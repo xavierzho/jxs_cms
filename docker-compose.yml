@@ -1,7 +1,7 @@
 version: "2"
 services:
   backend:
-    image: lucky/luck_box/data_cms:c_latest
+    image: lucky/lucky_box/cms_server:latest
     ports:
       - 8003:8003
     networks:
@@ -17,7 +17,7 @@ services:
       - "./data_backend/configs:/app/configs"
 
   frontend:
-    image: chaoshe/data/frontend:c_latest
+    image: lucky/lucky_box/cms_frontend:latest
     ports:
       - 8080:8080
     networks:
@@ -27,7 +27,7 @@ services:
     restart: always
     tty: true
     volumes:
-      - "./data_frontend/dist:/app/dist"
+      - "./view/dist_prod:/app/dist"
 
 networks:
   net:

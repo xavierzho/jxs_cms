@@ -4,8 +4,8 @@ repo ?= lucky/lucky_box/cms
 build-cms:
 	@cd cms; \
 	version=$$(cat version); \
-	docker build -t $(repo):$$version .; \
-	docker tag $(repo)/server:$$version $(repo)/server:latest
+	docker build -t $(repo)_server:$$version .; \
+	docker tag $(repo)_server:$$version $(repo)_server:latest
 
 
 .PHONY: build-frontend
