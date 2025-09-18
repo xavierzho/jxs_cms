@@ -1,0 +1,28 @@
+stages:
+  - build
+  - deploy
+variables:
+  GIT_CLONE_PATH: $CI_BUILDS_DIR/chaoshe_data_frontend
+
+build:
+  only:
+    - dev
+  stage: build
+  tags:
+    - backend-runner
+  script:
+    - yarn
+    - yarn run build:stage
+
+deploy:
+  only:
+    - dev
+  stage: deploy
+  tags:
+    - backend-runner
+  variables:
+    GIT_STRATEGY: fetch
+    GIT_CHECKOUT: "false"
+  script:
+    - sudo rm -r /usr/share/nginx/html/chaoshe_data_frontend
+    - sudo cp -r $CI_BUILDS_DIR/chaoshe_data_frontend/dist /usr/share/nginx/html/chaoshe_data_frontend

@@ -1,0 +1,27 @@
+stages:
+  - build
+  - deploy
+variables:
+  GIT_CLONE_PATH: $CI_BUILDS_DIR/data_backend
+
+build:
+  only:
+    - dev
+  stage: build
+  tags:
+    - backend-runner
+  script:
+    - cp configs/config.yaml.dev configs/config.yaml
+    - bash build.sh
+
+deploy:
+  only:
+    - dev
+  stage: deploy
+  tags:
+    - backend-runner
+  variables:
+    GIT_STRATEGY: fetch
+    GIT_CHECKOUT: "false"
+  script:
+    - bash start.sh restart

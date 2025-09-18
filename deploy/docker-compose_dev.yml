@@ -1,0 +1,37 @@
+version: "2"
+services:
+  backend:
+    image: lucky/luck_box/data_cms:c_latest
+    ports:
+      - 8003:8003
+    networks:
+      net:
+        aliases:
+          - backend
+    restart: always
+    tty: true
+    volumes:
+      - "./start.log:/app/start.log"
+      - "./panic.log:/app/panic.log"
+      - "./logs:/app/storage/logs"
+      - "./data_backend/configs:/app/configs"
+
+  frontend:
+    image: chaoshe/data/frontend:c_latest
+    ports:
+      - 8080:8080
+    networks:
+      net:
+        aliases:
+          - frontend
+    restart: always
+    tty: true
+    volumes:
+      - "./data_frontend/dist:/app/dist"
+
+networks:
+  net:
+
+
+volumes:
+  redisData: {}

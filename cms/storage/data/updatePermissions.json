@@ -1,0 +1,281 @@
+{
+	"permission": [
+		{
+			"id": 1,
+			"name": "management_role_view",
+			"display_name": "Management Role View",
+			"description": "角色管理视图",
+			"pages": "management_role"
+		},
+		{
+			"id": 2,
+			"name": "report_revenue_generate",
+			"display_name": "Report Revenue Generate",
+			"description": "营收报表生成",
+			"pages": "report_revenue"
+		},
+		{
+			"id": 3,
+			"name": "report_market_view",
+			"display_name": "Report Market View",
+			"description": "集市报表视图",
+			"pages": "report_market"
+		},
+		{
+			"id": 4,
+			"name": "report_realtime_view",
+			"display_name": "Report Realtime View",
+			"description": "实时数据视图",
+			"pages": "report_realtime"
+		},
+		{
+			"id": 5,
+			"name": "show_sensitive_info",
+			"display_name": "Show Sensitive Info",
+			"description": "显示敏感信息",
+			"pages": "dashboard"
+		},
+		{
+			"id": 6,
+			"name": "report_market_generate",
+			"display_name": "Report Market Generate",
+			"description": "集市报表生成",
+			"pages": "report_market"
+		},
+		{
+			"id": 7,
+			"name": "report_revenue_view",
+			"display_name": "Report Revenue View",
+			"description": "营收报表视图",
+			"pages": "report_revenue"
+		},
+		{
+			"id": 8,
+			"name": "data_export",
+			"display_name": "Data Export",
+			"description": "数据导出",
+			"pages": "dashboard"
+		},
+		{
+			"id": 9,
+			"name": "report_realtime_cached",
+			"display_name": "Report Realtime Cached",
+			"description": "实时数据缓存",
+			"pages": "report_realtime"
+		},
+		{
+			"id": 10,
+			"name": "lang_update",
+			"display_name": "Lang Update",
+			"description": "更换界面语言",
+			"pages": "dashboard"
+		},
+		{
+			"id": 11,
+			"name": "management_user_update",
+			"display_name": "Management User Update",
+			"description": "更新用户",
+			"pages": "management_user"
+		},
+		{
+			"id": 12,
+			"name": "management_log_view",
+			"display_name": "Management Log View",
+			"description": "操作日志视图",
+			"pages": "management_log"
+		},
+		{
+			"id": 13,
+			"name": "report_cohort_view",
+			"display_name": "Report Cohort View",
+			"description": "Cohort报表视图",
+			"pages": "report_cohort"
+		},
+		{
+			"id": 14,
+			"name": "advertising_analysis_create",
+			"display_name": "Advertising Analysis Create",
+			"description": "广告分析数据创建",
+			"pages": "advertising_analysis"
+		},
+		{
+			"id": 15,
+			"name": "advertising_analysis_view",
+			"display_name": "Advertising Analysis View",
+			"description": "广告分析视图",
+			"pages": "advertising_analysis"
+		},
+		{
+			"id": 16,
+			"name": "management_user_view",
+			"display_name": "Management User View",
+			"description": "用户管理视图",
+			"pages": "management_user"
+		},
+		{
+			"id": 17,
+			"name": "management_role_update",
+			"display_name": "Management Role Update",
+			"description": "更新角色",
+			"pages": "management_role"
+		},
+		{
+			"id": 18,
+			"name": "advertising_analysis_update",
+			"display_name": "Advertising Analysis Update",
+			"description": "广告分析数据修改",
+			"pages": "advertising_analysis"
+		},
+		{
+			"id": 19,
+			"name": "report_invite_generate",
+			"display_name": "Report Invite Generate",
+			"description": "邀请报表生成",
+			"pages": "report_invite"
+		},
+		{
+			"id": 20,
+			"name": "management_role_create",
+			"display_name": "Management Role Create",
+			"description": "创建角色",
+			"pages": "management_role"
+		},
+		{
+			"id": 21,
+			"name": "report_cohort_generate",
+			"display_name": "Report Cohort Generate",
+			"description": "Cohort报表生成",
+			"pages": "report_cohort"
+		},
+		{
+			"id": 22,
+			"name": "report_bet_view",
+			"display_name": "Report Bet View",
+			"description": "潮玩报表视图",
+			"pages": "report_bet"
+		},
+		{
+			"id": 23,
+			"name": "report_invite_view",
+			"display_name": "Report Invite View",
+			"description": "邀请报表视图",
+			"pages": "report_invite"
+		},
+		{
+			"id": 24,
+			"name": "management_user_create",
+			"display_name": "Management User Create",
+			"description": "创建用户",
+			"pages": "management_user"
+		},
+		{
+			"id": 25,
+			"name": "report_bet_generate",
+			"display_name": "Report Bet Generate",
+			"description": "潮玩报表生成",
+			"pages": "report_bet"
+		},
+		{
+			"id": 26,
+			"name": "inquire_item_view",
+			"display_name": "Inquire Item View",
+			"description": "用户物品日志视图",
+			"pages": "inquire_item"
+		},
+		{
+			"id": 27,
+			"name": "inquire_gacha_view",
+			"display_name": "Inquire Gacha View",
+			"description": "奖箱营收视图",
+			"pages": "inquire_gacha"
+		},
+		{
+			"id": 28,
+			"name": "report_dashboard_view",
+			"display_name": "Report Dashboard View",
+			"description": "仪表盘报表视图",
+			"pages": "dashboard"
+		},
+		{
+			"id": 29,
+			"name": "report_dashboard_generate",
+			"display_name": "Report Dashboard Generate",
+			"description": "仪表盘报表生成",
+			"pages": "dashboard"
+		},
+		{
+			"id": 30,
+			"name": "inquire_balance_view",
+			"display_name": "Inquire Balance View",
+			"description": "用户流水视图",
+			"pages": "inquire_balance"
+		},
+		{
+			"id": 31,
+			"name": "activity_cost_award_log_view",
+			"display_name": "Activity Cost Award Log View",
+			"description": "欧气值流水视图",
+			"pages": "cost_award_log"
+		},
+		{
+			"id": 32,
+			"name": "activity_cost_award_view",
+			"display_name": "Activity Cost Award View",
+			"description": "欧气值报表视图",
+			"pages": "cost_award"
+		},
+		{
+			"id": 33,
+			"name": "activity_cost_award_generate",
+			"display_name": "Activity Cost Award Generate",
+			"description": "欧气值报表生成",
+			"pages": "cost_award"
+		},
+		{
+			"id": 34,
+			"name": "inquire_coupon_view",
+			"display_name": "Inquire Coupon View",
+			"description": "用户优惠券日志视图",
+			"pages": "inquire_coupon"
+		},
+		{
+			"id": 35,
+			"name": "report_invite_daily_generate",
+			"display_name": "Report Invite Daily Generate",
+			"description": "邀请日报表生成",
+			"pages": "report_invite"
+		},
+		{
+			"id": 36,
+			"name": "report_invite_daily_view",
+			"display_name": "Report Invite Daily View",
+			"description": "邀请日报表视图",
+			"pages": "report_invite"
+		},
+		{
+			"id": 37,
+			"name": "inquire_invite_view",
+			"display_name": "Inquire Invite View",
+			"description": "邀请记录视图",
+			"pages": "inquire_invite"
+		},
+		{
+			"name": "report_order_daily_generate",
+			"display_name": "Report Order Daily Generate",  
+			"description": "发货报表生成",
+			"pages": "report_order"
+		},
+		{
+			"name": "report_order_view",
+			"display_name": "Report Order View",
+			"description": "发货报表视图",
+			"pages": "report_order"
+		},
+		{
+			"name": "activity_turntable_view",
+			"display_name": "Activity Turntable View",
+			"description": "转盘抽奖视图",
+			"pages": "activity_turntable"
+		}
+	]
+}

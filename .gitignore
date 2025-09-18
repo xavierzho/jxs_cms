@@ -1,0 +1,8 @@
+.vscode
+temp/
+deploy/logs/
+deploy/start.log
+deploy/panic.log
+
+.idea
+*node_modules

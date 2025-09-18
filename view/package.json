@@ -1,0 +1,68 @@
+{
+  "name": "jsx_cms_frontend",
+  "version": "4.4.0",
+  "description": "CMS Backend",
+  "author": "jixiangshang",
+  "scripts": {
+    "local": "NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service serve --mode local",
+    "dev": "NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service serve --mode development",
+    "build:prod": "NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service build --mode production",
+    "build:dev": "NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service build --mode development",
+    "preview": "node build/index.js --preview",
+    "svgo": "svgo -f src/icons/svg --config=src/icons/svgo.yml",
+    "test:unit": "jest --clearCache && vue-cli-service test:unit",
+    "test:ci": "npm run lint && npm run test:unit",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service build"
+  },
+  "dependencies": {
+    "axios": "0.23.0",
+    "core-js": "3.18.3",
+    "decimal.js": "^10.3.1",
+    "echarts": "^5.2.2",
+    "element-ui": "2.15.6",
+    "file-saver": "^2.0.5",
+    "js-cookie": "3.0.1",
+    "moment": "^2.29.1",
+    "moment-timezone": "^0.5.34",
+    "normalize.css": "8.0.1",
+    "nprogress": "0.2.0",
+    "path-to-regexp": "6.2.0",
+    "qs": "^6.10.1",
+    "vue": "2.6.14",
+    "vue-i18n": "^8.26.5",
+    "vue-router": "3.5.2",
+    "vuex": "3.6.2",
+    "yarn": "^1.22.22"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "4.5.14",
+    "@vue/cli-service": "4.5.14",
+    "@vue/test-utils": "1.2.2",
+    "autoprefixer": "9.5.1",
+    "babel-jest": "27.3.1",
+    "babel-plugin-dynamic-import-node": "2.3.3",
+    "chalk": "4.1.2",
+    "connect": "3.7.0",
+    "html-webpack-plugin": "^4.5.2",
+    "mockjs": "1.1.0",
+    "runjs": "4.4.2",
+    "sass": "1.43.3",
+    "sass-loader": "10.1.1",
+    "script-ext-html-webpack-plugin": "2.1.5",
+    "serve-static": "1.14.1",
+    "svg-sprite-loader": "6.0.10",
+    "svgo": "2.7.0",
+    "vue-template-compiler": "2.6.14"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions"
+  ],
+  "engines": {
+    "node": ">=8.9",
+    "npm": ">= 3.0.0"
+  },
+  "license": "MIT",
+  "main": "index.js",
+  "repository": ""
+}

@@ -1,0 +1,53 @@
+Server:
+  ServerName: data_banckend
+  Version: v2
+  # release, debug, migrate
+  RunMode: release
+  HttpPort: 8003
+  ReadTimeout: 60
+  WriteTimeout: 60
+  TimeZone: Asia/Shanghai
+  Language: zh
+  WhiteList:
+    - 127.0.0.1
+    - localhost
+
+App:
+  DefaultPageSize: 10
+  MaxPageSize: 100
+  DefaultContextTimeout: 60
+
+Tel:
+  AreaCode: 86
+  FullPhoneNumLength: 11
+
+JWT:
+  Secret: ChaoShe
+  Issuer: ChaoShe-cms
+  Expire: 24
+
+SecretKey:
+  AesKey: ChaoShe2023!@
+  AesVi: ChaoShe2023!@
+
+Logger:
+  LogSavePath: storage/logs
+  LogFileName: app
+  LogFileExt: .log
+
+WeChat:
+  WebHook: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=a1c752fe-3264-499e-bd82-7d843cf804a6
+
+Database:
+  CenterDB: "root:123456@tcp(192.168.8.92:3306)/blind_box?charset=utf8mb4&parseTime=True&loc=Asia%2FShanghai&multiStatements=True"
+  CMSDB: "root:123456@tcp(192.168.8.92:3306)/chaoshe_data?charset=utf8mb4&parseTime=True&loc=Asia%2FShanghai&multiStatements=True"
+  # 数据库连接池大小
+  Pool: 5
+  # 同时打开的连接数
+  ConnMaxLifetime: 100
+
+Redis:
+  Host: "redis:6379"
+  Password: 
+  CMSDB: 6
+
