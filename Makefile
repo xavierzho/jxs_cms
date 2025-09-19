@@ -14,3 +14,8 @@ build-frontend:
 	version=$$(jq -r '.version' package.json); \
 	docker build -t $(repo)_frontend:$$version .; \
 	docker tag $(repo)_frontend:$$version $(repo)_frontend:latest
+
+.PHONY:build
+build:
+	make build-cms;
+	make build-frontend;
