@@ -52,3 +52,17 @@ func TestRevenueWastageGenerate(t *testing.T) {
 
 	fmt.Printf("%v\n", data)
 }
+
+func TestRevenuePayGenerate(t *testing.T) {
+	dao := dao.NewPayDao(local.CMSDB, local.CenterDB, local.Logger)
+	cTime, _ := time.Parse(pkg.DATE_FORMAT, "2025-03-19")
+	data, err := dao.Generate(cTime)
+	if err != nil {
+		return
+	}
+
+	fmt.Printf("%v\n", data.Pay)
+	fmt.Printf("%v\n", data.Refund)
+	fmt.Printf("%v\n", data.Recharge)
+	fmt.Printf("%v\n", data.RechargeRefund)
+}

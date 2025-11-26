@@ -30,8 +30,4 @@ export default {
   updateRole({ id, ...params }) {
     return request.put('management/role/update/' + id, params)
   },
-  // log
-  getLogList(params) {
-    return request.get('management/log', { params })
-  },
 }

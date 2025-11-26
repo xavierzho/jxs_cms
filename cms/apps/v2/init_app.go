@@ -4,6 +4,10 @@ import (
 	"fmt"
 
 	costAward "data_backend/apps/v2/internal/activity/cost_award"
+	redemptionCode "data_backend/apps/v2/internal/activity/redemption_code"
+	signIn "data_backend/apps/v2/internal/activity/sign_in"
+	stepByStep "data_backend/apps/v2/internal/activity/step_by_step"
+	teamPK "data_backend/apps/v2/internal/activity/team_pk"
 	"data_backend/apps/v2/internal/activity/turntable"
 	"data_backend/apps/v2/internal/admin"
 	"data_backend/apps/v2/internal/common/local"
@@ -12,6 +16,8 @@ import (
 	"data_backend/apps/v2/internal/inquire/gacha"
 	iInvite "data_backend/apps/v2/internal/inquire/invite"
 	"data_backend/apps/v2/internal/inquire/item"
+	iRecall "data_backend/apps/v2/internal/inquire/recall"
+	iTask "data_backend/apps/v2/internal/inquire/task"
 	"data_backend/apps/v2/internal/report/bet"
 	"data_backend/apps/v2/internal/report/cohort"
 	"data_backend/apps/v2/internal/report/dashboard"
@@ -19,6 +25,7 @@ import (
 	"data_backend/apps/v2/internal/report/market"
 	"data_backend/apps/v2/internal/report/order"
 	"data_backend/apps/v2/internal/report/realtime"
+	"data_backend/apps/v2/internal/report/recall"
 	"data_backend/apps/v2/internal/report/revenue"
 	iDao "data_backend/internal/dao"
 	"data_backend/internal/global"
@@ -138,6 +145,9 @@ func startJobs() (err error) {
 		if err = order.AddJobList(); err != nil {
 			return err
 		}
+		if err = recall.AddJobList(); err != nil {
+			return err
+		}
 	}
 
 	// inquire
@@ -161,6 +171,12 @@ func startJobs() (err error) {
 		if err = iInvite.AddJobList(); err != nil { //inquire/invite
 			return err
 		}
+		if err = iRecall.AddJobList(); err != nil { //inquire/recall
+			return err
+		}
+		if err = iTask.AddJobList(); err != nil { //inquire/recall
+			return err
+		}
 
 	}
 
@@ -170,6 +186,18 @@ func startJobs() (err error) {
 			return err
 		}
 		if err = turntable.AddJobList(); err != nil { //activity/turntable
+			return err
+		}
+		if err = stepByStep.AddJobList(); err != nil {
+			return err
+		}
+		if err = signIn.AddJobList(); err != nil {
+			return err
+		}
+		if err = teamPK.AddJobList(); err != nil {
+			return err
+		}
+		if err = redemptionCode.AddJobList(); err != nil {
 			return err
 		}
 	}
@@ -233,6 +261,9 @@ func startQueue() (err error) {
 		if err = order.AddQueueJob(); err != nil {
 			return err
 		}
+		if err = recall.AddJobList(); err != nil {
+			return err
+		}
 
 	}
 
@@ -256,11 +287,32 @@ func startQueue() (err error) {
 		if err = iInvite.AddQueueJob(); err != nil { //inquire/invite
 			return err
 		}
+		if err = iRecall.AddQueueJob(); err != nil { //inquire/recall
+			return err
+		}
+		if err = iTask.AddQueueJob(); err != nil { //inquire/recall
+			return err
+		}
 	}
 
 	// activity
 	{
 		if err = costAward.AddQueueJob(); err != nil {
+			return err
+		}
+		if err = turntable.AddQueueJob(); err != nil {
+			return err
+		}
+		if err = stepByStep.AddQueueJob(); err != nil {
+			return err
+		}
+		if err = signIn.AddQueueJob(); err != nil {
+			return err
+		}
+		if err = teamPK.AddQueueJob(); err != nil {
+			return err
+		}
+		if err = redemptionCode.AddQueueJob(); err != nil {
 			return err
 		}
 	}
@@ -282,7 +334,6 @@ func InitRouter(rg *gin.RouterGroup) (err error) {
 	{
 		rg := rg.Group("report")
 		rg.Use(local.JWT.JWT())
-		//rg.Use(local.OperationLogMiddleware.Log("/api/v2/"))
 		if err = revenue.InitRouter(rg); err != nil {
 			return fmt.Errorf("revenue.InitRouter: %v", err)
 		}
@@ -315,13 +366,16 @@ func InitRouter(rg *gin.RouterGroup) (err error) {
 			return fmt.Errorf("order.InitRouter: %v", err) //report/order
 		}
 
+		if err = recall.InitRouter(rg); err != nil {
+			return fmt.Errorf("recall.InitRouter: %v", err) //report/recall
+		}
+
 	}
 
 	// inquire
 	{
 		rg := rg.Group("inquire")
 		rg.Use(local.JWT.JWT())
-		//rg.Use(local.OperationLogMiddleware.Log("/api/v2/"))
 		if err = item.InitRouter(rg); err != nil {
 			return fmt.Errorf("item.InitRouter: %v", err)
 		}
@@ -340,19 +394,35 @@ func InitRouter(rg *gin.RouterGroup) (err error) {
 		if err = iInvite.InitRouter(rg); err != nil {
 			return fmt.Errorf("invite.InitRouter: %v", err) //inquire/invite
 		}
-
+		if err = iRecall.InitRouter(rg); err != nil { //inquire/recall
+			return fmt.Errorf("recall.InitRouter: %v", err)
+		}
+		if err = iTask.InitRouter(rg); err != nil { //inquire/recall
+			return fmt.Errorf("task.InitRouter: %v", err)
+		}
 	}
 
 	// activity
 	{
 		rg := rg.Group("activity")
 		rg.Use(local.JWT.JWT())
-		//rg.Use(local.OperationLogMiddleware.Log("/api/v2/"))
 		if err = costAward.InitRouter(rg); err != nil {
 			return fmt.Errorf("costAward.InitRouter: %v", err)
 		}
 		if err = turntable.InitRouter(rg); err != nil {
 			return fmt.Errorf("turntable.InitRouter: %v", err) //activity/turntable
+		}
+		if err = stepByStep.InitRouter(rg); err != nil {
+			return fmt.Errorf("stepByStep.InitRouter: %v", err)
+		}
+		if err = signIn.InitRouter(rg); err != nil {
+			return fmt.Errorf("signIn.InitRouter: %v", err)
+		}
+		if err = teamPK.InitRouter(rg); err != nil {
+			return fmt.Errorf("teamPK.InitRouter: %v", err)
+		}
+		if err = redemptionCode.InitRouter(rg); err != nil {
+			return fmt.Errorf("redemptionCode.InitRouter: %v", err)
 		}
 	}
 
@@ -379,6 +449,7 @@ func MigrateModel() (err error) {
 		dashboard.AppendMigrateModel()
 		invite.AppendMigrateModel()
 		order.AppendMigrateModel()
+		recall.AppendMigrateModel()
 	}
 
 	// inquire
@@ -388,15 +459,21 @@ func MigrateModel() (err error) {
 		balance.AppendMigrateModel()
 		coupon.AppendMigrateModel()
 		iInvite.AppendMigrateModel()
+		iRecall.AppendMigrateModel()
+		iTask.AppendMigrateModel()
 	}
 
 	// activity
 	{
 		costAward.AppendMigrateModel()
 		turntable.AppendMigrateModel()
+		stepByStep.AppendMigrateModel()
+		signIn.AppendMigrateModel()
+		teamPK.AppendMigrateModel()
+		redemptionCode.AppendMigrateModel()
 	}
 
-	local.MigrateModel()
+	_ = local.MigrateModel()
 
 	return nil
 }
@@ -404,16 +481,15 @@ func MigrateModel() (err error) {
 func migrateModel() (err error) {
 	modelArr := []interface{}{
 		&iDao.Permission{}, &iDao.Role{}, &iDao.User{},
-		&iDao.OperationLog{},
 	}
 
 	// 第一次启动 进行初始化
-	if !local.CMSDB.Migrator().HasTable(iDao.User{}.TableName()) {
+	if !local.CMSDB.Migrator().HasTable((&iDao.User{}).TableName()) {
 		// 先迁移其他表后再进行初始化
-		//err = local.CMSDB.AutoMigrate(&iDao.Permission{})
-		//if err != nil {
-		//	return err
-		//}
+		err = local.CMSDB.AutoMigrate(&iDao.Permission{})
+		if err != nil {
+			return err
+		}
 
 		// 刷新权限表
 		permSvc := iService.NewPermissionSvc(local.Ctx, local.CMSDB, local.Logger, local.NewAlarm)

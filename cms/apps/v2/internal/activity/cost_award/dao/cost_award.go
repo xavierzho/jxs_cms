@@ -65,16 +65,16 @@ func (d *CostAwardDao) Generate(cDate time.Time) (dataLog, dataAward *CostAward,
 func (d *CostAwardDao) generateLog(cDate time.Time) (data *CostAward, err error) {
 	err = d.center.
 		Select(
-			fmt.Sprintf("date_format(caul.created_at, '%s') as date", pkg.SQL_DATE_FORMAT),
-			"count(distinct case when update_point > 0 then user_id else null end) as get_user_cnt",
-			"sum(case when update_point > 0 then update_point else 0 end) as get_amount",
-			"count(distinct case when log_type = 100 then user_id else null end) as accept_user_cnt",
-			"sum(case when log_type = 100 then -update_point else 0 end) as accept_amount",
+			fmt.Sprintf("date_format(bl.created_at, '%s') as date", pkg.SQL_DATE_FORMAT),
+			"count(distinct case when update_amount > 0 then user_id end) as get_user_cnt",
+			"sum(case when update_amount > 0 then update_amount else 0 end) as get_amount",
+			"count(distinct case when source_type = 100009 then user_id end) as accept_user_cnt",
+			"sum(case when source_type = 100009 then update_amount else 0 end) as accept_amount",
 		).
-		Table("activity_cost_award_user_log caul, users u").
-		Where("caul.created_at between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
-		Where("caul.user_id = u.id and u.is_admin=0").
-		Group(fmt.Sprintf("date_format(caul.created_at, '%s')", pkg.SQL_DATE_FORMAT)).
+		Table("balance_log bl, users u").
+		Where("bl.created_at between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
+		Where("bl.user_id = u.id and u.role=0").
+		Group(fmt.Sprintf("date_format(bl.created_at, '%s')", pkg.SQL_DATE_FORMAT)).
 		Find(&data).Error
 	if err != nil {
 		d.logger.Errorf("generateLog err: %v", err)
@@ -88,18 +88,18 @@ func (d *CostAwardDao) generateAward(cDate time.Time) (data *CostAward, err erro
 	err = d.center.
 		Select(
 			fmt.Sprintf("date_format(ua.created_at, '%s') as date", pkg.SQL_DATE_FORMAT),
-			"sum(case award_type when 0 then award_value else 0 end) as award_amount",
-			"sum(case award_type when 20 then cac.award_num * ifnull(i.show_price, 0) else 0 end) as award_item_show_price",
-			"sum(case award_type when 20 then cac.award_num * ifnull(i.inner_price, 0) else 0 end) as award_item_inner_price",
+			"sum(case type when 0 then award_value else 0 end) as award_amount",
+			"sum(case type when 20 then cac.num * ifnull(i.show_price, 0) else 0 end) as award_item_show_price",
+			"sum(case type when 20 then cac.num * ifnull(i.inner_price, 0) else 0 end) as award_item_inner_price",
 		).
 		Table("users u, activity a, user_activity ua, activity_cost_award_config cac").
-		Joins("left join item i on cac.award_type = 20 and cac.award_value = i.id").
-		Where("a.name = '欧气值'").
+		Joins("left join item i on cac.type = 20 and cac.award_value = i.id").
+		Where("a.key = 'CostAward'").
 		Where("a.id = ua.activity_id").
 		Where("ua.created_at between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
 		Where("ua.params_3->'$.type' = '0'").
 		Where("cast(ua.params as SIGNED) = cac.config_id").
-		Where("ua.user_id = u.id and u.is_admin=0").
+		Where("ua.user_id = u.id and u.role=0").
 		Group(fmt.Sprintf("date_format(ua.created_at, '%s')", pkg.SQL_DATE_FORMAT)).
 		Find(&data).Error
 	if err != nil {

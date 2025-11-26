@@ -1,8 +1,8 @@
+package app
+
 /*
 表单验证
 */
-package app
-
 import (
 	"strings"
 

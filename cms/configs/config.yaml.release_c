@@ -36,7 +36,7 @@ Logger:
   LogFileExt: .log
 
 WeChat:
-  WebHook: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=267aed8c-af84-420e-9248-f53ed3cd7905
+  WebHook: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=bbd2cb35-b214-44a2-a7cb-8a9e6679697a
 
 Database:
   CenterDB: "root:123456@tcp(192.168.0.93:3306)/blind_box?charset=utf8mb4&parseTime=True&loc=Asia%2FShanghai&multiStatements=True"

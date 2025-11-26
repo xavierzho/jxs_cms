@@ -21,12 +21,12 @@ type i18nFileType string
 type i18nCtxKey string
 
 const (
-	I18N_FILE_TYPE_TOML i18nFileType = "toml"
-	I18N_FILE_TYPE_JSON i18nFileType = "json"
+	FileTypeToml i18nFileType = "toml"
+	FileTypeJson i18nFileType = "json"
 
-	CTX_LANGUAGE_KEY i18nCtxKey = "I18nLanguage"
+	CtxLanguageKey i18nCtxKey = "I18nLanguage"
 
-	NESTED_SEPARATOR = "."
+	NestedSeparator = "."
 )
 
 var errInvalidTranslationValue = fmt.Errorf("invalid translation value")
@@ -35,14 +35,14 @@ func WithLanguage(ctx context.Context, language language.Tag) context.Context {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	return context.WithValue(ctx, CTX_LANGUAGE_KEY, language.String())
+	return context.WithValue(ctx, CtxLanguageKey, language.String())
 }
 
 func LanguageFromCtx(ctx context.Context) string {
 	if ctx == nil {
 		return ""
 	}
-	v := ctx.Value(CTX_LANGUAGE_KEY)
+	v := ctx.Value(CtxLanguageKey)
 	if v != nil {
 		return v.(string)
 	}
@@ -77,7 +77,7 @@ func findContent(content string) [][]string {
 	return regexp.MustCompile("{#.+?}").FindAllStringSubmatch(content, -1)
 }
 
-// 若文本中间出现需要翻译的内容则需要进行装饰
+// DecorateContent 若文本中间出现需要翻译的内容则需要进行装饰
 func DecorateContent(content string) string {
 	return fmt.Sprintf("{#%s}", content)
 }
@@ -86,7 +86,7 @@ func getTranslateText(group string, content string) string {
 	var text = content
 	if group != "" {
 		if content != "" {
-			text = group + NESTED_SEPARATOR + content
+			text = group + NestedSeparator + content
 		} else {
 			text = group
 		}

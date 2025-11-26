@@ -1,8 +1,8 @@
+package app
+
 /*
 格式化返回 http 请求
 */
-package app
-
 import (
 	"encoding/base64"
 	"encoding/json"
@@ -116,7 +116,7 @@ func (r *Response) BindAndValid(ctx *gin.Context, params interface{}, log *logge
 	return true
 }
 
-// 用于 返回文件
+// ExportFile 用于 返回文件
 func (r *Response) ExportFile(ctx *gin.Context, excelModel *excelize.File, fileName string) (err error) {
 	ctx.Header("Content-Type", "application/octet-stream")
 	ctx.Header("Access-Control-Expose-Headers", "Content-Disposition")
@@ -130,7 +130,7 @@ func (r *Response) ExportFile(ctx *gin.Context, excelModel *excelize.File, fileN
 	return nil
 }
 
-// 用于中间件处理
+// DeferResponse 用于中间件处理
 func DeferResponse(ctx *gin.Context, eCode **errcode.Error) {
 	if *eCode != nil {
 		response := NewResponse(ctx)

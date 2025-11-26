@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"data_backend/apps/v2/internal/activity/cost_award/dao"
+	cForm "data_backend/apps/v2/internal/common/form"
 	"data_backend/internal/app"
 	iForm "data_backend/internal/form"
 	"data_backend/pkg"
@@ -13,8 +14,6 @@ import (
 
 	"github.com/shopspring/decimal"
 )
-
-var COST_AWARD_POINT_STEP = decimal.NewFromInt(10)
 
 type GenerateRequest struct {
 	iForm.DateRangeRequest
@@ -49,8 +48,8 @@ type CostAward struct {
 func Format(dateRange [2]time.Time, _summary map[string]any, data []*dao.CostAward) (summary map[string]any, result []*CostAward) {
 	summary = _summary
 	if summary != nil {
-		summary["get_point"] = util.ConvertAmount2Decimal(summary["get_amount"]).Mul(COST_AWARD_POINT_STEP)
-		summary["accept_point"] = util.ConvertAmount2Decimal(summary["accept_amount"]).Mul(COST_AWARD_POINT_STEP)
+		summary["get_point"] = util.ConvertAmount2Decimal(summary["get_amount"]).Mul(cForm.COST_AWARD_POINT_STEP)
+		summary["accept_point"] = util.ConvertAmount2Decimal(summary["accept_amount"]).Mul(cForm.COST_AWARD_POINT_STEP)
 		summary["award_amount"] = util.ConvertAmount2Decimal(summary["award_amount"])
 		summary["award_item_show_price"] = util.ConvertAmount2Decimal(summary["award_item_show_price"])
 		summary["award_item_inner_price"] = util.ConvertAmount2Decimal(summary["award_item_inner_price"])
@@ -66,9 +65,9 @@ func Format(dateRange [2]time.Time, _summary map[string]any, data []*dao.CostAwa
 		result = append(result, &CostAward{
 			Date:                cDateStr,
 			GetUserCnt:          dataMap[cDateStr].GetUserCnt,
-			GetPoint:            util.ConvertAmount2Decimal(dataMap[cDateStr].GetAmount).Mul(COST_AWARD_POINT_STEP),
+			GetPoint:            util.ConvertAmount2Decimal(dataMap[cDateStr].GetAmount).Mul(cForm.COST_AWARD_POINT_STEP),
 			AcceptUserCnt:       dataMap[cDateStr].AcceptUserCnt,
-			AcceptPoint:         util.ConvertAmount2Decimal(dataMap[cDateStr].AcceptAmount).Mul(COST_AWARD_POINT_STEP),
+			AcceptPoint:         util.ConvertAmount2Decimal(dataMap[cDateStr].AcceptAmount).Mul(cForm.COST_AWARD_POINT_STEP),
 			AwardAmount:         util.ConvertAmount2Decimal(dataMap[cDateStr].AwardAmount),
 			AwardItemShowPrice:  util.ConvertAmount2Decimal(dataMap[cDateStr].AwardItemShowPrice),
 			AwardItemInnerPrice: util.ConvertAmount2Decimal(dataMap[cDateStr].AwardItemInnerPrice),

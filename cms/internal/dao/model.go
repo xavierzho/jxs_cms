@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// ? 考虑 是否限制 T 必须有主键
+// Dao ? 考虑 是否限制 T 必须有主键
 type Dao[T any] struct {
 	engine *gorm.DB
 	logger *logger.Logger

@@ -42,6 +42,7 @@ const (
 	pating_type_gashapon    = "Gashapon"   // 扭蛋机
 	pating_type_chao        = "Chao"       // 潮玩赏
 	pating_type_hole        = "Hole"       // 洞洞乐
+	pating_type_chao_she    = "ChaoShe"    // 潮社赏
 	pating_type_market      = "Market"     // 集市
 	pating_type_deliver     = "Deliver"    // 发货
 	pating_type_shop        = "Shop"       // 商城
@@ -138,6 +139,8 @@ func (svc *RealtimeSvc) cachedPating(startTime, endTime time.Time) (err error) {
 			patingType = pating_type_chao
 		case "user_cnt_104":
 			patingType = pating_type_hole
+		case "user_cnt_105":
+			patingType = pating_type_chao_she
 		case "user_cnt_200":
 			patingType = pating_type_market
 		case "user_cnt_300":
@@ -343,7 +346,7 @@ func (svc *RealtimeSvc) allActive(cTime time.Time, dataChan chan [2]any) (err er
 }
 
 func (svc *RealtimeSvc) allPating(cTime time.Time, dataChan chan [2]any) (err error) {
-	dataTypeList := []string{"", pating_type_first_prize, pating_type_gashapon, pating_type_chao, pating_type_hole, pating_type_market, pating_type_deliver, pating_type_shop}
+	dataTypeList := []string{"", pating_type_first_prize, pating_type_gashapon, pating_type_chao, pating_type_hole, pating_type_chao_she, pating_type_market, pating_type_deliver, pating_type_shop}
 	for _, dataType := range dataTypeList {
 		rKey := realtimeDataRKeyFormatByTime(realtime_data_pating+dataType, cTime)
 		data, err := svc.rdb.HGetAll(svc.ctx, rKey).Result()

@@ -10,19 +10,19 @@ import (
 	"time"
 )
 
-// 包含 数字、大小写字母的字符集
-var WORD_LIST []string
+// WordList 包含 数字、大小写字母的字符集
+var WordList []string
 
 func init() {
 	// WORD_LIST
 	for ind := 48; ind < 58; ind++ { // 数字
-		WORD_LIST = append(WORD_LIST, string(rune(ind)))
+		WordList = append(WordList, string(rune(ind)))
 	}
 	for ind := 65; ind < 91; ind++ { // 大写字母
-		WORD_LIST = append(WORD_LIST, string(rune(ind)))
+		WordList = append(WordList, string(rune(ind)))
 	}
 	for ind := 97; ind < 123; ind++ { // 小写字母
-		WORD_LIST = append(WORD_LIST, string(rune(ind)))
+		WordList = append(WordList, string(rune(ind)))
 	}
 }
 
@@ -38,7 +38,7 @@ func PKCS5UnPadding(src []byte) []byte {
 	return src[:(length - unpadding)]
 }
 
-func AesEncryptCBC(plaintext []byte, key []byte, iv []byte) ([]byte, error) {
+func EncryptCBC(plaintext []byte, key []byte, iv []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, fmt.Errorf("invalid decrypt key")
@@ -51,7 +51,7 @@ func AesEncryptCBC(plaintext []byte, key []byte, iv []byte) ([]byte, error) {
 	return ciphertext, nil
 }
 
-func AesDecryptCBC(ciphertext []byte, key []byte, iv []byte) ([]byte, error) {
+func DecryptCBC(ciphertext []byte, key []byte, iv []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, fmt.Errorf("invalid decrypt key")
@@ -101,7 +101,7 @@ func DecodeAesString(aesStr string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	strAes, err := AesDecryptCBC(strByte, CheckAesKey(SecretKeySetting.AesKey), CheckAesKey(SecretKeySetting.AesVi))
+	strAes, err := DecryptCBC(strByte, CheckAesKey(SecretKeySetting.AesKey), CheckAesKey(SecretKeySetting.AesVi))
 	if err != nil {
 		return "", err
 	}
@@ -109,14 +109,14 @@ func DecodeAesString(aesStr string) (string, error) {
 }
 
 func EncodeAesString(str string) (string, error) {
-	aesStr, err := AesEncryptCBC([]byte(str), CheckAesKey(SecretKeySetting.AesKey), CheckAesKey(SecretKeySetting.AesVi))
+	aesStr, err := EncryptCBC([]byte(str), CheckAesKey(SecretKeySetting.AesKey), CheckAesKey(SecretKeySetting.AesVi))
 	if err != nil {
 		return "", err
 	}
 	return base64.StdEncoding.EncodeToString(aesStr), nil
 }
 
-// 隐藏真实nickname
+// HideNickName 隐藏真实nickname
 func HideNickName(nickname string) string {
 	r := []rune(nickname)
 	if len(r) == 0 {
@@ -131,11 +131,11 @@ func HideNickName(nickname string) string {
 	return string(r[0:1]) + "****" + string(r[len(r)-1:])
 }
 
-// 生成一个假昵称(含脱敏)
+// GetMockNickName 生成一个假昵称(含脱敏)
 func GetMockNickName() string {
-	rand.Seed(time.Now().UnixNano())
-	first := WORD_LIST[rand.Intn(len(WORD_LIST))]
-	last := WORD_LIST[rand.Intn(len(WORD_LIST))]
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	first := WordList[r.Intn(len(WordList))]
+	last := WordList[r.Intn(len(WordList))]
 
 	return first + "****" + last
 }

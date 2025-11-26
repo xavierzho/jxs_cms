@@ -31,7 +31,7 @@ func InitRouter(r *gin.RouterGroup) (err error) {
 		// cost-award路由组
 		rg := r.Group("cost-award")
 		costAwardApi := api.NewCostAwardApi()
-		rg.GET("/generate", local.PermissionGate.CheckPerm("activity_cost_award_generate"), costAwardApi.Generate)
+		rg.POST("/generate", local.PermissionGate.CheckPerm("activity_cost_award_generate"), costAwardApi.Generate)
 		rg.GET("", local.PermissionGate.CheckPerm("activity_cost_award_view"), costAwardApi.List)
 		rg.POST("/export", local.PermissionGate.CheckPerm("activity_cost_award_view"), costAwardApi.Export)
 	}

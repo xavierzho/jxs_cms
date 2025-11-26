@@ -33,7 +33,6 @@ type BalanceSvc struct {
 	rdb      *redisdb.RedisClient
 	logger   *logger.Logger
 	userSvc  *iService.UserSvc
-	logSvc   *iService.OperationLogSvc
 	dao      *dao.BalanceDao
 	newAlarm func(log *logger.Logger) message.Alarm
 }
@@ -55,10 +54,14 @@ func (svc *BalanceSvc) OptionsSourceType() []map[string]string {
 		{"value": "1", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "1")},
 		{"value": "2", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "2")},
 		{"value": "3", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "3")},
+		{"value": "12", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "12")},
+		{"value": "13", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "13")},
 		{"value": "101", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "101")},
 		{"value": "102", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "102")},
 		{"value": "103", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "103")},
 		{"value": "104", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "104")},
+		{"value": "105", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "105")},
+		{"value": "106", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "106")},
 		{"value": "201", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "201")},
 		{"value": "202", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "202")},
 		{"value": "203", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "203")},
@@ -66,6 +69,7 @@ func (svc *BalanceSvc) OptionsSourceType() []map[string]string {
 		{"value": "301", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "301")},
 		{"value": "400", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "400")},
 		{"value": "601", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "601")},
+		{"value": "100005", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "100005")},
 		{"value": "999999", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "999999")},
 	}
 }
@@ -117,7 +121,6 @@ func (svc *BalanceSvc) AddComment(params *form.AddCommentRequest) (e *errcode.Er
 	}()
 
 	svc.userSvc = iService.NewUserSvc(svc.ctx, svc.engine, svc.rdb, svc.logger, svc.newAlarm)
-	svc.logSvc = iService.NewOperationLogSvc(svc.ctx, svc.engine, svc.logger, svc.newAlarm)
 
 	// 获取用户
 	operator, e := svc.userSvc.CurrentUser()
@@ -155,11 +158,6 @@ func (svc *BalanceSvc) AddComment(params *form.AddCommentRequest) (e *errcode.Er
 		return errcode.UpdateFail.WithDetails(err.Error())
 	}
 
-	// log
-	// go svc.logSvc.Create(&iDao.OperationLog{
-	// 	ModuleName: "balance_log", Operation: "Add Comment", ModuleID: convert.GetString(params.ID),
-	// })
-
 	return nil
 }
 
@@ -178,7 +176,6 @@ func (svc *BalanceSvc) DeleteComment(params *form.DeleteCommentRequest) (e *errc
 	}()
 
 	svc.userSvc = iService.NewUserSvc(svc.ctx, svc.engine, svc.rdb, svc.logger, svc.newAlarm)
-	svc.logSvc = iService.NewOperationLogSvc(svc.ctx, svc.engine, svc.logger, svc.newAlarm)
 
 	// 获取用户
 	operator, e := svc.userSvc.CurrentUser()
@@ -220,11 +217,6 @@ func (svc *BalanceSvc) DeleteComment(params *form.DeleteCommentRequest) (e *errc
 		return errcode.UpdateFail.WithDetails(err.Error())
 	}
 
-	// log
-	// go svc.logSvc.Create(&iDao.OperationLog{
-	// 	ModuleName: "balance_log", Operation: "Delete Comment", ModuleID: convert.GetString(params.ID),
-	// })
-
 	return nil
 }
 
@@ -246,4 +238,14 @@ func (svc *BalanceSvc) Export(params *form.AllRequest) (data *excel.Excel[*form.
 	}
 
 	return
+}
+
+func (svc *BalanceSvc) OptionsBalanceType() []map[string]string {
+	return []map[string]string{
+		{"value": "0", "label": global.I18n.T(svc.ctx.Request.Context(), "balance_type", "0")},
+		{"value": "1", "label": global.I18n.T(svc.ctx.Request.Context(), "balance_type", "1")},
+		{"value": "2", "label": global.I18n.T(svc.ctx.Request.Context(), "balance_type", "2")},
+		{"value": "3", "label": global.I18n.T(svc.ctx.Request.Context(), "balance_type", "3")},
+		{"value": "100", "label": global.I18n.T(svc.ctx.Request.Context(), "balance_type", "100")},
+	}
 }

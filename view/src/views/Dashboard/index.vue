@@ -25,10 +25,10 @@
         <dashboard-value class-name="recharge_user_cnt_summary" :title="$t('report.dashboard.recharge_user_cnt_summary')" :value="[summary.recharge_user_cnt,0]" is-summary/>
       </div>
 
-      <div class="group">
-        <dashboard-value class-name="recharge_amount_summary" :title="$t('report.dashboard.recharge_amount_summary')" :value="[summary.recharge_amount,0]" value-type="value2f" is-summary/>
-        <dashboard-value class-name="draw_amount_summary" :title="$t('report.dashboard.draw_amount_summary')" :value="[summary.draw_amount,0]" value-type="value2f" is-summary/>
-      </div>
+<!--      <div class="group">-->
+<!--        <dashboard-value class-name="recharge_amount_summary" :title="$t('report.dashboard.recharge_amount_summary')" :value="[summary.recharge_amount,0]" value-type="value2f" is-summary/>-->
+<!--        <dashboard-value class-name="draw_amount_summary" :title="$t('report.dashboard.draw_amount_summary')" :value="[summary.draw_amount,0]" value-type="value2f" is-summary/>-->
+<!--      </div>-->
     </div>
 
     <!--table-->

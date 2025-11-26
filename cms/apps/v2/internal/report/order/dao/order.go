@@ -59,8 +59,8 @@ func (d *DeliveryOrderDao) Generate(cDate time.Time, queryParams database.QueryW
 		Table("`order` o, item i, users u, ? as j", d.getOrderItemJsonDB()).
 		Where("j.item_id = i.id").
 		Where("u.id = o.user_id").
-		Where("o.state = 4").
-		Where("u.is_admin = 0").
+		// Where("o.state = 4"). // 部分发货时 状态 仍为 待发货
+		Where("u.role = 0").
 		Where("o.delivery_time between ? and ?", cDate.UnixMilli(), cDate.Add(24*time.Hour-time.Millisecond).UnixMilli()).
 		Scopes(database.ScopeQuery(queryParams)).
 		Group(fmt.Sprintf("date_format(FROM_UNIXTIME(o.delivery_time / 1000), '%s'), o.user_id, u.nickname", pkg.SQL_DATE_FORMAT)).

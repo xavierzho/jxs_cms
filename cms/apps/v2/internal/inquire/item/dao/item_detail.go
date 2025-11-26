@@ -46,11 +46,11 @@ type ItemDetail struct {
 }
 
 // ! 仅1w条 // 数量过多会占用 大量内存
-func (d *ItemDao) GetDetail(logTypeList []int, paramsGroup AllRequestParamsGroup, pager *app.Pager) (data []*ItemDetail, err error) {
-	if !(paramsGroup.BetFlag || paramsGroup.MarketFlag || paramsGroup.ActivityFlag.Flag || paramsGroup.AdminFlag || paramsGroup.OrderFlag) {
+func (d *ItemDao) GetDetail(logTypeList []int, paramsGroup AllRequestParamsGroup, pager *app.Pager) (data []*ItemDetail, total int64, err error) {
+	if !(paramsGroup.BetFlag || paramsGroup.MarketFlag || paramsGroup.ActivityFlag.Flag || paramsGroup.AdminFlag || paramsGroup.OrderFlag || paramsGroup.TaskFlag || paramsGroup.PublicizeFlag) {
 		err = fmt.Errorf("invalid listType: %v", logTypeList)
 		d.logger.Errorf("GetDetail: %v", err)
-		return nil, err
+		return nil, 0, err
 	}
 
 	var dbList []any
@@ -76,16 +76,45 @@ func (d *ItemDao) GetDetail(logTypeList []int, paramsGroup AllRequestParamsGroup
 			dbList = append(dbList, d.getDetailActivityItemExchangeIntoDB(paramsGroup))
 		}
 		if paramsGroup.ActivityFlag.PrizeWheel {
-			dbList = append(dbList, d.getDetailActivityPrizeWheelIntoDB(paramsGroup))
+			dbList = append(dbList, d.getDetailActivityPrizeWheelDB(paramsGroup))
 		}
+		if paramsGroup.ActivityFlag.StepByStep {
+			dbList = append(dbList, d.getDetailActivityStepByStepDB(paramsGroup))
+			dbList = append(dbList, d.getDetailActivityStepByStepRankDB(paramsGroup))
+		}
+		if paramsGroup.ActivityFlag.SignIn {
+			dbList = append(dbList, d.getDetailActivitySignInDB(paramsGroup))
+		}
+		if paramsGroup.ActivityFlag.LuckyNum {
+			dbList = append(dbList, d.getDetailActivityLuckyNumDB(paramsGroup))
+		}
+		if paramsGroup.ActivityFlag.RedemptionCode {
+			dbList = append(dbList, d.getDetailActivityRedemptionCodeDB(paramsGroup))
+		}
+		if paramsGroup.ActivityFlag.Lottery {
+			dbList = append(dbList, d.getDetailActivityLotteryDB(paramsGroup))
+		}
+	}
+	if paramsGroup.TaskFlag {
+		dbList = append(dbList, d.getDetailTaskDB(paramsGroup))
 	}
 	if paramsGroup.AdminFlag {
 		dbList = append(dbList, d.getDetailAdminDB(paramsGroup))
+	}
+	if paramsGroup.PublicizeFlag {
+		dbList = append(dbList, d.getDetailPublicizeDB(paramsGroup))
 	}
 
 	sqlList := make([]string, len(dbList))
 	for ind := range sqlList {
 		sqlList[ind] = "?"
+	}
+
+	// ! 正式服：十分奇怪 count(user_name) 的情况下 sql 执行方式与其他时候不同，会使用 item 索引，其他情况没有使用这个索引 导致 很慢（通过 EXPLAIN ANALYZE 分析） // 测试服都会走索引
+	err = d.center.Table("("+strings.Join(sqlList, " union all ")+") as t", dbList...).Select("count(user_name)").Scan(&total).Error
+	if err != nil {
+		d.logger.Errorf("GetDetail Count: %v", err)
+		return nil, 0, err
 	}
 
 	allDB := d.center.Table("("+strings.Join(sqlList, " union all ")+") as t", dbList...)
@@ -111,6 +140,7 @@ func (d *ItemDao) GetDetail(logTypeList []int, paramsGroup AllRequestParamsGroup
 			"nums",
 			"no",
 		).
+		// Count(&total). // ? 这个地方使用 count 结果 count(*) 语句不走item索引
 		Order("t.date_time desc, t.log_type, t.user_id, t.level_name, t.inner_price desc, t.nums desc").
 		Scopes(func(d *gorm.DB) *gorm.DB {
 			if pager != nil {
@@ -122,7 +152,7 @@ func (d *ItemDao) GetDetail(logTypeList []int, paramsGroup AllRequestParamsGroup
 		Find(&data).Error
 	if err != nil {
 		d.logger.Errorf("GetDetail Find: %v", err)
-		return nil, err
+		return nil, 0, err
 	}
 
 	return
@@ -402,6 +432,126 @@ func (d *ItemDao) getDetailOrderDB(paramsGroup AllRequestParamsGroup) *gorm.DB {
 		))
 }
 
+// 邮件
+func (d *ItemDao) GetDetailPublicize(queryParams database.QueryWhereGroup) (data []*Item, err error) {
+	err = d.center.
+		Select(
+			"i.id as item_id",
+			"i.name as item_name",
+			"'' as level_name",
+			"i.cover_thumb",
+			"i.show_price",
+			"i.inner_price",
+			"i.recycling_price",
+			"a.num as nums",
+		).
+		Table("publicize_mail_log l,publicize_mail_attachment a, item i").
+		Where("l.mail_id = a.config_id").
+		Where("a.type = 20").
+		Where("a.value = i.id").
+		Scopes(database.ScopeQuery(queryParams)).
+		Order("i.inner_price desc, a.num desc").
+		Find(&data).Error
+	if err != nil {
+		d.logger.Errorf("getDetailAdmin: %v", err)
+		return nil, err
+	}
+	return
+}
+
+func (d *ItemDao) getDetailPublicizeDB(paramsGroup AllRequestParamsGroup) *gorm.DB {
+	return d.center.
+		Select(
+			fmt.Sprintf("DATE_FORMAT(l.created_at, '%s') as date_time", pkg.SQL_DATE_TIME_FORMAT),
+			"u.id as user_id",
+			"u.nickname as user_name",
+			"701 as log_type",
+			"m.title as log_type_name",
+			"0 as period",
+			"0 as box_out_no",
+			"0 as amount",
+			"i.id as item_id",
+			"i.name as item_name",
+			"'' as level_name",
+			"i.cover_thumb",
+			"i.show_price",
+			"i.inner_price",
+			"i.recycling_price",
+			"a.num as nums",
+			"0 as no",
+		).
+		Table("publicize_mail_log l").
+		Joins("LEFT JOIN publicize_mail_attachment a ON a.config_id = l.mail_id").
+		Joins("LEFT JOIN publicize_mail m ON m.id = l.mail_id").
+		Joins("LEFT JOIN users u ON u.id = l.user_id").
+		Joins("LEFT JOIN item i ON i.id = a.value").
+		Where("a.type = 20").
+		Scopes(database.ScopeQuery(paramsGroup.PublicizeDateTimeParams)).
+		Scopes(database.ScopeQuery(paramsGroup.UsersParams)).
+		Scopes(database.ScopeQuery(paramsGroup.ItemParams))
+}
+
+// 管理员 添加
+func (d *ItemDao) GetDetailAdmin(queryParams database.QueryWhereGroup) (data []*Item, err error) {
+	err = d.center.
+		Select(
+			"i.id as item_id",
+			"i.name as item_name",
+			"gl.level_name",
+			"i.cover_thumb",
+			"i.show_price",
+			"i.inner_price",
+			"i.recycling_price",
+			"count(t.id) as nums",
+		).
+		Table("cabinet_stock t, item i, gacha_level gl").
+		Where("t.theme_type = 999").
+		Where("t.item_id = i.id").
+		Where("t.level_index=gl.level_index").
+		Scopes(database.ScopeQuery(queryParams)).
+		Group("i.id, i.name, gl.level_name, i.cover_thumb, i.show_price, i.inner_price, i.recycling_price").
+		Order("gl.level_name, i.inner_price desc, count(t.id) desc").
+		Find(&data).Error
+	if err != nil {
+		d.logger.Errorf("getDetailAdmin: %v", err)
+		return nil, err
+	}
+
+	return
+}
+
+func (d *ItemDao) getDetailAdminDB(paramsGroup AllRequestParamsGroup) *gorm.DB {
+	return d.center.
+		Select(
+			fmt.Sprintf("DATE_FORMAT(t.created_at, '%s') as date_time", pkg.SQL_DATE_TIME_FORMAT),
+			"u.id as user_id",
+			"u.nickname as user_name",
+			"999999 as log_type", // 欧气值
+			"'' as log_type_name",
+			"0 as period",
+			"0 as box_out_no",
+			"0 as amount",
+			"i.id as item_id",
+			"i.name as item_name",
+			"cast(gl.level_name as char) as level_name",
+			"i.cover_thumb",
+			"i.show_price",
+			"i.inner_price",
+			"i.recycling_price",
+			"count(t.id) as nums",
+			"0 as no",
+		).
+		Table("cabinet_stock t, users u, item i, gacha_level gl").
+		Where("t.theme_type = 999").
+		Where("t.user_id = u.id").
+		Where("t.item_id = i.id").
+		Where("t.level_index=gl.level_index").
+		Scopes(database.ScopeQuery(paramsGroup.DateTimeParams)).
+		Scopes(database.ScopeQuery(paramsGroup.UsersParams)).
+		Scopes(database.ScopeQuery(paramsGroup.ItemParams)).
+		Group(fmt.Sprintf("DATE_FORMAT(t.created_at, '%s'), u.id, u.nickname, i.id, i.name, cast(gl.level_name as char), i.cover_thumb, i.show_price, i.inner_price, i.recycling_price", pkg.SQL_DATE_TIME_FORMAT))
+}
+
 // 活动
 func (d *ItemDao) GetDetailActivityCostAwardConfig(queryParams database.QueryWhereGroup) (data []*Item, err error) {
 	err = d.center.
@@ -450,7 +600,7 @@ func (d *ItemDao) getDetailActivityCostAwardDB(paramsGroup AllRequestParamsGroup
 			"0 as no",
 		).
 		Table("activity a, user_activity ua, users u, activity_cost_award_config t, item i").
-		Where("a.name = '欧气值'").
+		Where("a.key = 'CostAward'").
 		Where("a.id = ua.activity_id").
 		Where("ua.user_id = u.id").
 		Where("cast(ua.params as SIGNED) = t.config_id").
@@ -498,7 +648,7 @@ func (d *ItemDao) getDetailActivityCostRankDB(paramsGroup AllRequestParamsGroup)
 			fmt.Sprintf("ROW_NUMBER() OVER(PARTITION BY DATE_FORMAT(ua.created_at, '%s'), u.id, u.nickname, ua.params, t.period ORDER BY no_limit) as near_no", pkg.SQL_DATE_TIME_FORMAT),
 		).
 		Table("activity a, user_activity ua, users u, activity_cost_rank_award_config t").
-		Where("a.name = '消费排行'").
+		Where("a.key = 'CostRank'").
 		Where("a.id = ua.activity_id").
 		Where("ua.user_id = u.id").
 		Where("cast(substring_index(ua.params, '|', 1) as SIGNED) = t.period").
@@ -591,7 +741,7 @@ func (d *ItemDao) getDetailActivityItemExchangeOutDB(paramsGroup AllRequestParam
 			"0 as no",
 		).
 		Table("activity as a, `user_activity` t, ? as j, users u, cabinet_stock as cs, item i", jsonDB).
-		Where("a.name = '物品置换'").
+		Where("a.key = 'ItemExchange'").
 		Where("a.id = t.activity_id").
 		Where("t.user_id = u.id").
 		Where("j.stock_id = cs.id").
@@ -635,7 +785,7 @@ func (d *ItemDao) getDetailActivityItemExchangeIntoDB(paramsGroup AllRequestPara
 			"0 as no",
 		).
 		Table("activity as a, `user_activity` t, users u, activity_item_exchange_config as iec, item i").
-		Where("a.name = '物品置换'").
+		Where("a.key = 'ItemExchange'").
 		Where("a.id = t.activity_id").
 		Where("t.user_id = u.id").
 		Where("t.params = iec.id").
@@ -647,78 +797,17 @@ func (d *ItemDao) getDetailActivityItemExchangeIntoDB(paramsGroup AllRequestPara
 		Group(fmt.Sprintf("DATE_FORMAT(t.created_at, '%s'), u.id, u.nickname, i.id, i.name, i.cover_thumb, i.show_price, i.inner_price, i.recycling_price, t.params_2", pkg.SQL_DATE_TIME_FORMAT))
 }
 
-// 管理员 添加
-func (d *ItemDao) GetDetailAdmin(queryParams database.QueryWhereGroup) (data []*Item, err error) {
-	err = d.center.
-		Select(
-			"i.id as item_id",
-			"i.name as item_name",
-			"gl.level_name",
-			"i.cover_thumb",
-			"i.show_price",
-			"i.inner_price",
-			"i.recycling_price",
-			"count(t.id) as nums",
-		).
-		Table("cabinet_stock t, item i, gacha_level gl").
-		Where("t.theme_type = 999").
-		Where("t.item_id = i.id").
-		Where("t.level_index=gl.level_index").
-		Scopes(database.ScopeQuery(queryParams)).
-		Group("i.id, i.name, gl.level_name, i.cover_thumb, i.show_price, i.inner_price, i.recycling_price").
-		Order("gl.level_name, i.inner_price desc, count(t.id) desc").
-		Find(&data).Error
+func (d *ItemDao) GetDetailActivityPrizeWheelConfig(queryParams database.QueryWhereGroup) (data []*Item, err error) {
+	err = d.getDetailActivityPrizeWheelDB(AllRequestParamsGroup{OtherParams: queryParams}).Order("inner_price desc, nums desc").Find(&data).Error
 	if err != nil {
-		d.logger.Errorf("getDetailAdmin: %v", err)
-		return nil, err
-	}
-
-	return
-}
-
-func (d *ItemDao) getDetailAdminDB(paramsGroup AllRequestParamsGroup) *gorm.DB {
-	return d.center.
-		Select(
-			fmt.Sprintf("DATE_FORMAT(t.created_at, '%s') as date_time", pkg.SQL_DATE_TIME_FORMAT),
-			"u.id as user_id",
-			"u.nickname as user_name",
-			"999999 as log_type", // 欧气值
-			"'' as log_type_name",
-			"0 as period",
-			"0 as box_out_no",
-			"0 as amount",
-			"i.id as item_id",
-			"i.name as item_name",
-			"cast(gl.level_name as char) as level_name",
-			"i.cover_thumb",
-			"i.show_price",
-			"i.inner_price",
-			"i.recycling_price",
-			"count(t.id) as nums",
-			"0 as no",
-		).
-		Table("cabinet_stock t, users u, item i, gacha_level gl").
-		Where("t.theme_type = 999").
-		Where("t.user_id = u.id").
-		Where("t.item_id = i.id").
-		Where("t.level_index=gl.level_index").
-		Scopes(database.ScopeQuery(paramsGroup.DateTimeParams)).
-		Scopes(database.ScopeQuery(paramsGroup.UsersParams)).
-		Scopes(database.ScopeQuery(paramsGroup.ItemParams)).
-		Group(fmt.Sprintf("DATE_FORMAT(t.created_at, '%s'), u.id, u.nickname, i.id, i.name, cast(gl.level_name as char), i.cover_thumb, i.show_price, i.inner_price, i.recycling_price", pkg.SQL_DATE_TIME_FORMAT))
-}
-
-// 获取转盘抽奖物品信息
-func (d *ItemDao) GetDetailActivityPrizeWheel(queryParams database.QueryWhereGroup) (data []*Item, err error) {
-	err = d.getDetailActivityPrizeWheelIntoDB(AllRequestParamsGroup{OtherParams: queryParams}).Order("inner_price desc, nums desc").Find(&data).Error
-	if err != nil {
-		d.logger.Errorf("GetDetailActivityItemExchangeInto: %v", err)
+		d.logger.Errorf("GetDetailActivityPrizeWheelConfig: %v", err)
 		return
 	}
 
 	return
 }
-func (d *ItemDao) getDetailActivityPrizeWheelIntoDB(paramsGroup AllRequestParamsGroup) *gorm.DB {
+
+func (d *ItemDao) getDetailActivityPrizeWheelDB(paramsGroup AllRequestParamsGroup) *gorm.DB {
 	return d.center.
 		Select(
 			fmt.Sprintf("DATE_FORMAT(t.created_at, '%s') as date_time", pkg.SQL_DATE_TIME_FORMAT), //格式化时间戳
@@ -741,6 +830,7 @@ func (d *ItemDao) getDetailActivityPrizeWheelIntoDB(paramsGroup AllRequestParams
 		).
 		Table("users u,activity_prize_wheel_history t, activity_prize_wheel_award_config apwac, item i,activity_prize_wheel_config apwc").
 		Where("t.award_id = apwac.id").
+		Where("apwac.type = 20").
 		Where("apwac.value = i.id").
 		Where("t.user_id = u.id").
 		Where("t.config_id = apwc.id").
@@ -749,4 +839,415 @@ func (d *ItemDao) getDetailActivityPrizeWheelIntoDB(paramsGroup AllRequestParams
 		Scopes(database.ScopeQuery(paramsGroup.ItemParams)).
 		Scopes(database.ScopeQuery(paramsGroup.OtherParams)).
 		Group(fmt.Sprintf("DATE_FORMAT(t.created_at, '%s'), u.id, u.nickname, apwc.name, apwc.period, i.id, i.name, i.cover_thumb, i.show_price, i.inner_price, i.recycling_price", pkg.SQL_DATE_TIME_FORMAT))
+}
+
+func (d *ItemDao) GetDetailActivityStepByStepConfig(levelType int, queryParams database.QueryWhereGroup) (data []*Item, err error) {
+	if levelType == 0 {
+		err = d.center.
+			Select(
+				"i.id as item_id",
+				"i.name as item_name",
+				"i.cover_thumb",
+				"i.show_price",
+				"i.inner_price",
+				"i.recycling_price",
+				"t.num as nums",
+			).
+			Table("activity_step_by_step_award_config t, item i").
+			Where("t.type = 20").
+			Scopes(database.ScopeQuery(queryParams)).
+			Where("t.value = i.id").
+			Order("inner_price desc, nums desc").
+			Find(&data).Error
+	} else if levelType == 1 {
+		err = d.center.
+			Select(
+				"i.id as item_id",
+				"i.name as item_name",
+				"i.cover_thumb",
+				"i.show_price",
+				"i.inner_price",
+				"i.recycling_price",
+				"t.num as nums",
+			).
+			Table("activity_step_by_step_rank_award_log t, item i").
+			Where("t.type = 20").
+			Scopes(database.ScopeQuery(queryParams)).
+			Where("t.value = i.id").
+			Order("inner_price desc, nums desc").
+			Find(&data).Error
+	}
+
+	if err != nil {
+		d.logger.Errorf("GetDetailActivityStepByStepConfig err: %v", err)
+		return
+	}
+
+	return
+}
+
+func (d *ItemDao) getDetailActivityStepByStepDB(paramsGroup AllRequestParamsGroup) *gorm.DB {
+	return d.center.
+		Select(
+			fmt.Sprintf("DATE_FORMAT(ua.created_at, '%s') as date_time", pkg.SQL_DATE_TIME_FORMAT),
+			"u.id as user_id",
+			"u.nickname as user_name",
+			"100006 as log_type", // 步步高升
+			"CONCAT(JSON_UNQUOTE(ua.params_3->'$.step_no'), '层 ', JSON_UNQUOTE(ua.params_3->'$.cell_no'), '格') as log_type_name",
+			"JSON_UNQUOTE(ua.params_3->'$.config_id') as period",
+			"0 as box_out_no",
+			"0 as amount",
+			"i.id as item_id",
+			"i.name as item_name",
+			"'' as level_name",
+			"i.cover_thumb",
+			"i.show_price",
+			"i.inner_price",
+			"i.recycling_price",
+			"c.num as nums",
+			"0 as no",
+		).
+		Table("activity a, user_activity ua, users u, activity_step_by_step_award_config c, item i").
+		Where("a.key = 'StepByStep'").
+		Where("a.id = ua.activity_id").
+		Where("ua.user_id = u.id").
+		Where("cast(ua.params as SIGNED) = c.cell_config_id").
+		Where("c.type = 20").
+		Where("c.value = i.id").
+		Where("JSON_EXTRACT(ua.params_3, '$.type') = ?", "1"). //1步步高升开奖
+		Scopes(database.ScopeQuery(paramsGroup.ActivityDateTimeParams)).
+		Scopes(database.ScopeQuery(paramsGroup.UsersParams)).
+		Scopes(database.ScopeQuery(paramsGroup.ItemParams))
+}
+
+func (d *ItemDao) getDetailActivityStepByStepRankDB(paramsGroup AllRequestParamsGroup) *gorm.DB {
+	return d.center.
+		Select(
+			fmt.Sprintf("DATE_FORMAT(ua.created_at, '%s') as date_time", pkg.SQL_DATE_TIME_FORMAT),
+			"u.id as user_id",
+			"u.nickname as user_name",
+			"100006 as log_type", // 步步高升
+			"CONCAT('第', ua.params_2, '名奖励') as log_type_name",
+			"JSON_UNQUOTE(ua.params_3->'$.config_id') as period",
+			"0 as box_out_no",
+			"0 as amount",
+			"i.id as item_id",
+			"i.name as item_name",
+			"'' as level_name",
+			"i.cover_thumb",
+			"i.show_price",
+			"i.inner_price",
+			"i.recycling_price",
+			"c.num as nums",
+			"0 as no",
+		).
+		Table("activity a, user_activity ua, users u, activity_step_by_step_rank_award_log c, item i").
+		Where("a.key = 'StepByStep'").
+		Where("a.id = ua.activity_id").
+		Where("ua.user_id = u.id").
+		Where("cast(ua.params as SIGNED) = c.config_id").
+		Where("c.type = 20").
+		Where("c.value = i.id").
+		Where("JSON_EXTRACT(ua.params_3, '$.type') = ?", "2").
+		Scopes(database.ScopeQuery(paramsGroup.ActivityDateTimeParams)).
+		Scopes(database.ScopeQuery(paramsGroup.UsersParams)).
+		Scopes(database.ScopeQuery(paramsGroup.ItemParams))
+}
+
+func (d *ItemDao) GetDetailActivitySignInConfig(queryParams database.QueryWhereGroup) (data []*Item, err error) {
+	err = d.center.
+		Select(
+			"i.id as item_id",
+			"i.name as item_name",
+			"i.cover_thumb",
+			"i.show_price",
+			"i.inner_price",
+			"i.recycling_price",
+			"t.num as nums",
+		).
+		Table("activity_sign_in_day_config t, item i").
+		Where("t.type = 20").
+		Scopes(database.ScopeQuery(queryParams)).
+		Where("t.value = i.id").
+		Order("inner_price desc, nums desc").
+		Find(&data).Error
+	if err != nil {
+		d.logger.Errorf("GetDetailActivityStepByStepConfig err: %v", err)
+		return
+	}
+
+	return
+}
+
+func (d *ItemDao) getDetailActivitySignInDB(paramsGroup AllRequestParamsGroup) *gorm.DB {
+	return d.center.
+		Select(
+			fmt.Sprintf("DATE_FORMAT(ua.created_at, '%s') as date_time", pkg.SQL_DATE_TIME_FORMAT),
+			"u.id as user_id",
+			"u.nickname as user_name",
+			"100007 as log_type", // 签到
+			"CONCAT(JSON_UNQUOTE(ua.params_3->'$.day_no'), '天') as log_type_name",
+			"ua.params as period",
+			"0 as box_out_no",
+			"0 as amount",
+			"i.id as item_id",
+			"i.name as item_name",
+			"'' as level_name",
+			"i.cover_thumb",
+			"i.show_price",
+			"i.inner_price",
+			"i.recycling_price",
+			"c.num as nums",
+			"0 as no",
+		).
+		Table("activity a, user_activity ua, users u, activity_sign_in_day_config c, item i").
+		Where("a.key = 'SignIn'").
+		Where("a.id = ua.activity_id").
+		Where("ua.user_id = u.id").
+		Where("JSON_UNQUOTE(ua.params_3->'$.value') = c.value").
+		Where("cast(ua.params as SIGNED) = c.config_id").
+		Where("c.type = 20").
+		Where("c.value = i.id").
+		Where("c.deleted_at is NULL").
+		Scopes(database.ScopeQuery(paramsGroup.ActivityDateTimeParams)).
+		Scopes(database.ScopeQuery(paramsGroup.UsersParams)).
+		Scopes(database.ScopeQuery(paramsGroup.ItemParams))
+}
+
+func (d *ItemDao) GetDetailActivityLuckyNumConfig(queryParams database.QueryWhereGroup) (data []*Item, err error) {
+	err = d.center.
+		Select(
+			"i.id as item_id",
+			"i.name as item_name",
+			"i.cover_thumb",
+			"i.show_price",
+			"i.inner_price",
+			"i.recycling_price",
+			"t.num as nums",
+		).
+		Table("activity_lucky_num_award_config t, item i").
+		Where("t.type = 20").
+		Scopes(database.ScopeQuery(queryParams)).
+		Where("t.value = i.id").
+		Order("inner_price desc, nums desc").
+		Find(&data).Error
+	if err != nil {
+		d.logger.Errorf("GetDetailActivityLuckyNumConfig err: %v", err)
+		return
+	}
+
+	return
+}
+
+func (d *ItemDao) getDetailActivityLuckyNumDB(paramsGroup AllRequestParamsGroup) *gorm.DB {
+	return d.center.
+		Select(
+			fmt.Sprintf("DATE_FORMAT(ua.created_at, '%s') as date_time", pkg.SQL_DATE_TIME_FORMAT),
+			"u.id as user_id",
+			"u.nickname as user_name",
+			"100008 as log_type", // 幸运数
+			"tc.name as log_type_name",
+			"0 as period", // id 作期数
+			"0 as box_out_no",
+			"0 as amount",
+			"i.id as item_id",
+			"i.name as item_name",
+			"'' as level_name",
+			"i.cover_thumb",
+			"i.show_price",
+			"i.inner_price",
+			"i.recycling_price",
+			"c.num as nums",
+			"0 as no",
+		).
+		Table("activity a, user_activity ua, users u, activity_lucky_num_target_config tc, activity_lucky_num_award_config c, item i").
+		Where("a.key = 'LuckyNum'").
+		Where("a.id = ua.activity_id").
+		Where("ua.user_id = u.id").
+		Where("cast(ua.params as SIGNED) = tc.id").
+		Where("cast(ua.params as SIGNED) = c.target_id").
+		Where("c.type = 20").
+		Where("c.value = i.id").
+		Scopes(database.ScopeQuery(paramsGroup.ActivityDateTimeParams)).
+		Scopes(database.ScopeQuery(paramsGroup.UsersParams)).
+		Scopes(database.ScopeQuery(paramsGroup.ItemParams))
+}
+
+func (d *ItemDao) GetDetailActivityRedemptionCodeConfig(queryParams database.QueryWhereGroup) (data []*Item, err error) {
+	err = d.center.
+		Select(
+			"i.id as item_id",
+			"i.name as item_name",
+			"i.cover_thumb",
+			"i.show_price",
+			"i.inner_price",
+			"i.recycling_price",
+			"t.num as nums",
+		).
+		Table("activity_redemption_code_award_log t, item i").
+		Where("t.type = 20").
+		Scopes(database.ScopeQuery(queryParams)).
+		Where("t.value = i.id").
+		Order("inner_price desc, nums desc").
+		Find(&data).Error
+	if err != nil {
+		d.logger.Errorf("GetDetailActivityRedemptionCodeConfig err: %v", err)
+		return
+	}
+
+	return
+}
+
+func (d *ItemDao) getDetailActivityRedemptionCodeDB(paramsGroup AllRequestParamsGroup) *gorm.DB {
+	return d.center.
+		Select(
+			fmt.Sprintf("DATE_FORMAT(ua.created_at, '%s') as date_time", pkg.SQL_DATE_TIME_FORMAT),
+			"u.id as user_id",
+			"u.nickname as user_name",
+			"100010 as log_type",
+			"ua.params_2 as log_type_name",
+			"0 as period",
+			"0 as box_out_no",
+			"0 as amount",
+			"i.id as item_id",
+			"i.name as item_name",
+			"'' as level_name",
+			"i.cover_thumb",
+			"i.show_price",
+			"i.inner_price",
+			"i.recycling_price",
+			"c.num as nums",
+			"0 as no",
+		).
+		Table("activity a, user_activity ua, users u, activity_redemption_code_log tc, activity_redemption_code_award_log c, item i").
+		Where("a.key = 'RedemptionCode'").
+		Where("a.id = ua.activity_id").
+		Where("ua.user_id = u.id").
+		Where("cast(ua.params as SIGNED) = tc.id").
+		Where("cast(ua.params as SIGNED) = c.config_id").
+		Where("c.type = 20").
+		Where("c.value = i.id").
+		Scopes(database.ScopeQuery(paramsGroup.ActivityDateTimeParams)).
+		Scopes(database.ScopeQuery(paramsGroup.UsersParams)).
+		Scopes(database.ScopeQuery(paramsGroup.ItemParams))
+}
+
+func (d *ItemDao) GetDetailActivityLotteryConfig(queryParams database.QueryWhereGroup) (data []*Item, err error) {
+	err = d.getDetailActivityLotteryDB(AllRequestParamsGroup{OtherParams: queryParams}).Order("inner_price desc, nums desc").Find(&data).Error
+	if err != nil {
+		d.logger.Errorf("GetDetailActivityLotteryConfig: %v", err)
+		return
+	}
+
+	return
+}
+
+func (d *ItemDao) getDetailActivityLotteryDB(paramsGroup AllRequestParamsGroup) *gorm.DB {
+	return d.center.
+		Select(
+			fmt.Sprintf("DATE_FORMAT(t.created_at, '%s') as date_time", pkg.SQL_DATE_TIME_FORMAT), //格式化时间戳
+			"u.id as user_id",
+			"u.nickname as user_name",
+			"100011 as log_type",
+			"concat_ws(' ', config.name, t.period) as log_type_name",
+			"0 as period",
+			"0 as box_out_no",
+			"0 as amount",
+			"i.id as item_id",
+			"i.name as item_name",
+			"'' as level_name",
+			"i.cover_thumb",
+			"i.show_price",
+			"i.inner_price",
+			"i.recycling_price",
+			"award.num as nums",
+			"0 as no",
+		).
+		Table("users u, activity_lottery_config config, activity_lottery_history t, activity_lottery_award award, item i").
+		Where("u.id = t.user_id").
+		Where("t.config_id = config.id").
+		Where("t.config_id = award.config_id").
+		Where("award.deleted_at is null").
+		Where("award.type = 20").
+		Where("award.value = i.id").
+		Scopes(database.ScopeQuery(paramsGroup.DateTimeParams)).
+		Scopes(database.ScopeQuery(paramsGroup.UsersParams)).
+		Scopes(database.ScopeQuery(paramsGroup.ItemParams)).
+		Scopes(database.ScopeQuery(paramsGroup.OtherParams))
+}
+
+// 任务
+func (d *ItemDao) GetDetailTaskConfig(queryParams database.QueryWhereGroup) (data []*Item, err error) {
+	err = d.center.
+		Select(
+			"i.id as item_id",
+			"i.name as item_name",
+			"i.cover_thumb",
+			"i.show_price",
+			"i.inner_price",
+			"i.recycling_price",
+			"a.num as nums",
+		).
+		Table("task_user_log l").
+		Joins(`
+			LEFT JOIN JSON_TABLE(
+				JSON_EXTRACT(l.params_2, '$.award_id'),
+				'$[*]' COLUMNS (
+					award_id BIGINT PATH '$'
+				)
+			) AS jt ON TRUE
+		`).
+		Joins("LEFT JOIN task_award a ON a.id = jt.award_id").
+		Joins("LEFT JOIN item i ON i.id = a.value").
+		Where("a.type = 20").
+		Scopes(database.ScopeQuery(queryParams)).
+		Where("a.value = i.id").
+		Order("inner_price desc, nums desc").
+		Find(&data).Error
+	if err != nil {
+		d.logger.Errorf("GetDetailTaskConfig err: %v", err)
+		return
+	}
+
+	return
+}
+
+func (d *ItemDao) getDetailTaskDB(paramsGroup AllRequestParamsGroup) *gorm.DB {
+	return d.center.
+		Select(
+			fmt.Sprintf("DATE_FORMAT(l.created_at, '%s') as date_time", pkg.SQL_DATE_TIME_FORMAT),
+			"u.id as user_id",
+			"u.nickname as user_name",
+			"200000 as log_type",
+			"t.name as log_type_name",
+			"0 as period",
+			"0 as box_out_no",
+			"0 as amount",
+			"i.id as item_id",
+			"i.name as item_name",
+			"'' as level_name",
+			"i.cover_thumb",
+			"i.show_price",
+			"i.inner_price",
+			"i.recycling_price",
+			"a.num as nums",
+			"0 as no",
+		).
+		Table("task_user_log l").
+		Joins("LEFT JOIN users u ON u.id = l.user_id").
+		Joins("LEFT JOIN task t ON t.id = l.task_id").
+		Joins(`
+			LEFT JOIN JSON_TABLE(
+				JSON_EXTRACT(l.params_2, '$.award_id'),
+				'$[*]' COLUMNS (
+					award_id BIGINT PATH '$'
+				)
+			) AS jt ON TRUE
+		`).
+		Joins("LEFT JOIN task_award a ON a.id = jt.award_id").
+		Joins("LEFT JOIN item i ON i.id = a.value").
+		Where("a.type = 20").
+		Scopes(database.ScopeQuery(paramsGroup.TaskDateTimeParams)).
+		Scopes(database.ScopeQuery(paramsGroup.UsersParams)).
+		Scopes(database.ScopeQuery(paramsGroup.ItemParams))
 }

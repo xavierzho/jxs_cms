@@ -31,6 +31,11 @@
               <el-option v-for="(item, index) in userType" :key="index" :label="item.label" :value="item.value"></el-option>
             </el-select>
           </el-form-item>
+          <el-form-item :label="$t('user.UserChannel')">
+            <el-select v-model="searchFormLog.channel" clearable>
+              <el-option v-for="(item, index) in userChannel" :key="index" :label="item.label" :value="item.value"></el-option>
+            </el-select>
+          </el-form-item>
         </el-form>
 
         <el-form inline v-model="searchFormLog">
@@ -61,6 +66,13 @@
               <el-option v-for="item in inquireBalancePaySourceType" :label="item.label" :value="item.value" :key="item.value" ></el-option>
             </el-select>
           </el-form-item>
+
+          <el-form-item :label="$t('inquire.balance.balance_type')">
+            <el-select v-model="searchFormLog.balance_type" multiple clearable>
+              <el-option v-for="item in inquireBalanceType" :label="item.label" :value="item.value" :key="item.value" ></el-option>
+            </el-select>
+          </el-form-item>
+
           <el-form-item :label="$t('inquire.balance.update_amount')">
             <input-number-range v-model="searchFormLog.update_amount_range" clearable></input-number-range>
           </el-form-item>
@@ -89,6 +101,9 @@
         </el-table-column>
         <el-table-column prop="update_amount" :label="$t('inquire.balance.update_amount')" min-width="90px" align="center">
           <template v-slot="data">{{formatUpdateAmount(data.row.update_amount)}}</template>
+        </el-table-column>
+        <el-table-column prop="balance_type_name" :label="$t('inquire.balance.balance_type')" min-width="90px" align="center">
+          <template v-slot="data">{{data.row.balance_type_name}} </template>
         </el-table-column>
         <el-table-column prop="comment" :label="$t('inquire.balance.comment')" min-width="90px" align="center">
           <template v-slot="data">
@@ -164,11 +179,13 @@ export default {
         user_name: '',
         tel: '',
         is_admin: false,
+        channel: null,
         source_type: [],
         channel_type: [],
         pay_source_type: [],
         item_name: '',
         update_amount_range: [], // 没填则不传, 用边界补齐 两个元素
+        balance_type: [],
       },
       total: 0,
       tableData: [],
@@ -184,11 +201,13 @@ export default {
   computed: {
     ...mapGetters({
       userType: 'option/userType',
+      userChannel: 'option/userChannel',
       inquireBalanceSourceType: 'option/inquireBalanceSourceType',
       inquireBalanceChannelType: 'option/inquireBalanceChannelType',
       inquireBalancePaySourceType:'option/inquireBalancePaySourceType',
       userInfo: 'user/userInfo',
       dateTimeType: "option/dateTimeType",
+      inquireBalanceType: 'option/inquireBalanceType',
     }),
   },
   created() {
@@ -200,6 +219,9 @@ export default {
     }
     if (this.inquireBalancePaySourceType.length === 0) {
       this.$store.dispatch('option/update', 'inquireBalancePaySourceType')
+    }
+    if (this.inquireBalanceType.length === 0) {
+      this.$store.dispatch('option/update', 'inquireBalanceType')
     }
     this.searchFormLog.date_time_range = [
       moment().subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss'),

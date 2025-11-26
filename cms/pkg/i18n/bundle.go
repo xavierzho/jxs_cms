@@ -62,7 +62,7 @@ func (b *Bundle) addPath(filePath string) {
 	b.path = append(b.path, filePath)
 }
 
-// 设置目录 用于懒加载文件
+// SetPath 设置目录 用于懒加载文件
 func (b *Bundle) SetPath(path string, language language.Tag, format i18nFileType) (err error) {
 	_, err = os.Stat(path)
 	if err != nil {
@@ -90,7 +90,7 @@ func (b *Bundle) SetPath(path string, language language.Tag, format i18nFileType
 	return
 }
 
-// 清空文件目录目录
+// UnsetPath 清空文件目录目录
 func (b *Bundle) UnsetPath() {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -183,13 +183,14 @@ func (b *Bundle) init() {
 	for tag, fileMap := range b.fileMap {
 		for fileType, filePathList := range fileMap {
 			for _, filePath := range filePathList {
-				b.loadMessage(filePath, tag, fileType)
+				_ = b.loadMessage(filePath, tag, fileType)
 			}
 		}
 		b.localizerMap[tag.String()] = NewLocalizer(tag, b) // 翻译器
 	}
 }
 
+// ShouldT
 // group：表名；content：字段名
 // group 为空则只使用content。允许使用{#content} 模式，将只转换定位符{#}中的内容
 func (b *Bundle) ShouldT(ctx context.Context, group string, content string) (string, bool) {
@@ -200,12 +201,12 @@ func (b *Bundle) ShouldT(ctx context.Context, group string, content string) (str
 	}
 	b.mu.Unlock()
 
-	language := b.defaultLanguage.String()
+	dl := b.defaultLanguage.String()
 	if lang := LanguageFromCtx(ctx); lang != "" {
-		language = lang
+		dl = lang
 	}
 
-	if localizer, ok := b.localizerMap[language]; ok {
+	if localizer, ok := b.localizerMap[dl]; ok {
 		var result string
 		subContentList := findContent(content)
 		if len(subContentList) == 0 {

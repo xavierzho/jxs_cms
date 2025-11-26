@@ -66,6 +66,12 @@
         <el-table-column prop="inner_price_left" :label="$t('inquire.gacha.inner_price_left')" min-width="90px" align="center">
           <template v-slot="data">{{data.row.inner_price_left | localeNum2f}}<br/>{{data.row.inner_price_left_extra | localeNum2f}}</template>
         </el-table-column>
+        <el-table-column prop="inner_price_left_normal" :label="$t('inquire.gacha.inner_price_left_normal')" min-width="90px" align="center">
+          <template v-slot="data">{{data.row.inner_price_left_normal | localeNum2f}}</template>
+        </el-table-column>
+        <el-table-column prop="sp_left_num" :label="$t('inquire.gacha.sp_left_num')" min-width="90px" align="center">
+          <template v-slot="data">{{data.row.sp_left_num | localeNum}}</template>
+        </el-table-column>
         <el-table-column prop="revenue" :label="$t('inquire.gacha.revenue')" min-width="90px" align="center">
           <template v-slot="data">{{data.row.revenue | localeNum2f}}</template>
         </el-table-column>
@@ -219,6 +225,7 @@ export default {
         Number(this.summary.amount).toLocaleString(), Number(this.summary.amount_left).toLocaleString(),
         <div><p>{Number(this.summary.inner_price_bet).toLocaleString()}</p><p>{Number(this.summary.inner_price_bet_extra).toLocaleString()}</p></div>,
         <div><p>{Number(this.summary.inner_price_left).toLocaleString()}</p><p>{Number(this.summary.inner_price_left_extra).toLocaleString()}</p></div>,
+        Number(this.summary.inner_price_left_normal).toLocaleString(), Number(this.summary.sp_left_num).toLocaleString(),
         Number(this.summary.revenue).toLocaleString(), Number(this.summary.revenue_rate).toLocaleString()+'%',
       ]
       if (this.searchFormRevenue.is_box_dim){

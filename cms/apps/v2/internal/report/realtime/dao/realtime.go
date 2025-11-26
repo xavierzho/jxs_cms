@@ -31,7 +31,7 @@ func (d *RealtimeDao) GetActiveUserCnt(startTime, endTime time.Time) (count int6
 		Table("logon_logs l, users u").
 		Where("l.user_id = u.id").
 		Where("l.created_at between ? and ?", startTime.Format(pkg.DATE_TIME_MIL_FORMAT), endTime.Format(pkg.DATE_TIME_MIL_FORMAT)).
-		Where("u.is_admin = 0").
+		Where("u.role = 0").
 		Scan(&count).Error
 	if err != nil {
 		d.logger.Errorf("GetActiveUserCnt: %v", err)
@@ -51,6 +51,7 @@ select
 	count(distinct case t.biz_type when 102 then t.user_id else null end) as user_cnt_102,
 	count(distinct case t.biz_type when 103 then t.user_id else null end) as user_cnt_103,
 	count(distinct case t.biz_type when 104 then t.user_id else null end) as user_cnt_104,
+	count(distinct case t.biz_type when 105 then t.user_id else null end) as user_cnt_105,
 	count(distinct case t.biz_type when 200 then t.user_id else null end) as user_cnt_200,
 	count(distinct case t.biz_type when 300 then t.user_id else null end) as user_cnt_300,
 	count(distinct case t.biz_type when 601 then t.user_id else null end) as user_cnt_600
@@ -58,22 +59,22 @@ from
 	(
 	select distinct 200 as biz_type, tv.user_id -- 创建集市订单的用户
 	from market_order tv, users u
-	where tv.created_at between '%[1]s' and '%s' and tv.user_id = u.id and u.is_admin = 0
+	where tv.created_at between '%[1]s' and '%s' and tv.user_id = u.id and u.role = 0
 	union
 	select distinct 200 as biz_type, muo.user_id
 	from market_user_offer muo, users u
-	where muo.created_at between '%[1]s' and '%s' and muo.user_id = u.id and u.is_admin = 0
+	where muo.created_at between '%[1]s' and '%s' and muo.user_id = u.id and u.role = 0
 	union
 	SELECT distinct 300 as biz_type, o.user_id
 	FROM %s o, users u -- 发货用户
-	Where o.pay_time between %[4]d and %d and o.user_id = u.id and u.is_admin = 0
+	Where o.pay_time between %[4]d and %d and o.user_id = u.id and u.role = 0
 	union
 	select distinct bl.source_type as biz_type, bl.user_id
 	from balance_log bl, users u
 	where bl.created_at between '%[1]s' and '%s'
 		and (bl.source_type between 100 and 199 or bl.source_type in (601)) -- 抽赏 + 商城
 		and bl.update_amount <= 0
-		and bl.user_id = u.id and u.is_admin = 0
+		and bl.user_id = u.id and u.role = 0
 	) t	
 	`,
 		startTime.Format(pkg.DATE_TIME_MIL_FORMAT), endTime.Format(pkg.DATE_TIME_MIL_FORMAT),
@@ -99,7 +100,7 @@ func (d *RealtimeDao) GetPayData(startTime, endTime time.Time) (data map[string]
 		).
 		Table("balance_log bl, users u").
 		Where("bl.user_id = u.id").
-		Where("u.is_admin = 0").
+		Where("u.role = 0").
 		Where("bl.finish_at between ? and ?", startTime.Format(pkg.DATE_TIME_MIL_FORMAT), endTime.Format(pkg.DATE_TIME_MIL_FORMAT)).
 		Where("(bl.source_type between 100 and 199 or bl.source_type in (201,202,300,301,302,303,304,601)) and bl.update_amount <= 0").
 		Scan(&data).Error
@@ -111,7 +112,7 @@ func (d *RealtimeDao) GetPayData(startTime, endTime time.Time) (data map[string]
 	return data, nil
 }
 
-// 充值
+// 充值 // 包括储值
 func (d *RealtimeDao) GetRechargeData(startTime, endTime time.Time) (data map[string]interface{}, err error) {
 	data = make(map[string]interface{})
 	err = d.center.
@@ -120,7 +121,7 @@ func (d *RealtimeDao) GetRechargeData(startTime, endTime time.Time) (data map[st
 			"count(distinct ppo.user_id) as user_cnt",
 		).
 		Table("pay_payment_order ppo").
-		Joins("join users u on ppo.user_id = u.id and u.is_admin = 0").
+		Joins("join users u on ppo.user_id = u.id and u.role = 0").
 		Where("ppo.finish_time between ? and ?", startTime.Format(pkg.DATE_TIME_MIL_FORMAT), endTime.Format(pkg.DATE_TIME_MIL_FORMAT)).
 		// Where("ppo.pay_source_type IN (100,201,202)"). -- 所有充值都计算
 		Where("ppo.status in (4,7,8,9,10,11,12,13,14)").
@@ -133,19 +134,38 @@ func (d *RealtimeDao) GetRechargeData(startTime, endTime time.Time) (data map[st
 	return
 }
 
-// 退款(￥)用户数
+// 退款(￥) union all 储值退款
 func (d *RealtimeDao) GetDrawData(startTime, endTime time.Time) (data map[string]interface{}, err error) {
 	data = make(map[string]interface{})
-	err = d.center.
+
+	pdoDB := d.center.
 		Select(
-			"cast(sum(pdo.amount) as UNSIGNED) as amount",
-			"count(distinct pdo.user_id) as user_cnt",
+			"pdo.amount",
+			"pdo.user_id",
 		).
 		Table("pay_payout_order pdo, users u").
 		Where("pdo.finish_time between ? and ?", startTime.Format(pkg.DATE_TIME_MIL_FORMAT), endTime.Format(pkg.DATE_TIME_MIL_FORMAT)).
 		Where("pdo.state in (6, 12)").
 		Where("pdo.user_id = u.id").
-		Where("u.is_admin = 0").
+		Where("u.role = 0")
+
+	rodDB := d.center.
+		Select(
+			"rod.amount",
+			"rod.user_id",
+		).
+		Table("refund_order_detail rod, users u").
+		Where("rod.refund_time between ? and ?", startTime.Format(pkg.DATE_TIME_MIL_FORMAT), endTime.Format(pkg.DATE_TIME_MIL_FORMAT)).
+		Where("rod.status = 3").
+		Where("rod.user_id = u.id").
+		Where("u.role = 0")
+
+	err = d.center.
+		Select(
+			"cast(sum(t.amount) as UNSIGNED) as amount",
+			"count(distinct t.user_id) as user_cnt",
+		).
+		Table("(? union all ?) t", pdoDB, rodDB).
 		Scan(&data).Error
 	if err != nil {
 		d.logger.Errorf("GetDrawData: %v", err)
@@ -161,7 +181,7 @@ func (d *RealtimeDao) GetNewUserCnt(startTime, endTime time.Time) (count int64, 
 		Select("count(distinct u.id) as user_cnt").
 		Table("users u").
 		Where("u.created_at between ? and ?", startTime.Format(pkg.DATE_TIME_MIL_FORMAT), endTime.Format(pkg.DATE_TIME_MIL_FORMAT)).
-		Where("u.is_admin = 0").
+		Where("u.role = 0").
 		Scan(&count).Error
 	if err != nil {
 		d.logger.Errorf("GetNewUserCnt: %v", err)

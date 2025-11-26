@@ -59,7 +59,7 @@ func (d *InviteBetDao) Generate(cDate time.Time, queryParams database.QueryWhere
 		Where("ui.user_id = bl.user_id").
 		Where("bl.source_type between 100 and 199").
 		Where("ui.user_id = u.id").
-		Where("u.is_admin = 0").
+		Where("u.role = 0").
 		Where("ui.parent_user_id = up.id").
 		Where(fmt.Sprintf("bl.created_at between '%s' and '%s'", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT))).
 		Scopes(database.ScopeQuery(queryParams)).

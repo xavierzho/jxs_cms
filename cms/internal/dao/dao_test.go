@@ -36,12 +36,6 @@ func TestMain(m *testing.M) {
 		}
 	}
 
-	if !db.Migrator().HasTable(dao.OperationLog{}.TableName()) {
-		if err := db.AutoMigrate(dao.OperationLog{}); err != nil {
-			panic(err)
-		}
-	}
-
 	fmt.Println("Test Run")
 	m.Run()
 }

@@ -24,6 +24,7 @@ type GachaRevenue struct {
 	InnerPriceLeftNormal int64  `gorm:"column:inner_price_left_normal; type:bigint;" json:"inner_price_left_normal"`
 	InnerPriceBetExtra   int64  `gorm:"column:inner_price_bet_extra; type:bigint;" json:"inner_price_bet_extra"`
 	InnerPriceLeftExtra  int64  `gorm:"column:inner_price_left_extra; type:bigint;" json:"inner_price_left_extra"`
+	SPLeftNum            int64  `gorm:"column:sp_left_num; type:bigint;" json:"sp_left_num"`
 }
 
 type RevenueRequestParamsGroup struct {
@@ -62,8 +63,10 @@ func (d *GachaDao) GetRevenue(paramsGroup RevenueRequestParamsGroup, pager *app.
 			"sum((case a.discount_price when 0 then a.price else a.discount_price end)*(b.total_nums-b.bet_nums)) as amount_left",
 			"sum(b.inner_price_bet) as inner_price_bet",
 			"sum(b.inner_price_left) as inner_price_left",
+			"sum(b.inner_price_left_normal) as inner_price_left_normal",
 			"sum(b.inner_price_bet_extra) as inner_price_bet_extra",
 			"sum(b.inner_price_left_extra) as inner_price_left_extra",
+			"sum(b.sp_left_num) as sp_left_num",
 		).
 		Scan(&summary).Error
 	if err != nil {
@@ -102,6 +105,7 @@ func (d *GachaDao) getRevenueBetDB(paramsGroup RevenueRequestParamsGroup) *gorm.
 		"sum(t.inner_price_left_extra) as inner_price_left_extra",
 		"sum(t.inner_price_bet_normal+t.inner_price_bet_extra) as inner_price_bet",
 		"sum(t.inner_price_left_normal+t.inner_price_left_extra) as inner_price_left",
+		"sum(t.sp_left_num) as sp_left_num",
 	}
 	groupList := []string{"t.created_at, t.gacha_id", "t.gacha_type", "t.gacha_name", "t.period"}
 	if paramsGroup.IsBoxDim {
@@ -113,7 +117,8 @@ func (d *GachaDao) getRevenueBetDB(paramsGroup RevenueRequestParamsGroup) *gorm.
 
 	return d.center.
 		Select(selectList).
-		Table("(? union all ?) t", d.getRevenueBetNormalDB(paramsGroup), d.getRevenueBetExtraDB(paramsGroup)).
+		//Table("(? union all ?) t", d.getRevenueBetNormalDB(paramsGroup), d.getRevenueBetExtraDB(paramsGroup)).
+		Table("(?) t", d.getRevenueBetNormalDB(paramsGroup)).
 		Group(strings.Join(groupList, ",")).
 		Having(awardHaving, awardHavingParams...)
 }
@@ -121,11 +126,13 @@ func (d *GachaDao) getRevenueBetDB(paramsGroup RevenueRequestParamsGroup) *gorm.
 func (d *GachaDao) getRevenueBetNormalDB(paramsGroup RevenueRequestParamsGroup) *gorm.DB {
 	betSelectList := []string{
 		"gm.created_at, gb.gacha_id", "(gm.`type` + 100) as gacha_type", "gm.name as gacha_name", "gm.period",
-		"sum(gba.total_nums-gba.left_nums) as bet_nums", "sum(gba.total_nums) as total_nums",
-		"sum((gba.total_nums-gba.left_nums)*i.inner_price) as inner_price_bet_normal",
-		"sum(gba.left_nums*i.inner_price) as inner_price_left_normal",
-		"0 as inner_price_bet_extra",
-		"0 as inner_price_left_extra",
+		"sum(case gba.level_type when 1 then gba.total_nums - gba.left_nums else 0 end) as bet_nums",
+		"sum(case gba.level_type when 1 then gba.total_nums else 0 end)as total_nums",
+		"sum(case gba.level_type when 1 then (gba.total_nums - gba.left_nums) * i.inner_price else 0 end) as inner_price_bet_normal",
+		"sum(case gba.level_type when 1 then gba.left_nums * i.inner_price else 0 end) as inner_price_left_normal",
+		"sum(case gba.level_type when 1 then 0 else (gba.total_nums - gba.left_nums) * i.inner_price end) as inner_price_bet_extra",
+		"sum(case gba.level_type when 1 then 0 else gba.left_nums * i.inner_price end) as inner_price_left_extra",
+		"sum(case gba.level_index when 28 then gba.left_nums else 0 end) sp_left_num",
 	}
 	betGroupList := []string{"gm.created_at, gb.gacha_id", "(gm.`type` + 100)", "gm.name", "gm.period"}
 	if paramsGroup.IsBoxDim {
@@ -155,6 +162,7 @@ func (d *GachaDao) getRevenueBetExtraDB(paramsGroup RevenueRequestParamsGroup) *
 		"0 as inner_price_left_normal",
 		"sum(case gb.state when 2 then ga.total_nums*i.inner_price else 0 end) as inner_price_bet_extra",
 		"sum(case gb.state when 2 then 0 else ga.total_nums*i.inner_price end) as inner_price_left_extra",
+		"0 as sp_left_num",
 	}
 	extraGroupList := []string{"gm.created_at, gb.gacha_id", "(gm.`type` + 100)", "gm.name", "gm.period"}
 	if paramsGroup.IsBoxDim {

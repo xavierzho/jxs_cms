@@ -296,7 +296,7 @@ func PermissionCheckAll(confirmPermission []string, permissions []string) bool {
 	return true
 }
 
-// 确认是否权限有至少一个通过校验
+// PermissionCheckOr 确认是否权限有至少一个通过校验
 func PermissionCheckOr(confirmPermission []string, permissions []string) bool {
 	permMap := make(map[string]struct{})
 

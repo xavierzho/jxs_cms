@@ -70,7 +70,7 @@ func (svc *MenuSvc) filter(menus []*dao.Menu, allPermission []string, isAdmin bo
 		if allow || isAdmin { // * admin 需要能看到全部菜单
 			currentMenu := &dao.Menu{
 				Name:       menu.Name,
-				Title:      global.I18n.T(svc.ctx.Request.Context(), "menu", strings.Join(append(titleList, menu.Title), i18n.NESTED_SEPARATOR)),
+				Title:      global.I18n.T(svc.ctx.Request.Context(), "menu", strings.Join(append(titleList, menu.Title), i18n.NestedSeparator)),
 				Permission: menu.Permission,
 				Path:       menu.Path,
 				Show:       allow,

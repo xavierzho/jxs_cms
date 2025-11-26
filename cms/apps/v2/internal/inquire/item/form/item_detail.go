@@ -9,6 +9,7 @@ import (
 
 	cForm "data_backend/apps/v2/internal/common/form"
 	"data_backend/apps/v2/internal/inquire/item/dao"
+	"data_backend/internal/app"
 	"data_backend/internal/global"
 	"data_backend/pkg"
 	"data_backend/pkg/convert"
@@ -29,8 +30,12 @@ func (q *DetailRequest) Parse() (queryParams, betQueryParams database.QueryWhere
 	if err = q.Valid(); err != nil {
 		return
 	}
-
-	if q.LogType == 100002 { // 欧气值
+	if q.LogType == 701 { // 欧气值
+		queryParams = append(queryParams, database.QueryWhere{
+			Prefix: "l.id = ?",
+			Value:  []any{convert.GetInt64(q.ID)},
+		})
+	} else if q.LogType == 100002 { // 欧气值
 		queryParams = append(queryParams, database.QueryWhere{
 			Prefix: "t.config_id = ?",
 			Value:  []any{convert.GetInt64(q.ID)},
@@ -45,6 +50,33 @@ func (q *DetailRequest) Parse() (queryParams, betQueryParams database.QueryWhere
 			Prefix: "t.period = ? and t.no_limit = ?",
 			Value:  []any{idList[0], idList[2]},
 		})
+	} else if q.LogType == 100006 { // 步步高升
+		if q.LevelType == 1 {
+			queryParams = append(queryParams, database.QueryWhere{
+				Prefix: "t.config_id = ?",
+				Value:  []any{convert.GetInt64(q.ID)},
+			})
+		} else {
+			queryParams = append(queryParams, database.QueryWhere{
+				Prefix: "t.cell_config_id = ?",
+				Value:  []any{convert.GetInt64(q.ID)},
+			})
+		}
+	} else if q.LogType == 100008 { // 幸运数
+		queryParams = append(queryParams, database.QueryWhere{
+			Prefix: "t.target_id = ?",
+			Value:  []any{convert.GetInt64(q.ID)},
+		})
+	} else if q.LogType == 100010 { // 兑换码
+		queryParams = append(queryParams, database.QueryWhere{
+			Prefix: "t.config_id = ?",
+			Value:  []any{convert.GetInt64(q.ID)},
+		})
+	} else if q.LogType == 200000 { // 任务
+		queryParams = append(queryParams, database.QueryWhere{
+			Prefix: "l.id = ?",
+			Value:  []any{convert.GetInt64(q.ID)},
+		})
 	} else if q.LogType == 999999 { // 管理员添加
 		idList := strings.Split(q.ID, "|")
 		if len(idList) != 2 {
@@ -55,17 +87,6 @@ func (q *DetailRequest) Parse() (queryParams, betQueryParams database.QueryWhere
 			Prefix: "t.create_time = ? and t.user_id = ?",
 			Value:  []any{idList[0], idList[1]},
 		})
-	} else if q.LogType == 300 { //发货
-		queryParams = append(queryParams, database.QueryWhere{
-			Prefix: "t.id = ?",
-			Value:  []any{convert.GetInt64(q.ID)},
-		})
-	} else if q.LogType == 100005 { //转盘抽奖
-		queryParams = append(queryParams, database.QueryWhere{
-			Prefix: "t.id = ?",
-			Value:  []any{convert.GetInt64(q.ID)},
-		})
-
 	} else {
 		queryParams = append(queryParams, database.QueryWhere{
 			Prefix: "t.id = ?",
@@ -83,22 +104,51 @@ func (q *DetailRequest) Parse() (queryParams, betQueryParams database.QueryWhere
 
 func (q *DetailRequest) Valid() (err error) {
 	switch q.LogType {
-	case 101, 102, 103, 104:
+	case 101, 102, 103, 104, 105, 106:
 	case 200:
 	case 300:
-	case 100002, 100003, 100004, 100005:
+	case 701:
+	case 100002, 100003, 100004, 100005, 100006, 100007, 100008, 100010, 100011, 200000:
 	case 999999:
 	default:
 		return fmt.Errorf("not expected log type: %d", q.LogType)
 	}
 
 	switch q.LevelType {
-	case 0, 1, 2, 3, 4:
+	case 0, 1, 2, 3, 4, 5:
 	default:
 		return fmt.Errorf("not expected level type: %d", q.LevelType)
 	}
 
 	return nil
+}
+
+type BetDetailListRequest struct {
+	*app.Pager
+	BetDetailAllRequest
+}
+
+func (q *BetDetailListRequest) Parse() (dateTimeRange [2]time.Time, paramsGroup dao.AllRequestParamsGroup, err error) {
+	q.Pager.Parse()
+
+	return q.BetDetailAllRequest.Parse()
+}
+
+type BetDetailAllRequest struct {
+	DetailAllRequest
+}
+
+func (q *BetDetailAllRequest) Parse() (dateTimeRange [2]time.Time, paramsGroup dao.AllRequestParamsGroup, err error) {
+	dateTimeRange, paramsGroup, err = q.DetailAllRequest.Parse()
+
+	if q.UpdateAmountRange != nil {
+		paramsGroup.OtherParams = append(paramsGroup.OtherParams, database.QueryWhere{ //! gacha_user_record 中 amount 是正数
+			Prefix: "amount between ? and ?",
+			Value:  []any{-util.ReconvertAmount2Decimal(q.UpdateAmountRange[1]).IntPart(), -util.ReconvertAmount2Decimal(q.UpdateAmountRange[0]).IntPart()},
+		})
+	}
+
+	return
 }
 
 type DetailAllRequest struct {
@@ -116,6 +166,16 @@ func (q *DetailAllRequest) Parse() (dateTimeRange [2]time.Time, paramsGroup dao.
 
 	paramsGroup.ActivityDateTimeParams = append(paramsGroup.ActivityDateTimeParams, database.QueryWhere{
 		Prefix: "ua.created_at between ? and ?",
+		Value:  []any{dateTimeRange[0].Format(pkg.DATE_TIME_MIL_FORMAT), dateTimeRange[1].Add(time.Second - time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)},
+	})
+
+	paramsGroup.TaskDateTimeParams = append(paramsGroup.TaskDateTimeParams, database.QueryWhere{
+		Prefix: "l.created_at between ? and ?",
+		Value:  []any{dateTimeRange[0].Format(pkg.DATE_TIME_MIL_FORMAT), dateTimeRange[1].Add(time.Second - time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)},
+	})
+
+	paramsGroup.PublicizeDateTimeParams = append(paramsGroup.PublicizeDateTimeParams, database.QueryWhere{
+		Prefix: "l.created_at between ? and ?",
 		Value:  []any{dateTimeRange[0].Format(pkg.DATE_TIME_MIL_FORMAT), dateTimeRange[1].Add(time.Second - time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)},
 	})
 
@@ -225,13 +285,16 @@ func FormatItemDetail(ctx context.Context, data []*dao.ItemDetail) (result []*It
 	for _, item := range data {
 		var logTypeName = item.LogTypeName
 		if item.Period != 0 {
-			if item.LogType == 100003 { // 消费排行
+			switch item.LogType {
+			case 100003: // 消费排行
 				logTypeNameList := strings.Split(item.LogTypeName, "|")
 				if len(logTypeNameList) != 2 {
 					return nil, fmt.Errorf("100003's LogTypeName invalid: %s", item.LogTypeName)
 				}
 				logTypeName = fmt.Sprintf("第%d期 第%s名", item.Period, logTypeNameList[1])
-			} else {
+			case 100006, 100007: // 步步高升 签到
+				logTypeName = strings.Join([]string{fmt.Sprintf("第%d期", item.Period), item.LogTypeName}, " ")
+			default:
 				logTypeName = strings.Join([]string{item.LogTypeName, fmt.Sprintf("第%d期", item.Period)}, " ")
 			}
 		}

@@ -1,8 +1,8 @@
+package app
+
 /*
 输出注册的变量
 */
-package app
-
 import (
 	"expvar"
 	"fmt"
@@ -15,19 +15,19 @@ func Expvar(ctx *gin.Context) {
 	first := true
 	report := func(key string, value interface{}) {
 		if !first {
-			fmt.Fprintf(ctx.Writer, ",\n")
+			_, _ = fmt.Fprintf(ctx.Writer, ",\n")
 		}
 		first = false
 		if str, ok := value.(string); ok {
-			fmt.Fprintf(ctx.Writer, "%q: %q", key, str)
+			_, _ = fmt.Fprintf(ctx.Writer, "%q: %q", key, str)
 		} else {
-			fmt.Fprintf(ctx.Writer, "%q: %v", key, value)
+			_, _ = fmt.Fprintf(ctx.Writer, "%q: %v", key, value)
 		}
 	}
 
-	fmt.Fprintf(ctx.Writer, "{\n")
+	_, _ = fmt.Fprintf(ctx.Writer, "{\n")
 	expvar.Do(func(kv expvar.KeyValue) {
 		report(kv.Key, kv.Value)
 	})
-	fmt.Fprintf(ctx.Writer, "\n}\n")
+	_, _ = fmt.Fprintf(ctx.Writer, "\n}\n")
 }

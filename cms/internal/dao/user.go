@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -13,8 +14,8 @@ import (
 )
 
 const (
-	USER_ROLE_R_KEY = "UserRole"
-	ADMIN_ROLE      = 1
+	UserRoleRKey = "UserRole"
+	AdminRole    = 1
 )
 
 type User struct {
@@ -30,17 +31,17 @@ type User struct {
 	Role []*Role `gorm:"many2many:user_role" json:"role,omitempty"`
 }
 
-func (User) TableName() string {
+func (*User) TableName() string {
 	return "users"
 }
 
-func (u User) UserRoleRKey() string {
-	return fmt.Sprintf("%s:%d", USER_ROLE_R_KEY, u.ID)
+func (u *User) UserRoleRKey() string {
+	return fmt.Sprintf("%s:%d", UserRoleRKey, u.ID)
 }
 
 func (u *User) IsAdmin() (isAdmin bool) {
 	for _, role := range u.Role {
-		if role.ID == ADMIN_ROLE {
+		if role.ID == AdminRole {
 			isAdmin = true
 			break
 		}
@@ -81,7 +82,7 @@ func (d *UserDao) Create(data *User) (err error) {
 
 func (d *UserDao) First(queryParams database.QueryWhereGroup) (data *User, err error) {
 	err = d.engine.Model(data).Preload("Role").Scopes(database.ScopeQuery(queryParams)).First(&data).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		d.logger.Errorf("First: %v", err)
 		return nil, err
 	}

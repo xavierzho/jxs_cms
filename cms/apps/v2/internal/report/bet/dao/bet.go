@@ -82,7 +82,7 @@ func (d *BetDao) generateBet(cDate time.Time) (data []*Bet, err error) {
 		Table("gacha_user_record gur, users u").
 		Where("gur.created_at between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
 		Where("gur.user_id = u.id").
-		Where("u.is_admin = 0").
+		Where("u.role = 0").
 		Group(fmt.Sprintf("date_format(gur.created_at, '%s'), gur.gacha_type", pkg.SQL_DATE_FORMAT)).
 		Find(&data).Error
 	if err != nil {
@@ -96,16 +96,16 @@ func (d *BetDao) generateBet(cDate time.Time) (data []*Bet, err error) {
 func (d *BetDao) generateAmount(cDate time.Time) (data []*Bet, err error) {
 	err = d.center.
 		Select(
-			fmt.Sprintf("date_format(bl.created_at, '%s') as date", pkg.SQL_DATE_FORMAT),
+			fmt.Sprintf("date_format(bl.finish_at, '%s') as date", pkg.SQL_DATE_FORMAT),
 			"bl.source_type as data_type",
 			"sum(-bl.update_amount) as amount",
 		).
 		Table("balance_log bl, users u").
-		Where("bl.created_at between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
+		Where("bl.finish_at between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
 		Where("bl.source_type between 100 and 199 and bl.update_amount <= 0").
 		Where("bl.user_id = u.id").
-		Where("u.is_admin = 0").
-		Group(fmt.Sprintf("date_format(bl.created_at, '%s'), bl.source_type", pkg.SQL_DATE_FORMAT)).
+		Where("u.role = 0").
+		Group(fmt.Sprintf("date_format(bl.finish_at, '%s'), bl.source_type", pkg.SQL_DATE_FORMAT)).
 		Find(&data).Error
 	if err != nil {
 		d.logger.Errorf("generateAmount: %v", err)
@@ -144,15 +144,15 @@ func (d *BetDao) generatePay(cDate time.Time) (data []*Bet, err error) {
 		Select(
 			fmt.Sprintf("date_format(ppo.finish_time, '%s') as date", pkg.SQL_DATE_FORMAT),
 			"gm.type as data_type",
-			"sum(case ppo.platform_id when 'wechatapp' then ppo.amount when 'wechatjs' then ppo.amount else 0 end) as  amount_wechat",
-			"sum(case ppo.platform_id when 'alipay' then ppo.amount else 0 end) as  amount_ali",
+			"sum(case ppo.platform_id when 'wechatapp' then ppo.amount-ppo.refund_amount when 'wechatjs' then ppo.amount-ppo.refund_amount else 0 end) as  amount_wechat",
+			"sum(case ppo.platform_id when 'alipay' then ppo.amount-ppo.refund_amount else 0 end) as  amount_ali",
 		).
 		Table("pay_payment_order ppo, users u, gacha_machine gm").
 		Where("ppo.finish_time between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
 		Where("ppo.pay_source_type = 100").
 		Where("ppo.status in (4,7,8,9,10,11,12,13,14)").
 		Where("ppo.user_id = u.id").
-		Where("u.is_admin = 0").
+		Where("u.role = 0").
 		Where("ppo.pay_source_id = gm.id").
 		Group(fmt.Sprintf("date_format(ppo.finish_time, '%s'), gm.type", pkg.SQL_DATE_FORMAT)).
 		Find(&data).Error

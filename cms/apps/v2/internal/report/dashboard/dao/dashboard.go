@@ -34,12 +34,14 @@ func (Dashboard) TableName() string {
 }
 
 type DashboardGroup struct {
-	NewUser      *Dashboard
-	ActiveUser   *Dashboard
-	PatingData   *Dashboard
-	PayData      *Dashboard
-	RechargeData *Dashboard
-	DrawData     *Dashboard
+	NewUser        *Dashboard
+	ActiveUser     *Dashboard
+	Pating         *Dashboard
+	Pay            *Dashboard
+	Recharge       *Dashboard
+	Draw           *Dashboard
+	RechargeRefund *Dashboard
+	SavingRefund   *Dashboard
 }
 
 type DashboardDao struct {
@@ -71,19 +73,27 @@ func (d *DashboardDao) Generate(startTime, endTime time.Time) (dataGroup Dashboa
 		return err
 	})
 	eg.Go(func() (err error) {
-		dataGroup.PatingData, err = d.generatePatingData(startTime, endTime)
+		dataGroup.Pating, err = d.generatePating(startTime, endTime)
 		return err
 	})
 	eg.Go(func() (err error) {
-		dataGroup.PayData, err = d.generatePayData(startTime, endTime)
+		dataGroup.Pay, err = d.generatePay(startTime, endTime)
 		return err
 	})
 	eg.Go(func() (err error) {
-		dataGroup.RechargeData, err = d.generateRechargeData(startTime, endTime)
+		dataGroup.Recharge, err = d.generateRecharge(startTime, endTime)
 		return err
 	})
 	eg.Go(func() (err error) {
-		dataGroup.DrawData, err = d.generateDrawData(startTime, endTime)
+		dataGroup.Draw, err = d.generateDraw(startTime, endTime)
+		return err
+	})
+	eg.Go(func() (err error) {
+		dataGroup.RechargeRefund, err = d.generateRechargeRefund(startTime, endTime)
+		return err
+	})
+	eg.Go(func() (err error) {
+		dataGroup.SavingRefund, err = d.generateSavingRefund(startTime, endTime)
 		return err
 	})
 
@@ -98,8 +108,8 @@ func (d *DashboardDao) generateNewUserCnt(startTime, endTime time.Time) (data *D
 		Select("count(distinct u.id) as new_user_cnt").
 		Table("users u").
 		Where("u.created_at between ? and ?", startTime.Format(pkg.DATE_TIME_MIL_FORMAT), endTime.Format(pkg.DATE_TIME_MIL_FORMAT)).
-		Where("u.is_admin = 0").
-		Scan(&data).Error
+		Where("u.role = 0").
+		Find(&data).Error
 	if err != nil {
 		d.logger.Errorf("generateNewUserCnt: %v", err)
 		return nil, err
@@ -115,8 +125,8 @@ func (d *DashboardDao) generateActiveUserCnt(startTime, endTime time.Time) (data
 		Table("logon_logs l, users u").
 		Where("l.created_at between ? and ?", startTime.Format(pkg.DATE_TIME_MIL_FORMAT), endTime.Format(pkg.DATE_TIME_MIL_FORMAT)).
 		Where("l.user_id = u.id").
-		Where("u.is_admin = 0").
-		Scan(&data).Error
+		Where("u.role = 0").
+		Find(&data).Error
 	if err != nil {
 		d.logger.Errorf("generateActiveUserCnt: %v", err)
 		return nil, err
@@ -126,7 +136,7 @@ func (d *DashboardDao) generateActiveUserCnt(startTime, endTime time.Time) (data
 }
 
 // 参与用户 分新旧 // ! 当时间范围 大于一天时 pating_user_cnt pating_user_cnt_new 会重复计算一个用户 // 该函数结果不用于summary部分
-func (d *DashboardDao) generatePatingData(startTime, endTime time.Time) (data *Dashboard, err error) {
+func (d *DashboardDao) generatePating(startTime, endTime time.Time) (data *Dashboard, err error) {
 	err = d.center.Raw(fmt.Sprintf(`
 select
 	count(distinct t.user_id) as pating_user_cnt,
@@ -137,19 +147,19 @@ from
 		(case when datediff(tv.created_at, u.created_at) = 0 then 1 else 0 end) is_new,
 		tv.user_id
 	from market_order tv, users u -- 集市 创建者
-	where tv.created_at between '%[1]s' and '%s' and tv.user_id = u.id and u.is_admin = 0
+	where tv.created_at between '%[1]s' and '%s' and tv.user_id = u.id and u.role = 0
 	union
 	select distinct
 		(case when datediff(muo.created_at, u.created_at) = 0 then 1 else 0 end) is_new,
 		muo.user_id
 	from market_user_offer muo, users u -- 集市 交易者
-	where muo.created_at between '%[1]s' and '%s' and muo.user_id = u.id and u.is_admin = 0
+	where muo.created_at between '%[1]s' and '%s' and muo.user_id = u.id and u.role = 0
 	union
 	SELECT distinct
 		(case when datediff(FROM_UNIXTIME(left(o.pay_time, 10)), u.created_at) = 0 then 1 else 0 end) is_new,
 		o.user_id
 	FROM %s o, users u -- 发货用户
-	Where o.pay_time between %[4]d and %d and o.user_id = u.id and u.is_admin = 0
+	Where o.pay_time between %[4]d and %d and o.user_id = u.id and u.role = 0
 	union
 	select distinct
 		(case when datediff(bl.created_at, u.created_at) = 0 then 1 else 0 end) is_new,
@@ -159,7 +169,7 @@ from
 		bl.created_at between '%[1]s' and '%s'
 		and (bl.source_type between 100 and 199 or bl.source_type in (601)) -- 抽赏 + 商城
 		and bl.update_amount <= 0
-		and bl.user_id = u.id and u.is_admin = 0
+		and bl.user_id = u.id and u.role = 0
 	) t
 	`,
 		startTime.Format(pkg.DATE_TIME_MIL_FORMAT), endTime.Format(pkg.DATE_TIME_MIL_FORMAT),
@@ -168,7 +178,7 @@ from
 	)).
 		Find(&data).Error
 	if err != nil {
-		d.logger.Errorf("generatePatingData: %v", err)
+		d.logger.Errorf("generatePating: %v", err)
 		return nil, err
 	}
 
@@ -176,7 +186,7 @@ from
 }
 
 // 付费用户 分新旧
-func (d *DashboardDao) generatePayData(startTime, endTime time.Time) (data *Dashboard, err error) {
+func (d *DashboardDao) generatePay(startTime, endTime time.Time) (data *Dashboard, err error) {
 	err = d.center.
 		Select(
 			"count(distinct bl.user_id) as pay_user_cnt",
@@ -186,18 +196,18 @@ func (d *DashboardDao) generatePayData(startTime, endTime time.Time) (data *Dash
 		Where("bl.finish_at between ? and ?", startTime.Format(pkg.DATE_TIME_MIL_FORMAT), endTime.Format(pkg.DATE_TIME_MIL_FORMAT)).
 		Where("(bl.source_type between 100 and 199 or bl.source_type in (201,202,300,301,302,303,304,601)) and bl.update_amount <= 0").
 		Where("bl.user_id = u.id").
-		Where("u.is_admin = 0").
-		Scan(&data).Error
+		Where("u.role = 0").
+		Find(&data).Error
 	if err != nil {
-		d.logger.Errorf("generatePayData: %v", err)
+		d.logger.Errorf("generatePay: %v", err)
 		return nil, err
 	}
 
 	return data, nil
 }
 
-// 充值 分渠道
-func (d *DashboardDao) generateRechargeData(startTime, endTime time.Time) (data *Dashboard, err error) {
+// 充值 分渠道 // 包括储值
+func (d *DashboardDao) generateRecharge(startTime, endTime time.Time) (data *Dashboard, err error) {
 	err = d.center.
 		Select(
 			"count(distinct ppo.user_id) as recharge_user_cnt",
@@ -207,13 +217,13 @@ func (d *DashboardDao) generateRechargeData(startTime, endTime time.Time) (data 
 			"sum(case ppo.platform_id when 'alipay' then ppo.amount else 0 end) as  recharge_amount_ali",
 		).
 		Table("pay_payment_order ppo").
-		Joins("join users u on ppo.user_id = u.id and u.is_admin = 0").
+		Joins("join users u on ppo.user_id = u.id and u.role = 0").
 		Where("ppo.finish_time between ? and ?", startTime.Format(pkg.DATE_TIME_MIL_FORMAT), endTime.Format(pkg.DATE_TIME_MIL_FORMAT)).
 		// Where("ppo.pay_source_type IN (100,201,202)"). -- 所有充值都计算
 		Where("ppo.status in (4,7,8,9,10,11,12,13,14)").
 		Find(&data).Error
 	if err != nil {
-		d.logger.Errorf("generateRechargeData: %v", err)
+		d.logger.Errorf("generateRecharge: %v", err)
 		return nil, err
 	}
 
@@ -221,7 +231,7 @@ func (d *DashboardDao) generateRechargeData(startTime, endTime time.Time) (data 
 }
 
 // 退款(￥)
-func (d *DashboardDao) generateDrawData(startTime, endTime time.Time) (data *Dashboard, err error) {
+func (d *DashboardDao) generateDraw(startTime, endTime time.Time) (data *Dashboard, err error) {
 	err = d.center.
 		Select(
 			"cast(sum(pdo.amount) as UNSIGNED) as draw_amount",
@@ -230,12 +240,50 @@ func (d *DashboardDao) generateDrawData(startTime, endTime time.Time) (data *Das
 		Where("pdo.finish_time between ? and ?", startTime.Format(pkg.DATE_TIME_MIL_FORMAT), endTime.Format(pkg.DATE_TIME_MIL_FORMAT)).
 		Where("pdo.state in (6, 12)").
 		Where("pdo.user_id = u.id").
-		Where("u.is_admin = 0").
-		Scan(&data).Error
+		Where("u.role = 0").
+		Find(&data).Error
 	if err != nil {
-		d.logger.Errorf("generateDrawData: %v", err)
+		d.logger.Errorf("generateDraw: %v", err)
 		return nil, err
 	}
 
 	return data, nil
+}
+
+// 原路退款
+func (d *DashboardDao) generateRechargeRefund(startTime, endTime time.Time) (data *Dashboard, err error) {
+	err = d.center.
+		Select(
+			"sum(refund_amount) as draw_amount",
+		).
+		Table("pay_payment_order ppo").
+		Joins("join users u on ppo.user_id = u.id and u.role = 0").
+		Where("ppo.refund_time between ? and ?", startTime.Format(pkg.DATE_TIME_MIL_FORMAT), endTime.Format(pkg.DATE_TIME_MIL_FORMAT)).
+		Where("ppo.status = 9").
+		Where("ppo.pay_source_type <> 12"). // 金币储值 不算在 Refund 中
+		Find(&data).Error
+	if err != nil {
+		d.logger.Errorf("generateRechargeRefund: %v", err)
+		return nil, err
+	}
+
+	return data, nil
+}
+
+// 储值退款
+func (d *DashboardDao) generateSavingRefund(startTime, endTime time.Time) (data *Dashboard, err error) {
+	err = d.center.
+		Select("sum(amount) as draw_amount").
+		Table("refund_order_detail rod, users u").
+		Where("rod.refund_time between ? and ?", startTime.Format(pkg.DATE_TIME_MIL_FORMAT), endTime.Format(pkg.DATE_TIME_MIL_FORMAT)).
+		Where("rod.status = 3").
+		Where("rod.user_id = u.id").
+		Where("u.role = 0").
+		Find(&data).Error
+	if err != nil {
+		d.logger.Errorf("generateSavingRefund: %v", err)
+		return nil, err
+	}
+
+	return
 }

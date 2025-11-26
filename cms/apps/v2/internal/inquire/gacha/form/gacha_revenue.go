@@ -40,7 +40,7 @@ func (q *RevenueRequest) Parse() (paramsGroup dao.RevenueRequestParamsGroup, err
 			typeList := []int{}
 			for _, i := range q.TypeList {
 				switch i {
-				case 101, 102, 103, 104:
+				case 101, 102, 103, 104, 105, 106:
 					typeList = append(typeList, i%100)
 				}
 			}
@@ -93,7 +93,7 @@ func (q *RevenueRequest) Parse() (paramsGroup dao.RevenueRequestParamsGroup, err
 func (q *RevenueRequest) Valid() (err error) {
 	for _, i := range q.TypeList {
 		switch i {
-		case 101, 102, 103, 104:
+		case 101, 102, 103, 104, 105, 106:
 		default:
 			return fmt.Errorf("not expected type: %d", q.TypeList)
 		}
@@ -115,24 +115,26 @@ func (q *RevenueRequest) Valid() (err error) {
 }
 
 type GachaRevenue struct {
-	GachaID             string          `json:"gacha_id"`
-	GachaType           int             `json:"gacha_type"`
-	GachaTypeStr        string          `json:"gacha_type_str"`
-	GachaName           string          `json:"gacha_name"`
-	BoxOutNo            int64           `json:"box_out_no"`
-	BetNums             int             `json:"bet_nums"`
-	TotalNums           int             `json:"total_nums"`
-	BetRate             float64         `json:"bet_rate"`
-	Price               decimal.Decimal `json:"price"`
-	DiscountPrice       decimal.Decimal `json:"discount_price"`
-	Amount              decimal.Decimal `json:"amount"`
-	AmountLeft          decimal.Decimal `json:"amount_left"`
-	InnerPriceBet       decimal.Decimal `json:"inner_price_bet"`
-	InnerPriceLeft      decimal.Decimal `json:"inner_price_left"`
-	InnerPriceBetExtra  decimal.Decimal `json:"inner_price_bet_extra"`
-	InnerPriceLeftExtra decimal.Decimal `json:"inner_price_left_extra"`
-	Revenue             decimal.Decimal `json:"revenue"`
-	RevenueRate         decimal.Decimal `json:"revenue_rate"`
+	GachaID              string          `json:"gacha_id"`
+	GachaType            int             `json:"gacha_type"`
+	GachaTypeStr         string          `json:"gacha_type_str"`
+	GachaName            string          `json:"gacha_name"`
+	BoxOutNo             int64           `json:"box_out_no"`
+	BetNums              int             `json:"bet_nums"`
+	TotalNums            int             `json:"total_nums"`
+	BetRate              float64         `json:"bet_rate"`
+	Price                decimal.Decimal `json:"price"`
+	DiscountPrice        decimal.Decimal `json:"discount_price"`
+	Amount               decimal.Decimal `json:"amount"`
+	AmountLeft           decimal.Decimal `json:"amount_left"`
+	InnerPriceBet        decimal.Decimal `json:"inner_price_bet"`
+	InnerPriceLeft       decimal.Decimal `json:"inner_price_left"`
+	InnerPriceLeftNormal decimal.Decimal `json:"inner_price_left_normal"`
+	InnerPriceBetExtra   decimal.Decimal `json:"inner_price_bet_extra"`
+	InnerPriceLeftExtra  decimal.Decimal `json:"inner_price_left_extra"`
+	Revenue              decimal.Decimal `json:"revenue"`
+	RevenueRate          decimal.Decimal `json:"revenue_rate"`
+	SPLeftNum            int64           `json:"sp_left_num"`
 }
 
 func FormatRevenue(ctx context.Context, _summary map[string]any, data []*dao.GachaRevenue) (summary map[string]any, result []*GachaRevenue) {
@@ -141,6 +143,7 @@ func FormatRevenue(ctx context.Context, _summary map[string]any, data []*dao.Gac
 	summary["amount_left"] = util.ConvertAmount2Decimal(summary["amount_left"])
 	summary["inner_price_bet"] = util.ConvertAmount2Decimal(summary["inner_price_bet"])
 	summary["inner_price_left"] = util.ConvertAmount2Decimal(summary["inner_price_left"])
+	summary["inner_price_left_normal"] = util.ConvertAmount2Decimal(summary["inner_price_left_normal"])
 	summary["inner_price_bet_extra"] = util.ConvertAmount2Decimal(summary["inner_price_bet_extra"])
 	summary["inner_price_left_extra"] = util.ConvertAmount2Decimal(summary["inner_price_left_extra"])
 	summary["revenue"] = util.Sub2Decimal(summary["amount"], summary["inner_price_bet"])
@@ -153,24 +156,26 @@ func FormatRevenue(ctx context.Context, _summary map[string]any, data []*dao.Gac
 		}
 
 		resultItem := &GachaRevenue{
-			GachaID:             strconv.FormatInt(item.GachaID, 10),
-			GachaType:           item.GachaType,
-			GachaTypeStr:        global.I18n.T(ctx, "source_type", convert.GetString(item.GachaType)),
-			GachaName:           gachaName,
-			BoxOutNo:            item.BoxOutNo,
-			BetNums:             item.BetNums,
-			TotalNums:           item.TotalNums,
-			BetRate:             util.SaveRatio2Float64(item.BetNums, item.TotalNums),
-			Price:               util.ConvertAmount2Decimal(item.Price),
-			DiscountPrice:       util.ConvertAmount2Decimal(item.DiscountPrice),
-			Amount:              util.ConvertAmount2Decimal(item.Amount),
-			InnerPriceBet:       util.ConvertAmount2Decimal(item.InnerPriceBetNormal + item.InnerPriceBetExtra),
-			InnerPriceLeft:      util.ConvertAmount2Decimal(item.InnerPriceLeftNormal + item.InnerPriceLeftExtra),
-			InnerPriceBetExtra:  util.ConvertAmount2Decimal(item.InnerPriceBetExtra),
-			InnerPriceLeftExtra: util.ConvertAmount2Decimal(item.InnerPriceLeftExtra),
+			GachaID:              strconv.FormatInt(item.GachaID, 10),
+			GachaType:            item.GachaType,
+			GachaTypeStr:         global.I18n.T(ctx, "source_type", convert.GetString(item.GachaType)),
+			GachaName:            gachaName,
+			BoxOutNo:             item.BoxOutNo,
+			BetNums:              item.BetNums,
+			TotalNums:            item.TotalNums,
+			BetRate:              util.SaveRatio2Float64(item.BetNums, item.TotalNums),
+			Price:                util.ConvertAmount2Decimal(item.Price),
+			DiscountPrice:        util.ConvertAmount2Decimal(item.DiscountPrice),
+			Amount:               util.ConvertAmount2Decimal(item.Amount),
+			InnerPriceBet:        util.ConvertAmount2Decimal(item.InnerPriceBetNormal + item.InnerPriceBetExtra),
+			InnerPriceLeft:       util.ConvertAmount2Decimal(item.InnerPriceLeftNormal + item.InnerPriceLeftExtra),
+			InnerPriceLeftNormal: util.ConvertAmount2Decimal(item.InnerPriceLeftNormal),
+			InnerPriceBetExtra:   util.ConvertAmount2Decimal(item.InnerPriceBetExtra),
+			InnerPriceLeftExtra:  util.ConvertAmount2Decimal(item.InnerPriceLeftExtra),
+			SPLeftNum:            item.SPLeftNum,
 		}
 
-		leftNums := (resultItem.TotalNums - resultItem.BetNums)
+		leftNums := resultItem.TotalNums - resultItem.BetNums
 		if resultItem.DiscountPrice.IsZero() {
 			resultItem.AmountLeft = resultItem.Price.Mul(decimal.NewFromInt(int64(leftNums)))
 		} else {

@@ -5,6 +5,7 @@ import advertising from "@/i18n/zh-CN/advertising";
 import report from "@/i18n/zh-CN/report"
 import inquire from '@/i18n/zh-CN/inquire'
 import activity from '@/i18n/zh-CN/activity'
+import item from '@/i18n/zh-CN/item'
 
 export default {
   ...zhLocale,
@@ -14,6 +15,7 @@ export default {
   report,
   inquire,
   activity,
+  item,
   common: {
     LoginSuccess: '登录成功',
     Language: '选择语言',
@@ -21,6 +23,7 @@ export default {
     PermissionDenied: '没有权限',
     Search: '查询',
     Export: '导出',
+    ExportDetail: "导出详情",
     CreateTime: '创建时间',
     Date: '日期',
     DateTime: '时间',
@@ -68,11 +71,33 @@ export default {
     YesOrNo: ['是', '否'],
     DatePickerOptions: ['一周内', '一个月内', '三个月内', '六个月内', '一年内'],
     OperationLogModule: ["路由", "角色", "用户", "流水"],
-    BetOptions: ['一番赏', '扭蛋机', '潮玩赏', '洞洞乐'],
+    BetOptions: ['一番赏', '扭蛋机', '潮玩赏', '洞洞乐', '潮社赏'],
     dim: ['日', '月'],
     dateTimeType: ['创建时间', '完成时间'],
     inviteUserType: ['被邀用户', '邀请用户'],
-    prizeType: ['潮币', '优惠券','物品'],
+    recallUserType: ['被召回用户', '召回用户'],
+    pointType: {
+      0:"潮币钱包",
+      2:"金币钱包",
+      10: "现金点",
+      11: "欧气值",
+      100:"免费",
+    },
+    awardType: {
+      10: "优惠券",
+      20: "物品",
+      30: "欧气值",
+    },
+    userChannel: {
+      1: "官方",
+      2: "华为",
+      4: "OPPO",
+      8: "小米",
+      16: "VIVO",
+      32: "荣耀",
+      64: "百度",
+      128: "腾讯",
+    },
   },
   login: {
     validMsg: {
@@ -90,5 +115,13 @@ export default {
     Saturday: '星期六',
     Sunday: '星期天',
     Everyday: '每一天',
+  },
+  reward: {
+    reward_value_item: "奖励价值(物品)",
+    reward_value_cost_award_point: "奖励价值(欧气值)",
+    award_type: "奖励类型",
+    award_name: "奖励名称",
+    award_value: "奖励值",
+    award_num: "奖励数量",
   },
 }

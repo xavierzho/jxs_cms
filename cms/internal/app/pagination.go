@@ -31,7 +31,7 @@ func (p *Pager) Parse() {
 	}
 }
 
-func (p Pager) GetPageOffset() int {
+func (p *Pager) GetPageOffset() int {
 	result := 0
 	if p.Page > 0 {
 		result = (p.Page - 1) * p.PageSize
@@ -40,7 +40,7 @@ func (p Pager) GetPageOffset() int {
 	return result
 }
 
-// 日报表 按日查询时 会用默认值填充空缺的记录，当涉及到分页时会导致数据错乱、分页失效
+// PaginationDateRange 日报表 按日查询时 会用默认值填充空缺的记录，当涉及到分页时会导致数据错乱、分页失效
 // 通过 对 日期范围进行分页操作，取当前分页的时间范围(倒序)
 // params: dateRange [2]time.Time 必须都是一天中的同一时刻（即差24小时的整数倍）
 func (p *Pager) PaginationDateRange(dateRange [2]time.Time) [2]time.Time {
@@ -95,6 +95,7 @@ func GetPager(ctx *gin.Context) Pager {
 	}
 }
 
+// GetStartEndRow 开始行和结束行
 func GetStartEndRow(total, page, pageSize int) (startRow, endRow int) {
 	startRow = (page-1)*pageSize + 1
 	if startRow > total {

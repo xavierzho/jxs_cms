@@ -111,6 +111,12 @@ const dynamicRouter = [
         meta: { permission: 'report_order_view' },
         component: () => import('@/views/Report/Order.vue'),
       },
+      {
+        path: 'recall',
+        name: 'report_recall',
+        meta: { permission: 'report_recall_view' },
+        component: () => import('@/views/Report/Recall.vue'),
+      },
     ],
   },
   {
@@ -123,6 +129,18 @@ const dynamicRouter = [
         name: 'inquire_item',
         meta: { permission: 'inquire_item_view' },
         component: () => import('@/views/Inquire/Item.vue'),
+      },
+      {
+        path: 'revenue-item',
+        name: 'inquire_revenue_item',
+        meta: { permission: 'inquire_revenue_item_view' },
+        component: () => import('@/views/Inquire/RevenueItem.vue'),
+      },
+      {
+        path: 'bet-item',
+        name: 'inquire_bet_item',
+        meta: { permission: 'inquire_bet_item_view' },
+        component: () => import('@/views/Inquire/BetItem.vue'),
       },
       {
         path: 'gacha',
@@ -147,6 +165,18 @@ const dynamicRouter = [
         name: 'inquire_invite',
         meta: { permission: 'inquire_invite_view' },
         component: () => import('@/views/Inquire/Invite.vue'),
+      },
+      {
+        path: 'recall',
+        name: 'inquire_recall',
+        meta: { permission: 'inquire_recall_view' },
+        component: () => import('@/views/Inquire/Recall.vue'),
+      },
+      {
+        path: 'task',
+        name: 'inquire_task',
+        meta: { permission: 'inquire_task_view' },
+        component: () => import('@/views/Inquire/Task.vue'),
       },
     ]
   },
@@ -173,6 +203,30 @@ const dynamicRouter = [
         meta: { permission: 'activity_turntable_view' },
         component: () => import('@/views/Activity/Turntable.vue'),
       },
+      {
+        path: 'step-by-step',
+        name: 'activity_step_by_step',
+        meta: { permission: 'activity_step_by_step_view' },
+        component: () => import('@/views/Activity/StepByStep.vue'),
+      },
+      {
+        path: 'sign-in',
+        name: 'activity_sign_in',
+        meta: { permission: 'activity_sign_in_view' },
+        component: () => import('@/views/Activity/SignIn.vue'),
+      },
+      {
+        path: 'team-pk',
+        name: 'activity_team_pk',
+        meta: { permission: 'activity_team_pk_view' },
+        component: () => import('@/views/Activity/TeamPK.vue'),
+      },
+      {
+        path: 'redemption-code',
+        name: 'activity_redemption_code',
+        meta: { permission: 'activity_redemption_code_view' },
+        component: () => import('@/views/Activity/RedemptionCode.vue'),
+      },
     ]
   },
   {
@@ -191,12 +245,6 @@ const dynamicRouter = [
         name: 'management_role',
         meta: { permission: 'management_role_view' },
         component: () => import('@/views/User/RoleList'),
-      },
-      {
-        path: 'log',
-        name: 'management_log',
-        meta: { permission: 'management_log_view' },
-        component: () => import('@/views/User/OperationLogList'),
       },
     ],
   },

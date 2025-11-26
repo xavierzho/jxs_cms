@@ -27,7 +27,6 @@ func InitRouter(r *gin.RouterGroup) (err error) {
 
 	r = r.Group("")
 	r.Use(local.JWT.JWT())
-	//r.Use(local.OperationLogMiddleware.Log("/api/v2/"))
 
 	// 菜单
 	{
@@ -66,13 +65,6 @@ func InitRouter(r *gin.RouterGroup) (err error) {
 			rg := rg.Group("permission")
 			permissionApi := api.NewPermissionApi()
 			rg.GET("options", permissionApi.Options)
-		}
-
-		// 操作日志
-		{
-			rg := rg.Group("log")
-			operationLogApi := api.NewOperationLogApi()
-			rg.GET("", local.PermissionGate.CheckPerm("management_log_view"), operationLogApi.List)
 		}
 	}
 	return nil

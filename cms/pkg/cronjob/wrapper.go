@@ -8,135 +8,205 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type CronJobWrapper func(CronCommonJob) CronCommonJob
+// Wrapper is a function type that wraps a CronCommonJob with additional functionality.
+// Wrappers can add cross-cutting concerns like logging, recovery, timeout detection, etc.
+type Wrapper func(CronCommonJob) CronCommonJob
 
+// CronChain represents a chain of job wrappers that are applied in sequence.
+// Wrappers are applied in reverse order, so the last wrapper in the chain
+// is the outermost wrapper (executes first).
 type CronChain struct {
-	wrappers []CronJobWrapper
+	wrappers []Wrapper
 }
 
-func NewCronChain(c ...CronJobWrapper) CronChain {
-	return CronChain{c}
+// NewCronChain creates a new CronChain from the provided wrappers.
+//
+// Example:
+//
+//	chain := NewCronChain(
+//	  RecoverWrapper(config),         // Applied last (outermost)
+//	  LoggerWrapper(config),          // Applied second
+//	  SkipIfStillRunningWrapper(config), // Applied first (innermost)
+//	)
+func NewCronChain(wrappers ...Wrapper) CronChain {
+	return CronChain{wrappers: wrappers}
 }
 
+// then applies all wrappers in the chain to the given job.
+// Wrappers are applied in reverse order to maintain intuitive ordering.
 func (c CronChain) then(j CronCommonJob) CronCommonJob {
-	for i := range c.wrappers {
-		j = c.wrappers[len(c.wrappers)-1-i](j)
+	for i := len(c.wrappers) - 1; i >= 0; i-- {
+		j = c.wrappers[i](j)
 	}
 	return j
 }
 
-func RecoverWrapper(message *cronMessage) CronJobWrapper {
+// RecoverWrapper creates a wrapper that recovers from panics in job execution.
+// When a panic occurs, it captures the stack trace and sends an alarm.
+// This prevents a single job failure from crashing the entire scheduler.
+//
+// Usage:
+//
+//	chain := NewCronChain(RecoverWrapper(config))
+func RecoverWrapper(config *JobConfig) Wrapper {
 	return func(job CronCommonJob) CronCommonJob {
-		funcJob := cronJob{
-			run:  recoverWrapper(job.Run, job.Name(), "run", message),
+		return cronJob{
+			run: recoverWrapper(job.Run, job.Name(), "run", config),
+			work: wrapWorkIfQueueJob(job, func(workFn func()) func() {
+				return recoverWrapper(workFn, job.Name(), "work", config)
+			}),
 			name: job.Name(),
 		}
-		if _, ok := job.(CronQueueJob); ok {
-			funcJob.work = recoverWrapper(job.(CronQueueJob).Work, job.Name(), "work", message)
-		}
-		return funcJob
 	}
 }
 
-func recoverWrapper(f func(), jobName, funName string, message *cronMessage) func() {
+// recoverWrapper wraps a function with panic recovery logic.
+func recoverWrapper(fn func(), jobName, funcName string, config *JobConfig) func() {
 	return func() {
-		// recover
 		defer func() {
 			if r := recover(); r != nil {
-				const size = 64 << 10
-				buf := make([]byte, size)
+				const stackSize = 64 << 10 // 64KB stack buffer
+				buf := make([]byte, stackSize)
 				buf = buf[:runtime.Stack(buf, false)]
+
 				err, ok := r.(error)
 				if !ok {
 					err = fmt.Errorf("%v", r)
 				}
-				message.Alarm(logrus.ErrorLevel, fmt.Sprintf("cron job execute %s %s occur error: %v %s", jobName, funName, err, string(buf)))
+
+				errMsg := fmt.Sprintf("cron job execute %s %s panic: %v\n%s",
+					jobName, funcName, err, string(buf))
+				config.Alarm(logrus.ErrorLevel, errMsg)
 			}
 		}()
-		f()
+		fn()
 	}
 }
 
-func LoggerWrapper(message *cronMessage) CronJobWrapper {
+// LoggerWrapper creates a wrapper that logs job execution start and completion.
+// Successful executions are logged at INFO level, while panics are re-thrown
+// to be handled by RecoverWrapper.
+//
+// Usage:
+//
+//	chain := NewCronChain(
+//	  RecoverWrapper(config),
+//	  LoggerWrapper(config),  // Should be inside RecoverWrapper
+//	)
+func LoggerWrapper(config *JobConfig) Wrapper {
 	return func(job CronCommonJob) CronCommonJob {
-		funcJob := cronJob{
-			run:  loggerWrapper(job.Run, job.Name(), "run", message),
+		return cronJob{
+			run: loggerWrapper(job.Run, job.Name(), "run", config),
+			work: wrapWorkIfQueueJob(job, func(workFn func()) func() {
+				return loggerWrapper(workFn, job.Name(), "work", config)
+			}),
 			name: job.Name(),
 		}
-		if _, ok := job.(CronQueueJob); ok {
-			funcJob.work = loggerWrapper(job.(CronQueueJob).Work, job.Name(), "work", message)
-		}
-		return funcJob
 	}
 }
 
-func loggerWrapper(f func(), jobName, funName string, message *cronMessage) func() {
+// loggerWrapper wraps a function with execution logging.
+func loggerWrapper(fn func(), jobName, funcName string, config *JobConfig) func() {
 	return func() {
-		message.Logf(logrus.InfoLevel, "cron job execute %s %s start", jobName, funName)
+		config.Logf(logrus.InfoLevel, "cron job execute %s %s start", jobName, funcName)
 		defer func() {
 			if r := recover(); r != nil {
-				panic(r) // 不做处理直接抛出
-			} else {
-				message.Logf(logrus.InfoLevel, "cron job execute %s %s success", jobName, funName)
+				panic(r) // Re-throw for RecoverWrapper to handle
 			}
+			config.Logf(logrus.InfoLevel, "cron job execute %s %s success", jobName, funcName)
 		}()
-		f()
+		fn()
 	}
 }
 
-func SkipIfStillRunningWrapper(message *cronMessage) CronJobWrapper {
+// SkipIfStillRunningWrapper creates a wrapper that prevents concurrent execution
+// of the same job. If a job is still running when its next scheduled execution
+// occurs, the new execution is skipped.
+//
+// This is useful for long-running jobs where overlapping executions could
+// cause resource conflicts or data inconsistencies.
+//
+// Usage:
+//
+//	chain := NewCronChain(SkipIfStillRunningWrapper(config))
+func SkipIfStillRunningWrapper(config *JobConfig) Wrapper {
 	return func(job CronCommonJob) CronCommonJob {
-		funcJob := cronJob{
-			run:  skipIfStillRunningWrapper(job.Run, job.Name(), "run", message),
+		return cronJob{
+			run: skipIfStillRunningWrapper(job.Run, job.Name(), "run", config),
+			work: wrapWorkIfQueueJob(job, func(workFn func()) func() {
+				return skipIfStillRunningWrapper(workFn, job.Name(), "work", config)
+			}),
 			name: job.Name(),
 		}
-		if _, ok := job.(CronQueueJob); ok {
-			funcJob.work = skipIfStillRunningWrapper(job.(CronQueueJob).Work, job.Name(), "work", message)
-		}
-		return funcJob
 	}
 }
 
-func skipIfStillRunningWrapper(f func(), jobName, funName string, message *cronMessage) func() {
-	var ch = make(chan struct{}, 1)
-	ch <- struct{}{}
+// skipIfStillRunningWrapper wraps a function to prevent concurrent execution.
+func skipIfStillRunningWrapper(fn func(), jobName, funcName string, config *JobConfig) func() {
+	ch := make(chan struct{}, 1)
+	ch <- struct{}{} // Initialize as available
+
 	return func() {
 		select {
-		case v := <-ch:
+		case token := <-ch:
 			defer func() {
-				ch <- v
+				ch <- token // Return token
 				if r := recover(); r != nil {
-					panic(r) // 继续抛出
+					panic(r) // Re-throw panic
 				}
 			}()
-			f()
+			fn()
 		default:
-			message.Logf(logrus.InfoLevel, "cron job execute %s %s skip", jobName, funName)
+			config.Logf(logrus.InfoLevel, "cron job execute %s %s skip (still running)", jobName, funcName)
 		}
 	}
 }
 
-func TimeoutReminderWrapper(message *cronMessage, timeLimit time.Duration) CronJobWrapper {
+// TimeoutReminderWrapper creates a wrapper that sends an alarm if job execution
+// exceeds the specified time limit. Note that this does NOT cancel the job;
+// it only sends a notification.
+//
+// Parameters:
+//   - config: Job configuration for logging and alarms
+//   - timeLimit: Duration threshold for sending timeout alerts
+//
+// Usage:
+//
+//	chain := NewCronChain(
+//	  TimeoutReminderWrapper(config, 5*time.Minute),
+//	)
+func TimeoutReminderWrapper(config *JobConfig, timeLimit time.Duration) Wrapper {
 	return func(job CronCommonJob) CronCommonJob {
-		funcJob := cronJob{
-			run:  timeoutReminderWrapper(job.Run, job.Name(), "run", message, timeLimit),
+		return cronJob{
+			run: timeoutReminderWrapper(job.Run, job.Name(), "run", config, timeLimit),
+			work: wrapWorkIfQueueJob(job, func(workFn func()) func() {
+				return timeoutReminderWrapper(workFn, job.Name(), "work", config, timeLimit)
+			}),
 			name: job.Name(),
 		}
-		if _, ok := job.(CronQueueJob); ok {
-			funcJob.work = timeoutReminderWrapper(job.(CronQueueJob).Work, job.Name(), "work", message, timeLimit)
-		}
-		return funcJob
 	}
 }
 
-func timeoutReminderWrapper(f func(), jobName, funName string, message *cronMessage, timeLimit time.Duration) func() {
+// timeoutReminderWrapper wraps a function to measure execution time and alert on slow execution.
+func timeoutReminderWrapper(fn func(), jobName, funcName string, config *JobConfig, timeLimit time.Duration) func() {
 	return func() {
 		startTime := time.Now()
-		f()
-		subTime := time.Since(startTime)
-		if subTime >= timeLimit {
-			message.Alarm(logrus.ErrorLevel, fmt.Sprintf("cron job execute %s %s too slow: %s", jobName, funName, subTime.String()))
-		}
+		fn()
+		elapsed := time.Since(startTime)
 
+		if elapsed >= timeLimit {
+			alarmMsg := fmt.Sprintf("cron job execute %s %s exceeded time limit: took %s (limit: %s)",
+				jobName, funcName, elapsed, timeLimit)
+			config.Alarm(logrus.ErrorLevel, alarmMsg)
+		}
 	}
+}
+
+// wrapWorkIfQueueJob is a helper function that conditionally wraps the Work method
+// if the job implements CronQueueJob. This reduces code duplication in wrappers.
+func wrapWorkIfQueueJob(job CronCommonJob, wrapper func(func()) func()) func() {
+	if qJob, ok := job.(CronQueueJob); ok {
+		return wrapper(qJob.Work)
+	}
+	return nil
 }

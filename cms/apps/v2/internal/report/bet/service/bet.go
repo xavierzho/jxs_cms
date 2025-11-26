@@ -116,6 +116,10 @@ func convertBetType(dataType string) string {
 		return form.BET_TYPE_CHAO
 	case "4", "104":
 		return form.BET_TYPE_HOLE
+	case "5", "105":
+		return form.BET_TYPE_CHAO_SHE
+	case "6", "106":
+		return form.BET_TYPE_SHARE_BILL
 	default:
 		return ""
 	}

@@ -30,6 +30,9 @@ func InitRouter(r *gin.RouterGroup) (err error) {
 		rg.POST("/log/export", local.PermissionGate.CheckPerm("inquire_item_view"), itemApi.ExportLog)
 		rg.GET("/detail", local.PermissionGate.CheckPerm("inquire_item_view"), itemApi.GetDetail)
 		rg.POST("/detail/export", local.PermissionGate.CheckPerm("inquire_item_view"), itemApi.ExportDetail)
+		rg.GET("/bet", local.PermissionGate.CheckPerm("inquire_bet_item_view"), itemApi.ListBetDetail)
+		rg.POST("/bet/export", local.PermissionGate.CheckPerm("inquire_bet_item_view"), itemApi.ExportBetDetail)
+		rg.GET("/revenue", local.PermissionGate.CheckPerm("inquire_revenue_item_view"), itemApi.GetRevenue)
 	}
 
 	return nil

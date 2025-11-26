@@ -214,7 +214,7 @@ func GetDecimal(value interface{}) decimal.Decimal {
 	}
 }
 
-// 将字符串转为 time.Time
+// GetDateTime 将字符串转为 time.Time
 // time.Time{} 的值会受当前 Location 在该时间戳的历史时间中采用的 TimeZone 影响
 // 一个 Location 在历史上可能采用了多个不同的 TimeZone
 // TimeZone 有 DST(夏令时) LMT(地方平时) UTC 等几种
@@ -249,8 +249,8 @@ func GetDateTime(value interface{}) (time.Time, error) {
 }
 
 func GetDateTimeMust(value interface{}) time.Time {
-	time, _ := GetDateTime(value)
-	return time
+	t, _ := GetDateTime(value)
+	return t
 }
 
 func GetDateStr(value interface{}) string {

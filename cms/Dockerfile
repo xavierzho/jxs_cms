@@ -19,9 +19,12 @@ FROM alpine:3.19
 
 WORKDIR /app
 
-RUN apk add --no-cache tzdata \
- && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
- && echo "Asia/Shanghai" > /etc/timezone
+# 配置时区
+ENV TZ=Asia/Shanghai
+# 安装时区包
+RUN apk --no-cache add tzdata && \
+    mkdir -p /opt/service
+
 
 # 从 builder 阶段复制编译好的二进制
 COPY --from=builder /app/chaoshe_data_backend ./data_backend

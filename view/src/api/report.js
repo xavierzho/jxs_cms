@@ -42,4 +42,17 @@ export default {
   exportReportDeliveryOrderDaily(params) {
     return saveFile('report/delivery_order/export', params, "report_delivery_order_daily")
   },
+  //召回报表
+  getReportRecall(params) {
+    return request.get('report/recall', {params})
+  },
+  exportReportRecall(params) {
+    return saveFile('report/recall/export', params, "recall")
+  },
+  getReportRecallDaily(params) {
+    return request.get('report/recall/daily', {params})
+  },
+  exportReportRecallDaily(params) {
+    return saveFile('report/recall/daily/export', params, "recall_daily")
+  },
 }

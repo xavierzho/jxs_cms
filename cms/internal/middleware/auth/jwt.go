@@ -2,6 +2,7 @@ package auth
 
 import (
 	"encoding/hex"
+	"errors"
 	"strconv"
 
 	"data_backend/internal/app"
@@ -79,7 +80,7 @@ func (j JWT) JWT() gin.HandlerFunc {
 		// 验证token
 		tokenKey := token.GetRKeyByUserID(uint32(userID))
 		tokenCache, err := j.rdb.Get(ctx, tokenKey).Result()
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			eCode = errcode.UnauthorizedTokenTimeout
 			return
 		} else if err != nil {

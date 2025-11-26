@@ -117,3 +117,66 @@ func (api *ItemApi) ExportDetail(ctx *gin.Context) {
 		api.logger.Errorf("response.ExportFile err: %v", e.Error())
 	}
 }
+
+func (api *ItemApi) ListBetDetail(ctx *gin.Context) {
+	params := &form.BetDetailListRequest{}
+	response := app.NewResponse(ctx)
+	if ok := response.BindAndValid(ctx, params, api.logger); !ok {
+		return
+	}
+
+	svc := service.NewItemSvc(ctx, local.CenterDB, api.logger)
+	data, total, err := svc.ListBetDetail(params)
+	if err != nil {
+		api.logger.Errorf("ListBetDetail: %v", err)
+		response.ToErrorResponse(err)
+		return
+	}
+
+	response.ToResponse(gin.H{
+		"data": data,
+		"headers": map[string]any{
+			"total": total,
+		},
+	})
+}
+
+func (api *ItemApi) ExportBetDetail(ctx *gin.Context) {
+	params := &form.BetDetailAllRequest{}
+	response := app.NewResponse(ctx)
+	if ok := response.BindAndValid(ctx, params, api.logger); !ok {
+		return
+	}
+
+	svc := service.NewItemSvc(ctx, local.CenterDB, api.logger)
+	excelModel, err := svc.ExportBetDetail(params)
+	if err != nil {
+		api.logger.Errorf("ExportBetDetail: %v", err)
+		response.ToErrorResponse(err)
+		return
+	}
+
+	e := response.ExportFile(ctx, excelModel.Excelize, excelModel.FileName)
+	if e != nil {
+		api.logger.Errorf("response.ExportFile err: %v", e.Error())
+	}
+}
+
+func (api *ItemApi) GetRevenue(ctx *gin.Context) {
+	params := &form.GetRevenueRequest{}
+	response := app.NewResponse(ctx)
+	if ok := response.BindAndValid(ctx, params, api.logger); !ok {
+		return
+	}
+
+	svc := service.NewItemSvc(ctx, local.CenterDB, api.logger)
+	data, err := svc.GetRevenue(params)
+	if err != nil {
+		api.logger.Errorf("GetLog: %v", err)
+		response.ToErrorResponse(err)
+		return
+	}
+	response.ToResponse(gin.H{
+		"data": data,
+	})
+}

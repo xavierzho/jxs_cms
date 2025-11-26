@@ -28,6 +28,8 @@ func InitRouter(r *gin.RouterGroup) (err error) {
 		rg.GET("/source-type/options", local.PermissionGate.CheckPerm("inquire_balance_view"), balanceApi.OptionsSourceType)
 		rg.GET("/channel-type/options", local.PermissionGate.CheckPerm("inquire_balance_view"), balanceApi.OptionsChannelType)
 		rg.GET("/pay-source-type/options", local.PermissionGate.CheckPerm("inquire_balance_view"), balanceApi.OptionsPaySourceType)
+		rg.GET("/balance-type/options", local.PermissionGate.CheckPerm("inquire_balance_view"), balanceApi.OptionsBalanceType)
+
 		rg.GET("", local.PermissionGate.CheckPerm("inquire_balance_view"), balanceApi.List)
 		rg.POST("comment", local.PermissionGate.CheckPerm("inquire_balance_view"), balanceApi.AddComment)
 		rg.DELETE("comment", local.PermissionGate.CheckPerm("inquire_balance_view"), balanceApi.DeleteComment)

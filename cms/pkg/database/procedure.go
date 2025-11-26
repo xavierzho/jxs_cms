@@ -8,20 +8,20 @@ import (
 type ProcParamsType string
 
 const (
-	PROC_PARAMS_INPUT    ProcParamsType = "input"
-	PROC_PARAMS_INOUTPUT ProcParamsType = "inoutput"
-	PROC_PARAMS_OUTPUT   ProcParamsType = "output"
+	ProcParamsInput    ProcParamsType = "input"
+	ProcParamsInoutput ProcParamsType = "inoutput"
+	ProcParamsOutput   ProcParamsType = "output"
 )
 
 type ProcValueType string
 
 const (
-	PROC_VALUE_INT    ProcValueType = "int"
-	PROC_VALUE_STRING ProcValueType = "string"
-	PROC_VALUE_BOOl   ProcValueType = "bool"
+	ProcValueInt    ProcValueType = "int"
+	ProcValueString ProcValueType = "string"
+	ProcValueBool   ProcValueType = "bool"
 )
 
-//sql参数
+// SqlParameter sql参数
 type SqlParameter struct {
 	Name       string         // 参数名
 	Value      interface{}    // 参数值
@@ -32,9 +32,9 @@ type SqlParameter struct {
 
 func (p SqlParameter) ValueString() string {
 	switch p.ValueType {
-	case PROC_VALUE_INT, PROC_VALUE_BOOl:
+	case ProcValueInt, ProcValueBool:
 		return fmt.Sprintf("%v", p.Value)
-	case PROC_VALUE_STRING:
+	case ProcValueString:
 		value := strings.ReplaceAll(fmt.Sprintf("%s", p.Value), "'", `\'`)
 		return fmt.Sprintf("'%s'", value)
 	}
@@ -45,7 +45,7 @@ func newSqlIntParameter(name string, value int64, procParamsType ProcParamsType)
 	return SqlParameter{
 		Name:       name,
 		Value:      value,
-		ValueType:  PROC_VALUE_INT,
+		ValueType:  ProcValueInt,
 		ParamsType: procParamsType,
 	}
 }
@@ -54,7 +54,7 @@ func newSqlStringParameter(name string, value string, procParamsType ProcParamsT
 	return SqlParameter{
 		Name:       name,
 		Value:      value,
-		ValueType:  PROC_VALUE_STRING,
+		ValueType:  ProcValueString,
 		ParamsType: procParamsType,
 	}
 }
@@ -63,87 +63,87 @@ func newSqlBoolParameter(name string, value bool, procParamsType ProcParamsType)
 	return SqlParameter{
 		Name:       name,
 		Value:      value,
-		ValueType:  PROC_VALUE_BOOl,
+		ValueType:  ProcValueBool,
 		ParamsType: procParamsType,
 	}
 }
 
-//参数数组
+// 参数数组
 type Parameters struct {
 	innerParameters []*SqlParameter
 }
 
-//创建Sql参数集合
+// 创建Sql参数集合
 func NewSqlParameters() *Parameters {
 	return new(Parameters)
 }
 
-//添加参数
+// 添加参数
 func (ps *Parameters) addParameter(p SqlParameter) {
 	ps.innerParameters = append(ps.innerParameters, &p)
 }
 
-//添加int input 参数
+// 添加int input 参数
 func (ps *Parameters) AddIntInputParameter(name string, value int64) {
-	p := newSqlIntParameter(name, value, PROC_PARAMS_INPUT)
+	p := newSqlIntParameter(name, value, ProcParamsInput)
 	ps.addParameter(p)
 }
 
-//添加int inOutput 参数
+// 添加int inOutput 参数
 func (ps *Parameters) AddIntInOutputParameter(name string, value int64) {
-	p := newSqlIntParameter(name, value, PROC_PARAMS_INOUTPUT)
+	p := newSqlIntParameter(name, value, ProcParamsInoutput)
 	ps.addParameter(p)
 }
 
-//添加int output 参数
+// 添加int output 参数
 func (ps *Parameters) AddIntOutputParameter(name string) {
-	p := newSqlIntParameter(name, 0, PROC_PARAMS_OUTPUT)
+	p := newSqlIntParameter(name, 0, ProcParamsOutput)
 	ps.addParameter(p)
 }
 
-//添加string input 参数
+// 添加string input 参数
 func (ps *Parameters) AddStringInputParameter(name string, value string) {
-	p := newSqlStringParameter(name, value, PROC_PARAMS_INPUT)
+	p := newSqlStringParameter(name, value, ProcParamsInput)
 	ps.addParameter(p)
 }
 
-//添加string inOutput 参数
+// 添加string inOutput 参数
 func (ps *Parameters) AddStringInOutputParameter(name string, value string) {
-	p := newSqlStringParameter(name, value, PROC_PARAMS_INOUTPUT)
+	p := newSqlStringParameter(name, value, ProcParamsInoutput)
 	ps.addParameter(p)
 }
 
-//添加string output 参数
+// 添加string output 参数
 func (ps *Parameters) AddStringOutputParameter(name string) {
-	p := newSqlStringParameter(name, "", PROC_PARAMS_OUTPUT)
+	p := newSqlStringParameter(name, "", ProcParamsOutput)
 	ps.addParameter(p)
 }
 
-//添加bool input 参数
+// 添加bool input 参数
 func (ps *Parameters) AddBoolInputParameter(name string, value bool) {
-	p := newSqlBoolParameter(name, value, PROC_PARAMS_INPUT)
+	p := newSqlBoolParameter(name, value, ProcParamsInput)
 	ps.addParameter(p)
 }
 
-//添加bool inOutput 参数
+// 添加bool inOutput 参数
 func (ps *Parameters) AddBoolInOutputParameter(name string, value bool) {
-	p := newSqlBoolParameter(name, value, PROC_PARAMS_INOUTPUT)
+	p := newSqlBoolParameter(name, value, ProcParamsInoutput)
 	ps.addParameter(p)
 }
 
-//添加bool output 参数
+// 添加bool output 参数
 func (ps *Parameters) AddBoolOutputParameter(name string) {
-	p := newSqlBoolParameter(name, false, PROC_PARAMS_OUTPUT)
+	p := newSqlBoolParameter(name, false, ProcParamsOutput)
 	ps.addParameter(p)
 }
 
-//存储过程
+// 存储过程
 type Procedure struct {
 	Name       string //存储过程名称
 	Parameters *Parameters
 }
 
-//创建存储过程
+// 创建存储过程
 func NewProcedure(name string, ps *Parameters) *Procedure {
 	// 规定所有的存储过程都有该参数
 	ps.AddIntInOutputParameter("intRet", 0)
@@ -166,12 +166,12 @@ func (p *Procedure) GetProcedureSql() (sqlString string) {
 	callSql += fmt.Sprintf("call %s(", p.Name)
 	for _, pr := range p.Parameters.innerParameters {
 		switch pr.ParamsType {
-		case PROC_PARAMS_INPUT:
+		case ProcParamsInput:
 			callSql += fmt.Sprintf("%s, ", pr.ValueString())
-		case PROC_PARAMS_OUTPUT:
+		case ProcParamsOutput:
 			callSql += fmt.Sprintf("@%s, ", pr.Name)
 			selectSql += fmt.Sprintf("@%s, ", pr.Name)
-		case PROC_PARAMS_INOUTPUT:
+		case ProcParamsInoutput:
 			setSql += fmt.Sprintf("set @%s=%s; ", pr.Name, pr.ValueString())
 			callSql += fmt.Sprintf("@%s, ", pr.Name)
 			selectSql += fmt.Sprintf("@%s, ", pr.Name)

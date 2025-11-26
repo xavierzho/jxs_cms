@@ -1,7 +1,6 @@
 package form
 
 import (
-	"database/sql/driver"
 	"fmt"
 	"time"
 
@@ -19,18 +18,21 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-type CostAwardLogType uint32
-
-func (t CostAwardLogType) Value() (driver.Value, error) {
-	return int64(t), nil
-}
-
 const (
-	CostAwardLogType_Normal    = 0   // 消费返欧气值
-	CostAwardLogType_Invite    = 1   // 邀请用户消费返欧气值
-	CostAwardLogType_Accept    = 100 // 欧气值兑换
-	CostAwardLogType_Admin     = 999 // 管理员手动修改
-	CostAwardLogType_Turntable = 101 // 转盘抽奖
+	CostAwardLogType_Normal          = 0   // 消费返欧气值
+	CostAwardLogType_Invite          = 1   // 邀请用户消费返欧气值
+	CostAwardLogType_Accept          = 100 // 欧气值兑换
+	CostAwardLogType_Turntable       = 101 // 转盘抽奖
+	CostAwardLogType_StepByStep      = 102 // 步步高升
+	CostAwardLogType_SignIn          = 103 // 签到
+	CostAwardLogType_LuckyNum        = 104 // 幸运数
+	CostAwardLogType_CostAwardOffset = 105 // 欧气值抵扣
+	CostAwardLogType_Recall          = 106 // 好友召回
+	CostAwardLogType_RedemptionCode  = 107 // 兑换码
+	CostAwardLogType_Task_CostAmount = 201 // 任务 抽赏有送
+	CostAwardLogType_Task_PrizeValue = 202 // 任务 SP悬赏
+	CostAwardLogType_Task_Week       = 203 // 任务 周任务（统一使用这个）
+	CostAwardLogType_Admin           = 999 // 管理员手动修改
 )
 
 type ListLogRequest struct {
@@ -47,7 +49,7 @@ func (q *ListLogRequest) Parse() (dateTimeRange [2]time.Time, queryParams databa
 type AllLogRequest struct {
 	iForm.DateTimeRangeRequest
 	cForm.UserInfoRequest
-	LogType []CostAwardLogType `form:"log_type[]"`
+	LogType []uint32 `form:"log_type[]"`
 }
 
 func (q *AllLogRequest) Parse() (dateTimeRange [2]time.Time, queryParams database.QueryWhereGroup, err error) {
@@ -79,8 +81,17 @@ func (q *AllLogRequest) Valid() error {
 		case CostAwardLogType_Normal:
 		case CostAwardLogType_Invite:
 		case CostAwardLogType_Accept:
-		case CostAwardLogType_Admin:
 		case CostAwardLogType_Turntable:
+		case CostAwardLogType_StepByStep:
+		case CostAwardLogType_SignIn:
+		case CostAwardLogType_LuckyNum:
+		case CostAwardLogType_CostAwardOffset:
+		case CostAwardLogType_Recall:
+		case CostAwardLogType_RedemptionCode:
+		case CostAwardLogType_Task_CostAmount:
+		case CostAwardLogType_Task_PrizeValue:
+		case CostAwardLogType_Task_Week:
+		case CostAwardLogType_Admin:
 		default:
 			return fmt.Errorf("not expected LogType: %d", q.LogType)
 		}
@@ -102,7 +113,7 @@ type CostAwardLog struct {
 func FormatLog(ctx *gin.Context, _summary map[string]any, data []map[string]any) (summary map[string]any, result []*CostAwardLog) {
 	summary = _summary
 	if summary != nil {
-		summary["update_point"] = util.ConvertAmount2Decimal(summary["update_point"]).Mul(COST_AWARD_POINT_STEP)
+		summary["update_amount"] = util.ConvertAmount2Decimal(summary["update_amount"]).Mul(cForm.COST_AWARD_POINT_STEP)
 	}
 
 	for _, item := range data {
@@ -110,10 +121,10 @@ func FormatLog(ctx *gin.Context, _summary map[string]any, data []map[string]any)
 			CreatedAt:   convert.GetString(item["created_at"]),
 			UserID:      convert.GetInt64(item["user_id"]),
 			UserName:    convert.GetString(item["user_name"]),
-			LogTypeStr:  global.I18n.T(ctx, "cost_award.log_type", convert.GetString(item["log_type"])),
-			UpdatePoint: util.ConvertAmount2Decimal(item["update_point"]).Mul(COST_AWARD_POINT_STEP),
-			BeforePoint: util.ConvertAmount2Decimal(item["before_point"]).Mul(COST_AWARD_POINT_STEP),
-			AfterPoint:  util.ConvertAmount2Decimal(item["after_point"]).Mul(COST_AWARD_POINT_STEP),
+			LogTypeStr:  global.I18n.T(ctx, "source_type", convert.GetString(item["source_type"])),
+			UpdatePoint: util.ConvertAmount2Decimal(item["update_amount"]).Mul(cForm.COST_AWARD_POINT_STEP),
+			BeforePoint: util.ConvertAmount2Decimal(item["before_balance"]).Mul(cForm.COST_AWARD_POINT_STEP),
+			AfterPoint:  util.ConvertAmount2Decimal(item["after_balance"]).Mul(cForm.COST_AWARD_POINT_STEP),
 		})
 	}
 

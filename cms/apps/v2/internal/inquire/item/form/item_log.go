@@ -40,10 +40,12 @@ type LogAllRequest struct {
 	activityFlag          dao.ActivityFlag
 	adminFlag             bool
 	orderFlag             bool
-	GachaName             string    `form:"gacha_name"`            // 仅 GachaParams
-	UpdateAmountRange     *[2]int64 `form:"update_amount_range[]"` // 仅 AmountParams
-	ShowPriceRange        *[2]int64 `form:"show_price_range[]"`    // 仅 ItemParams
-	InnerPriceRange       *[2]int64 `form:"inner_price_range[]"`   // 仅 ItemParams
+	taskFlag              bool
+	publicizeFlag         bool
+	GachaName             string      `form:"gacha_name"`            // 仅 GachaParams
+	UpdateAmountRange     *[2]float64 `form:"update_amount_range[]"` // 仅 AmountParams
+	ShowPriceRange        *[2]float64 `form:"show_price_range[]"`    // 仅 ItemParams
+	InnerPriceRange       *[2]float64 `form:"inner_price_range[]"`   // 仅 ItemParams
 }
 
 func (q *LogAllRequest) Parse() (dateTimeRange [2]time.Time, paramsGroup dao.AllRequestParamsGroup, err error) {
@@ -65,6 +67,8 @@ func (q *LogAllRequest) Parse() (dateTimeRange [2]time.Time, paramsGroup dao.All
 	paramsGroup.ActivityFlag = q.activityFlag
 	paramsGroup.AdminFlag = q.adminFlag
 	paramsGroup.OrderFlag = q.orderFlag
+	paramsGroup.TaskFlag = q.taskFlag
+	paramsGroup.PublicizeFlag = q.publicizeFlag
 
 	// GachaParams
 	{
@@ -78,7 +82,7 @@ func (q *LogAllRequest) Parse() (dateTimeRange [2]time.Time, paramsGroup dao.All
 			typeList := []int{}
 			for _, i := range q.LogTypeList {
 				switch i {
-				case 101, 102, 103, 104:
+				case 101, 102, 103, 104, 105, 106:
 					typeList = append(typeList, i%100)
 				}
 			}
@@ -124,23 +128,30 @@ func (q *LogAllRequest) Parse() (dateTimeRange [2]time.Time, paramsGroup dao.All
 
 func (q *LogAllRequest) Valid() (err error) {
 	if len(q.LogTypeList) == 0 {
-		q.betFlag, q.marketFlag, q.adminFlag, q.orderFlag = true, true, true, true
+		q.betFlag, q.marketFlag, q.adminFlag, q.orderFlag, q.publicizeFlag = true, true, true, true, true
 		q.activityFlag = dao.ActivityFlag{
-			Flag:         true,
-			CostAward:    true,
-			CostRank:     true,
-			ItemExchange: true,
-			PrizeWheel:   true, //转盘抽奖
+			Flag:           true,
+			CostAward:      true,
+			CostRank:       true,
+			ItemExchange:   true,
+			PrizeWheel:     true, // 转盘抽奖
+			StepByStep:     true,
+			SignIn:         true,
+			LuckyNum:       true,
+			RedemptionCode: true,
 		}
+		q.taskFlag = true
 	} else {
 		for _, i := range q.LogTypeList {
 			switch i {
-			case 101, 102, 103, 104:
+			case 101, 102, 103, 104, 105, 106:
 				q.betFlag = true
 			case 200:
 				q.marketFlag = true
 			case 300:
 				q.orderFlag = true
+			case 701:
+				q.publicizeFlag = true
 			case 100002:
 				q.activityFlag.Flag = true
 				q.activityFlag.CostAward = true
@@ -152,7 +163,24 @@ func (q *LogAllRequest) Valid() (err error) {
 				q.activityFlag.ItemExchange = true
 			case 100005:
 				q.activityFlag.Flag = true
-				q.activityFlag.PrizeWheel = true //转盘抽奖
+				q.activityFlag.PrizeWheel = true // 转盘抽奖
+			case 100006:
+				q.activityFlag.Flag = true
+				q.activityFlag.StepByStep = true
+			case 100007:
+				q.activityFlag.Flag = true
+				q.activityFlag.SignIn = true
+			case 100008:
+				q.activityFlag.Flag = true
+				q.activityFlag.LuckyNum = true
+			case 100010:
+				q.activityFlag.Flag = true
+				q.activityFlag.RedemptionCode = true
+			case 100011:
+				q.activityFlag.Flag = true
+				q.activityFlag.Lottery = true
+			case 200000:
+				q.taskFlag = true
 			case 999999:
 				q.adminFlag = true
 			default:
@@ -205,13 +233,16 @@ func FormatLog(ctx context.Context, _summary map[string]any, data []*dao.ItemLog
 	for _, item := range data {
 		var logTypeName = item.LogTypeName
 		if item.Period != 0 {
-			if item.LogType == 100003 { // 消费排行
+			switch item.LogType {
+			case 100003:
 				idStrList := strings.Split(item.ID, "|")
 				if len(idStrList) != 3 {
 					return nil, nil, fmt.Errorf("100003's id invalid: %s", item.ID)
 				}
 				logTypeName = fmt.Sprintf("第%d期 第%s名", item.Period, idStrList[1])
-			} else {
+			case 100006, 100007:
+				logTypeName = strings.Join([]string{fmt.Sprintf("第%d期", item.Period), item.LogTypeName}, " ")
+			default:
 				logTypeName = strings.Join([]string{item.LogTypeName, fmt.Sprintf("第%d期", item.Period)}, " ")
 			}
 		}
@@ -280,5 +311,43 @@ func FormatLog2Excel(ctx context.Context, dateTimeRange [2]time.Time, _data []*d
 		return nil, err
 	}
 
+	return
+}
+
+type GetRevenueRequest struct {
+	cForm.UserInfoRequest // UsersParam
+}
+
+type ItemRevenue struct {
+	UpdateAmount7Day    decimal.Decimal `json:"update_amount_7_day"`
+	RecyclingPrice7Day  decimal.Decimal `json:"recycling_price_7_day"`
+	Revenue7Day         decimal.Decimal `json:"revenue_7_day"`
+	UpdateAmount15Day   decimal.Decimal `json:"update_amount_15_day"`
+	RecyclingPrice15Day decimal.Decimal `json:"recycling_price_15_day"`
+	Revenue15Day        decimal.Decimal `json:"revenue_15_day"`
+	UpdateAmount30Day   decimal.Decimal `json:"update_amount_30_day"`
+	RecyclingPrice30Day decimal.Decimal `json:"recycling_price_30_day"`
+	Revenue30Day        decimal.Decimal `json:"revenue_30_day"`
+}
+
+func (q *GetRevenueRequest) Parse() (paramsGroup dao.AllRequestParamsGroup, err error) {
+	// UsersParams
+	if paramsGroup.UsersParams, err = q.UserInfoRequest.Parse(); err != nil {
+		return
+	}
+	return
+}
+func FormatRevenue(ctx context.Context, data *dao.ItemRevenue) (result []*ItemRevenue, err error) {
+	result = append(result, &ItemRevenue{
+		Revenue7Day:         data.Revenue7Day,
+		UpdateAmount7Day:    data.UpdateAmount7Day,
+		RecyclingPrice7Day:  data.RecyclingPrice7Day,
+		Revenue15Day:        data.Revenue15Day,
+		UpdateAmount15Day:   data.UpdateAmount15Day,
+		RecyclingPrice15Day: data.RecyclingPrice15Day,
+		Revenue30Day:        data.Revenue30Day,
+		UpdateAmount30Day:   data.UpdateAmount30Day,
+		RecyclingPrice30Day: data.RecyclingPrice30Day,
+	})
 	return
 }

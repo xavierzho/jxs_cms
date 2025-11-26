@@ -27,7 +27,6 @@ type RoleSvc struct {
 	rdb      *redisdb.RedisClient
 	logger   *logger.Logger
 	userSvc  *UserSvc
-	logSvc   *OperationLogSvc
 	dao      *dao.RoleDao
 	newAlarm func(log *logger.Logger) message.Alarm
 }
@@ -46,7 +45,6 @@ func NewRoleSvc(ctx *gin.Context, engine *gorm.DB, rdb *redisdb.RedisClient, log
 
 func (svc *RoleSvc) Create(params *form.RoleCreateRequest) *errcode.Error {
 	permDao := dao.NewPermissionDao(svc.engine, svc.logger)
-	svc.logSvc = NewOperationLogSvc(svc.ctx, svc.engine, svc.logger, svc.newAlarm)
 
 	if flag, err := svc.checkExist(0, params.Name); err != nil {
 		return errcode.CreateFail.WithDetails(errcode.QueryFail.WithDetails(err.Error()).Error())
@@ -65,9 +63,6 @@ func (svc *RoleSvc) Create(params *form.RoleCreateRequest) *errcode.Error {
 	}
 
 	go svc.cachedRolePerm(data.ID)
-	go svc.logSvc.Create(&dao.OperationLog{
-		ModuleName: data.TableName(), Operation: "Create", ModuleID: convert.GetString(data.ID),
-	})
 
 	return nil
 }
@@ -107,7 +102,6 @@ func (svc *RoleSvc) All(queryParams database.QueryWhereGroup) ([]*dao.Role, *err
 
 func (svc *RoleSvc) Update(id uint32, params *form.RoleUpdateRequest) (permList []string, e *errcode.Error) {
 	svc.userSvc = NewUserSvc(svc.ctx, svc.engine, svc.rdb, svc.logger, svc.newAlarm)
-	svc.logSvc = NewOperationLogSvc(svc.ctx, svc.engine, svc.logger, svc.newAlarm)
 	permDao := dao.NewPermissionDao(svc.engine, svc.logger)
 
 	// 执行用户
@@ -171,8 +165,6 @@ func (svc *RoleSvc) Update(id uint32, params *form.RoleUpdateRequest) (permList 
 		go svc.delRolePermCache(role.ID)
 	}
 
-	go svc.logSvc.Create(&dao.OperationLog{ModuleName: role.TableName(), Operation: "Update", ModuleID: convert.GetString(role.ID)})
-
 	// 当修改的是自己的权限时, 需要重新获取权限; 合并处理了 // TODO 去掉这部分
 	permissions, e := svc.userSvc.GetPermNameList(operator.ID)
 	if e != nil {
@@ -182,7 +174,7 @@ func (svc *RoleSvc) Update(id uint32, params *form.RoleUpdateRequest) (permList 
 	return permissions, nil
 }
 
-// 优先从缓存获取
+// GetPermNameList 优先从缓存获取
 func (svc *RoleSvc) GetPermNameList(roleIDList []uint32) (result []string, e *errcode.Error) {
 	// 生成redis的缓存key
 	roleIDRKeyList := make([]string, 0, len(roleIDList))

@@ -11,13 +11,13 @@ import (
 	"data_backend/pkg/database"
 )
 
-// 登录请求信息
+// LoginRequest 登录请求信息
 type LoginRequest struct {
 	UserName string `form:"user_name" binding:"required,min=2,max=100"`
 	Password string `form:"password" binding:"required,min=6,max=20"`
 }
 
-// 登录信息返回
+// UserLoginInfo 登录信息返回
 type UserLoginInfo struct {
 	ID         uint32   `json:"id"`
 	Name       string   `json:"name"`
@@ -27,7 +27,7 @@ type UserLoginInfo struct {
 	IsAdmin    bool     `json:"is_admin"`
 }
 
-// 创建用户请求
+// UserCreateRequest 创建用户请求
 type UserCreateRequest struct {
 	UserName   string   `form:"user_name" binding:"required,min=2,max=100"`
 	Name       string   `form:"name" binding:"required,min=2,max=100"`
@@ -37,7 +37,7 @@ type UserCreateRequest struct {
 	RoleIDList []uint32 `form:"role_id_list[]"`
 }
 
-// 获取用户列表请求
+// UserListRequest 获取用户列表请求
 type UserListRequest struct {
 	Name     string `form:"name" binding:"max=100"`
 	UserName string `form:"user_name" binding:"max=100"`
@@ -60,7 +60,7 @@ func (q *UserListRequest) Parse() (queryParams database.QueryWhereGroup) {
 	return queryParams
 }
 
-// 用户列表返回信息
+// User 用户列表返回信息
 type User struct {
 	ID            uint32      `json:"id"`
 	UserName      string      `json:"user_name"`
@@ -109,7 +109,7 @@ func UserFormat(data []*dao.User, orderBy app.OrderBy) (userList []User, err err
 	return userList, nil
 }
 
-// 更新用户信息请求
+// UserUpdateRequest 更新用户信息请求
 type UserUpdateRequest struct {
 	Name       string   `form:"name" binding:"required,min=2,max=100"`
 	Email      string   `form:"email" binding:"required,email,min=2,max=100"`

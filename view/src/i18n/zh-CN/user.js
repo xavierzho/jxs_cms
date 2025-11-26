@@ -14,6 +14,7 @@ export default {
   Owned: '已拥有',
   NotOwned: '未拥有',
   UserID: '用户ID',
+  filterOptionTip_userID: '多用户查询时 例:1019096,1019078',
   Name: '用户昵称',
   UserName: '用户登录名',
   Email: '邮箱',
@@ -38,4 +39,5 @@ export default {
   Channel: '渠道',
   IsAdmin: '是否是内部账户',
   UserType:'用户类型',
+  UserChannel: "渠道",
 }

@@ -34,7 +34,7 @@ func getMessages(data map[string]interface{}) (messageList []*Message, err error
 
 			for ind := range childMessageList {
 				if childMessageList[ind].ID != "" {
-					childMessageList[ind].ID = key + NESTED_SEPARATOR + childMessageList[ind].ID
+					childMessageList[ind].ID = key + NestedSeparator + childMessageList[ind].ID
 				} else {
 					childMessageList[ind].ID = key
 				}
@@ -63,7 +63,7 @@ func addChildMessages(data interface{}) ([]*Message, error) {
 			}
 
 			for ind := range messageList {
-				messageList[ind].ID = strconv.Itoa(index) + NESTED_SEPARATOR + messageList[ind].ID
+				messageList[ind].ID = strconv.Itoa(index) + NestedSeparator + messageList[ind].ID
 			}
 
 			childMessagesList = append(childMessagesList, messageList...)
@@ -81,7 +81,7 @@ func addChildMessages(data interface{}) ([]*Message, error) {
 				if messageList[ind].ID == "" {
 					messageList[ind].ID = strconv.Itoa(index)
 				} else {
-					messageList[ind].ID = strconv.Itoa(index) + NESTED_SEPARATOR + messageList[ind].ID
+					messageList[ind].ID = strconv.Itoa(index) + NestedSeparator + messageList[ind].ID
 				}
 			}
 

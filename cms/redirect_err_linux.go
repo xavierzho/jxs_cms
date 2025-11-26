@@ -1,5 +1,5 @@
-//go:build linux || darwin
-// +build linux darwin
+//go:build linux
+// +build linux
 
 package main
 
@@ -9,7 +9,7 @@ import (
 	"syscall"
 )
 
-// redirectStderr to the file passed in
+// redirectStderr 将标准错误输出重定向到指定文件
 func redirectStderr(f *os.File) {
 	err := syscall.Dup2(int(f.Fd()), int(os.Stderr.Fd()))
 	if err != nil {

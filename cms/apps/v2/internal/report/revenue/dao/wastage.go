@@ -61,7 +61,7 @@ from
 	left join logon_logs l on l.user_id = u.id and l.created_at between '%s' and '%s'
 	where
 		u.created_at between '%s' and '%s'
-		and u.is_admin = 0
+		and u.role = 0
 	group by
 		u.id, date_format(u.created_at, '%s')
 	) t

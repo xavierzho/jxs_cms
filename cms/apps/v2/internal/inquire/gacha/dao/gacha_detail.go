@@ -9,14 +9,27 @@ import (
 
 type GachaDetail struct {
 	cDao.Item
-	BetNums   int `gorm:"column:bet_nums; type:int" json:"bet_nums"`
-	TotalNums int `gorm:"column:total_nums; type:int" json:"total_nums"`
+	LevelIndex int `gorm:"column:level_index; type:int" json:"level_index"`
+	BetNums    int `gorm:"column:bet_nums; type:int" json:"bet_nums"`
+	TotalNums  int `gorm:"column:total_nums; type:int" json:"total_nums"`
 }
 
 func (d *GachaDao) GetDetail(queryParams database.QueryWhereGroup) (data []*GachaDetail, err error) {
 	err = d.center.
-		Select("*").
+		Select(
+			"item_id",
+			"item_name",
+			"level_index",
+			"level_name",
+			"cover_thumb",
+			"show_price",
+			"inner_price",
+			"recycling_price",
+			"sum(bet_nums) as bet_nums",
+			"sum(total_nums) as total_nums",
+		).
 		Table("(? union all ?) t", d.getDetailNormalDB(queryParams), d.getDetailExtraDB(queryParams)).
+		Group("item_id, item_name, level_index, level_name, cover_thumb, show_price, inner_price, recycling_price").
 		Order("level_index, inner_price desc, total_nums desc, bet_nums desc").
 		Find(&data).Error
 	if err != nil {
@@ -40,6 +53,7 @@ func (d *GachaDao) getDetailNormalDB(queryParams database.QueryWhereGroup) *gorm
 		Where("gb.box_index = gba.box_index").
 		Where("gba.item_id = i.id").
 		Where("gba.level_index = gl.level_index").
+		Where("gl.level_type = 1"). // 只查询普通奖励，排除 Last(2) 和 Lucky(3)
 		Group("gba.item_id, i.name, gba.level_index, gl.level_name, i.cover_thumb, i.show_price, i.inner_price, i.recycling_price")
 }
 

@@ -76,13 +76,13 @@ func (svc *OperationLogSvc) initModel(data *dao.OperationLog) (form url.Values, 
 
 // 创建操作日志为独立行为, 不返回错误, 直接告警
 func (svc *OperationLogSvc) Create(data *dao.OperationLog) {
-	form, err := svc.initModel(data)
+	formVal, err := svc.initModel(data)
 	if err != nil {
 		svc.alarm.AlertErrorMsg(fmt.Sprintf("OperationLogSvc.initModel\n%#v\n%v", data, err), message.CMS_ID)
 	}
 
-	if err = svc.dao.Create(form, data); err != nil {
-		svc.alarm.AlertErrorMsg(fmt.Sprintf("OperationLogSvc.dao.Create\n%#v\n%#v\n%v", form, data, err), message.CMS_ID)
+	if err = svc.dao.Create(formVal, data); err != nil {
+		svc.alarm.AlertErrorMsg(fmt.Sprintf("OperationLogSvc.dao.Create\n%#v\n%#v\n%v", formVal, data, err), message.CMS_ID)
 	}
 }
 

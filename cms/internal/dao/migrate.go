@@ -3,7 +3,6 @@ package dao
 import (
 	"data_backend/pkg/logger"
 	"data_backend/pkg/util"
-	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -21,7 +20,7 @@ func InitFirstUser(db *gorm.DB, log *logger.Logger) (err error) {
 	}
 
 	// 获取全部权限
-	permissionList := []*Permission{}
+	var permissionList []*Permission
 	if err = tx.Find(&permissionList).Error; err != nil {
 		return err
 	}
@@ -31,7 +30,6 @@ func InitFirstUser(db *gorm.DB, log *logger.Logger) (err error) {
 		Permission: permissionList,
 	}
 	if err = tx.Create(role).Error; err != nil {
-		fmt.Println("create role error", err)
 		return err
 	}
 	if err = tx.Model(role).Association("Permission").Replace(permissionList); err != nil {
@@ -46,7 +44,6 @@ func InitFirstUser(db *gorm.DB, log *logger.Logger) (err error) {
 		Role:     []*Role{role},
 	}
 	if err = tx.Create(user).Error; err != nil {
-		fmt.Println("create user error", err)
 		return err
 	}
 	if err = tx.Model(user).Association("Role").Replace(user.Role); err != nil {

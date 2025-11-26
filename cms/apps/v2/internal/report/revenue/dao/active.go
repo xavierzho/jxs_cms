@@ -82,7 +82,7 @@ func (d *ActiveDao) generateRegister(cDate time.Time) (data *Active, err error) 
 		).
 		Table("users u").
 		Where("u.created_at between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
-		Where("u.is_admin = 0").
+		Where("u.role = 0").
 		Group(fmt.Sprintf("date_format(u.created_at, '%s')", pkg.SQL_DATE_FORMAT)).
 		Find(&data).Error
 	if err != nil {
@@ -103,7 +103,7 @@ func (d *ActiveDao) generateActive(cDate time.Time) (data *Active, err error) {
 			"count(distinct (case when datediff(l.created_at, u.created_at) <> 0 then u.id else null end)) as active_cnt_old",
 		).
 		Table("logon_logs l").
-		Joins("join users u on l.user_id = u.id and u.is_admin = 0").
+		Joins("join users u on l.user_id = u.id and u.role = 0").
 		Where("l.created_at between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
 		Group(fmt.Sprintf("date_format(l.created_at, '%s')", pkg.SQL_DATE_FORMAT)).
 		Find(&data).Error
@@ -147,7 +147,7 @@ from
 			and (bl.source_type between 100 and 199 or bl.source_type in (201,202,300,301,302,303,304,601))
 			and bl.update_amount <= 0
 			and l.user_id = u.id
-			and u.is_admin = 0
+			and u.role = 0
 		group by
 			l.user_id, date_format(l.created_at, '%s')
 		) l,
@@ -161,7 +161,7 @@ from
 		where
 			l.created_at between '%s' and '%s'
 			and l.user_id = u.id
-			and u.is_admin = 0
+			and u.role = 0
 		) ll
 	where
 		l.user_id = ll.user_id

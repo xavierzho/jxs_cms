@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-form :inline="true" :model="searchForm">
-      <el-form-item>
+      <el-form-item v-if="$checkPermission('report_bet_filter')">
         <date-picker v-model="searchForm.date_range" type="daterange" :clearable="false"></date-picker>
       </el-form-item>
       <el-form-item>
@@ -50,6 +50,26 @@
         >
         </bet-table>
       </el-tab-pane>
+      <el-tab-pane :label="$t('report.bet.type.ChaoShe')" name="ChaoShe">
+        <bet-table
+          ref="betTable"
+          :loading="loading"
+          :tableData="tableData.ChaoShe"
+          :show-summary="false"
+          :summary-method="summaryMethod"
+        >
+        </bet-table>
+      </el-tab-pane>
+      <el-tab-pane :label="$t('report.bet.type.ShareBill')" name="ShareBill">
+        <bet-table
+          ref="betTable"
+          :loading="loading"
+          :tableData="tableData.ShareBill"
+          :show-summary="false"
+          :summary-method="summaryMethod"
+        >
+        </bet-table>
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
@@ -76,6 +96,8 @@ export default {
         Gashapon: [],
         Chao: [],
         Hole: [],
+        ChaoShe: [],
+        ShareBill: [],
       }
     }
   },

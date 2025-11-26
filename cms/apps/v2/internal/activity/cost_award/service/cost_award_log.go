@@ -37,6 +37,15 @@ func (svc *CostAwardLogSvc) OptionsLogType() []map[string]string {
 		{"value": convert.GetString(form.CostAwardLogType_Accept), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_Accept))},
 		{"value": convert.GetString(form.CostAwardLogType_Admin), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_Admin))},
 		{"value": convert.GetString(form.CostAwardLogType_Turntable), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_Turntable))}, //转盘抽奖
+		{"value": convert.GetString(form.CostAwardLogType_StepByStep), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_StepByStep))},
+		{"value": convert.GetString(form.CostAwardLogType_SignIn), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_SignIn))},
+		{"value": convert.GetString(form.CostAwardLogType_LuckyNum), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_LuckyNum))},
+		{"value": convert.GetString(form.CostAwardLogType_CostAwardOffset), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_CostAwardOffset))},
+		{"value": convert.GetString(form.CostAwardLogType_Recall), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_Recall))},
+		{"value": convert.GetString(form.CostAwardLogType_RedemptionCode), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_RedemptionCode))},
+		{"value": convert.GetString(form.CostAwardLogType_Task_CostAmount), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_Task_CostAmount))},
+		{"value": convert.GetString(form.CostAwardLogType_Task_PrizeValue), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_Task_PrizeValue))},
+		{"value": convert.GetString(form.CostAwardLogType_Task_Week), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_Task_Week))},
 	}
 }
 

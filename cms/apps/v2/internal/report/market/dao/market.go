@@ -69,12 +69,12 @@ from
 	(	
 	select date_format(t.created_at, '%[1]s') as date, user_id, count(distinct t.id) as order_cnt
 	from market_order t, users u
-	where t.created_at between '%s' and '%s' and t.user_id = u.id and u.is_admin = 0
+	where t.created_at between '%s' and '%s' and t.user_id = u.id and u.role = 0
 	group by date_format(t.created_at, '%[1]s'), user_id
 	union all
 	select date_format(t.created_at, '%[1]s') as date, user_id, 0 as order_cnt
 	from market_user_offer t, users u
-	where t.created_at between '%s' and '%s' and t.user_id = u.id and u.is_admin = 0
+	where t.created_at between '%s' and '%s' and t.user_id = u.id and u.role = 0
 	group by date_format(t.created_at, '%[1]s'), user_id
 	) t
 group by
@@ -95,11 +95,11 @@ func (d *MarketDao) generateAmount(cDate time.Time) (data *Market, err error) {
 	err = d.center.
 		Select(
 			fmt.Sprintf("date_format(bl.created_at, '%s') as date", pkg.SQL_DATE_FORMAT),
-			"sum(case muou.is_admin when 0 then bl.update_amount else 0 end) as amount_0",
-			"sum(case muou.is_admin when 1 then bl.update_amount else 0 end) as amount_1",
+			"sum(case muou.role when 0 then bl.update_amount else 0 end) as amount_0",
+			"sum(case muou.role when 1 then bl.update_amount else 0 end) as amount_1",
 		).
 		Table("balance_log bl").
-		Joins("join users u on bl.user_id = u.id and u.is_admin = 0").
+		Joins("join users u on bl.user_id = u.id and u.role = 0").
 		Joins("join market_user_offer muo on bl.source_id = muo.id").
 		Joins("join users muou on muo.user_id = muou.id").
 		Where("bl.created_at between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).

@@ -29,15 +29,25 @@
                 <el-form-item :label="$t('user.Tel')">
                   <input-number v-model="searchForm.tel" :range="[0,99999999999]" clearable></input-number>
                 </el-form-item>
-    
+                <el-form-item :label="$t('user.UserChannel')">
+                  <el-select v-model="searchForm.channel" clearable>
+                    <el-option v-for="(item, index) in userChannel" :key="index" :label="item.label" :value="item.value"></el-option>
+                  </el-select>
+                </el-form-item>
+
           <!-- <el-form-item :label="$t('user.IsRewards')" @click="() => {fetchDaily({page: 1});}" ><el-switch v-model="searchForm.is_rewards" /></el-form-item> -->
           </el-form>
-         
+
           <el-form inline v-model="searchForm">
+            <el-form-item :label="$t('activity.turntable.point_type')">
+              <el-select v-model="searchForm.point_type" clearable @clear="()=>{searchForm.point_type=null}">       <!-- multiple  多选-->
+                <el-option v-for="item in pointType" :label="item.label" :value="item.value" :key="item.value" ></el-option>
+              </el-select>
+            </el-form-item>
             <el-form-item :label="$t('activity.turntable.type')">
-            <el-select v-model="searchForm.type"  clearable>       <!-- multiple  多选-->
-              <el-option v-for="item in prizeType" :label="item.label" :value="item.value" :key="item.value" ></el-option>
-            </el-select>
+              <el-select v-model="searchForm.type"  clearable>       <!-- multiple  多选-->
+                <el-option v-for="item in awardType" :label="item.label" :value="item.value" :key="item.value" ></el-option>
+              </el-select>
             </el-form-item>
 
             <el-form-item>
@@ -45,7 +55,7 @@
             </span>
             <el-input v-model="searchForm.name" clearable></el-input>
             </el-form-item>
-   
+
 
           <el-form-item>
             <el-button type="primary" v-loading="loading" @click="fetch({page: 1})">{{ $t('common.Search') }}</el-button>
@@ -96,7 +106,7 @@
     </search-table>
     </div>
   </template>
-  
+
   <script>
   import DatePicker from "@/components/DatePicker.vue";
   import moment from "moment/moment";
@@ -104,7 +114,7 @@
   import SearchTable from "@/components/Table/SearchTable.vue";
   import InputNumber from "@/components/Input/InputNumber.vue";
   import {mapGetters} from "vuex";
-  
+
   export default {
     name: "Invite",
     components: {InputNumber,SearchTable, DatePicker},
@@ -119,7 +129,9 @@
           user_name: '',
           tel: '',
           name:'',
+          point_type: null,
           type:'',
+          channel: null,
         },
         total: 0,
         amount: 0,
@@ -129,10 +141,12 @@
         summary: {},
       }
     },
-  
+
     computed: {
       ...mapGetters({
-        prizeType: 'option/prizeType',
+        pointType: 'option/pointType',
+        awardType: 'option/awardType',
+        userChannel: 'option/userChannel',
       }),
     },
     created() {
@@ -143,7 +157,7 @@
       this.fetch()
     },
     methods:{
-  
+
       fetch(params = {}) {
         this.loading = true
         this.searchForm = Object.assign({}, this.searchForm, params)
@@ -167,8 +181,8 @@
           this.loading = false
         })
       },
-  
-  
+
+
       summaryMethod({ columns, data }){
         return [
           'Total',
@@ -179,8 +193,7 @@
     },
   }
   </script>
-  
+
   <style scoped>
-  
+
   </style>
-  

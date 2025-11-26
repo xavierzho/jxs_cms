@@ -56,8 +56,9 @@ export default {
     },
     summary: {
       active_cnt: "日活",
-      wallet_balance: "钱包余额",
+      wallet_balance: "潮币余额",
       merchant_balance: "商户钱包余额",
+      gold_balance: "金币余额",
       pay_amount: "总付费",
       pay_amount_bet: "总付费(抽赏)",
       recharge_amount: "总充值",
@@ -66,12 +67,21 @@ export default {
       recharge_refund_amount_wechat: "总充值退款(微信)",
       recharge_amount_ali: "总充值(支付宝)",
       recharge_refund_amount_ali: "总充值退款(支付宝)",
+      saving_amount: "总储值",
+      saving_refund_amount: "总储值退款",
+      saving_amount_wechat: "总储值(微信)",
+      saving_refund_amount_wechat: "总储值退款(微信)",
+      saving_amount_ali: "总储值(支付宝)",
+      saving_refund_amount_ali: "总储值退款(支付宝)",
       draw_amount: "总退款(￥)",
       tax_amount: "总抽水",
       revenue: "总营收",
       revenue_rate: "营收率",
       revenue_arpu: "营收ARPU",
       refund_amount: "总退款(潮币)",
+      discount_amount:"总折扣",
+      discount_amount_wechat:"总折扣(微信)",
+      discount_amount_ali:"总折扣(支付宝)",
     },
   },
 
@@ -174,6 +184,7 @@ export default {
       patingGashapon: "扭蛋机参与用户",
       patingChao: "潮玩赏参与用户",
       patingHole: "洞洞乐参与用户",
+      patingChaoShe: "潮社赏参与用户",
       patingMarket: "集市参与用户",
       patingDeliver: "发货参与用户",
       patingShop: "商城参与用户",
@@ -216,6 +227,8 @@ export default {
       Gashapon: "扭蛋机",
       Chao: "潮玩赏",
       Hole: "洞洞乐",
+      ChaoShe: "潮社赏",
+      ShareBill: "一网打尽",
     },
   },
 
@@ -255,5 +268,21 @@ export default {
     recharge_user_cnt_summary: '累计充值用户数',
     recharge_amount_summary: '累计总充值',
     draw_amount_summary: '累计总退款(￥)',
-  }
+  },
+
+  recall: {
+    is_daily: '日维度统计',
+
+    user_id: "被召回用户ID",
+    user_name: "被召回用户昵称",
+    parent_user_id: "召回用户ID",
+    parent_user_name: "召回用户昵称",
+    amount: "被召回用户抽赏金额",
+    point: "召回用户获得欧气值",
+
+    daily: {
+      total_amount: "总抽赏",
+      difference: "差额",
+    },
+  },
 }

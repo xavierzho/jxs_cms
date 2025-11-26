@@ -1,6 +1,7 @@
 package form
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -8,21 +9,14 @@ import (
 	cForm "data_backend/apps/v2/internal/common/form"
 	"data_backend/internal/app"
 	iForm "data_backend/internal/form"
+	"data_backend/internal/global"
 	"data_backend/pkg"
+	"data_backend/pkg/convert"
+	"data_backend/pkg/database"
 	"data_backend/pkg/excel"
 	"data_backend/pkg/util"
 
 	"github.com/shopspring/decimal"
-)
-
-// 奖品类型
-type Type int64
-
-const (
-	PrizeType_None   Type = 0
-	PrizeType_Coin   Type = 1
-	PrizeType_Coupon Type = 10
-	PrizeType_Goods  Type = 20
 )
 
 type GenerateRequest struct {
@@ -34,7 +28,7 @@ type ListRequest struct {
 	AllRequest
 }
 
-func (q *ListRequest) Parse() (dateRange [2]time.Time, err error) {
+func (q *ListRequest) Parse() (dateRange [2]time.Time, queryParams database.QueryWhereGroup, err error) {
 	q.Pager.Parse()
 
 	return q.AllRequest.Parse()
@@ -43,11 +37,12 @@ func (q *ListRequest) Parse() (dateRange [2]time.Time, err error) {
 type AllRequest struct {
 	iForm.DateRangeRequest
 	cForm.UserInfoRequest
-	Type Type   `form:"type"`
-	Name string `form:"name"`
+	Name      string           `form:"name"`
+	PointType *cForm.PointType `form:"point_type"`
+	Type      cForm.AwardType  `form:"type"`
 }
 
-func (q *AllRequest) Parse() (dateRange [2]time.Time, err error) {
+func (q *AllRequest) Parse() (dateRange [2]time.Time, queryParams database.QueryWhereGroup, err error) {
 	if err = q.Valid(); err != nil {
 		return
 	}
@@ -56,15 +51,45 @@ func (q *AllRequest) Parse() (dateRange [2]time.Time, err error) {
 		return
 	}
 
-	return dateRange, nil
+	if queryParams, err = q.UserInfoRequest.Parse(); err != nil {
+		return
+	}
+
+	if q.Name != "" {
+		queryParams = append(queryParams, database.QueryWhere{Prefix: "apwc.name = ?", Value: []any{q.Name}})
+	}
+	//AND ((JSON_UNQUOTE(apwh.params_3->'$.point_type') IS NULL AND apwc.point_type=11) OR JSON_UNQUOTE(apwh.params_3->'$.point_type') = 'PointType_CostAwardPoint')
+	if q.PointType != nil {
+		switch *q.PointType {
+		case cForm.PointType_Coin:
+			queryParams = append(queryParams, database.QueryWhere{Prefix: "(JSON_UNQUOTE(apwh.params_3->'$.point_type') = ?)", Value: []any{"PointType_Coin"}})
+		case cForm.PointType_AmountPoint:
+			queryParams = append(queryParams, database.QueryWhere{Prefix: "((JSON_UNQUOTE(apwh.params_3->'$.point_type') IS NULL AND apwc.point_type= ?) OR JSON_UNQUOTE(apwh.params_3->'$.point_type') = 'PointType_AmountPoint')", Value: []any{int32(*q.PointType)}})
+		case cForm.PointType_Free:
+			queryParams = append(queryParams, database.QueryWhere{Prefix: "(JSON_UNQUOTE(apwh.params_3->'$.point_type') = ?)", Value: []any{"PointType_Free"}})
+		case cForm.PointType_CostAwardPoint:
+			queryParams = append(queryParams, database.QueryWhere{Prefix: "((JSON_UNQUOTE(apwh.params_3->'$.point_type') IS NULL AND apwc.point_type= ?) OR JSON_UNQUOTE(apwh.params_3->'$.point_type') = 'PointType_CostAwardPoint')", Value: []any{int32(*q.PointType)}})
+		case cForm.PointType_Gold:
+			queryParams = append(queryParams, database.QueryWhere{Prefix: "(JSON_UNQUOTE(apwh.params_3->'$.point_type') = ?)", Value: []any{"PointType_Gold"}})
+		}
+
+	}
+	if q.Type != 0 {
+		queryParams = append(queryParams, database.QueryWhere{Prefix: "apwac.type = ?", Value: []any{int32(q.Type)}})
+	}
+
+	return dateRange, queryParams, nil
 }
 
 func (q *AllRequest) Valid() error {
-	switch q.Type {
-	case PrizeType_Coin, PrizeType_None:
-	case PrizeType_Coupon, PrizeType_Goods:
-	default:
-		return fmt.Errorf("not expected Type: %v", q.Type)
+	if q.PointType != nil {
+		if err := q.PointType.Valid(); err != nil {
+			return err
+		}
+	}
+
+	if err := q.Type.Valid(); err != nil {
+		return err
 	}
 
 	return nil
@@ -80,34 +105,45 @@ type Turntable struct {
 	Type          int64           `json:"type"`
 	TypeName      string          `json:"type_name"`
 	ItemName      string          `json:"item_name"`
-	PointType     int64           `json:"point_type"`      //抽奖支付类型
+	PointType     string          `json:"point_type"`      //抽奖支付类型
 	PointTypeName string          `json:"point_type_name"` //抽奖支付类型名称
-	Point         int64           `json:"point"`           //抽奖消耗
+	Point         string          `json:"point"`           //抽奖消耗
 	PrizeValue    decimal.Decimal `json:"prize_value"`     // 奖品价值
 }
 
-func Format(dateRange [2]time.Time, _summary map[string]any, data []*dao.Turntable) (summary map[string]any, result []*Turntable) {
+func Format(ctx context.Context, dateRange [2]time.Time, _summary map[string]any, data []*dao.Turntable) (summary map[string]any, result []*Turntable) {
 	summary = _summary
 	if summary != nil {
 		summary["amount"] = util.ConvertAmount2Decimal(summary["amount"])
 	}
-	PointTypeName := map[int64]string{
-		10: "现金点",
-		11: "欧气值",
-	}
 
-	TypeName := map[int64]string{
-		0:  "潮币",
-		10: "优惠券",
-		20: "物品",
-	}
-	var ConvertPoint int64
+	var ConvertPoint string
 	var totalAmount decimal.Decimal
 	for _, item := range data {
-		if item.PointType == 10 {
-			ConvertPoint = item.Point / 100 // 现金点1元=100点
-		} else {
-			ConvertPoint = item.Point / 10 // 欧气值1元=10点
+		switch item.PointType {
+		case "PointType_AmountPoint":
+			item.PointType = "10"
+			ConvertPoint = util.ConvertAmount2Decimal(item.Point).String()
+		case "PointType_CostAwardPoint":
+			item.PointType = "11"
+			ConvertPoint = util.ConvertAmount2Decimal(item.Point).Mul(cForm.COST_AWARD_POINT_STEP).String()
+		case "PointType_Coin":
+			item.PointType = "0"
+			ConvertPoint = util.ConvertAmount2Decimal(item.Point).String()
+		case "PointType_Gold":
+			item.PointType = "2"
+			ConvertPoint = util.ConvertAmount2Decimal(item.Point).String()
+		case "PointType_Free":
+			item.PointType = "100" //免费
+			ConvertPoint = "0"
+		default:
+			if item.OldPointType == 10 {
+				item.PointType = "10"
+				ConvertPoint = util.ConvertAmount2Decimal(item.Point).String()
+			} else if item.OldPointType == 11 {
+				item.PointType = "11"
+				ConvertPoint = util.ConvertAmount2Decimal(item.Point).Mul(cForm.COST_AWARD_POINT_STEP).String()
+			}
 		}
 
 		PrizeValue := util.ConvertAmount2Decimal(item.PrizeValue)
@@ -122,11 +158,11 @@ func Format(dateRange [2]time.Time, _summary map[string]any, data []*dao.Turntab
 			Period:        item.Period,
 			Name:          item.Name,
 			Type:          item.Type,
-			TypeName:      TypeName[item.Type],
+			TypeName:      global.I18n.T(ctx, "activity.award_type", convert.GetString(item.Type)),
 			ItemId:        item.ItemId,
 			ItemName:      item.ItemName,
 			PointType:     item.PointType,
-			PointTypeName: PointTypeName[item.PointType],
+			PointTypeName: global.I18n.T(ctx, "activity.point_type", item.PointType),
 			Point:         ConvertPoint,
 			PrizeValue:    PrizeValue,
 		})
@@ -138,8 +174,8 @@ func Format(dateRange [2]time.Time, _summary map[string]any, data []*dao.Turntab
 	return
 }
 
-func Format2Excel(dateRange [2]time.Time, _data []*dao.Turntable) (excelModel *excel.Excel[*Turntable], err error) {
-	_, data := Format(dateRange, nil, _data)
+func Format2Excel(ctx context.Context, dateRange [2]time.Time, _data []*dao.Turntable) (excelModel *excel.Excel[*Turntable], err error) {
+	_, data := Format(ctx, dateRange, nil, _data)
 
 	reflectMap := map[string]func(source *Turntable) any{
 		"日期":   func(source *Turntable) any { return source.Date },

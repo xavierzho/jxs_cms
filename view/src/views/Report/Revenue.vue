@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-form :inline="true" :model="searchForm">
-      <el-form-item>
+      <el-form-item v-if="$checkPermission('report_revenue_filter')">
         <date-picker v-model="searchForm.date_range" type="daterange" :clearable="false"></date-picker>
       </el-form-item>
       <el-form-item>
@@ -165,6 +165,9 @@
             <el-table-column prop="wallet_balance" :label="$t('report.revenue.summary.wallet_balance')" min-width="90px" align="center">
               <template v-slot="data">{{data.row.wallet_balance | localeNum2f}}</template>
             </el-table-column>
+            <el-table-column prop="gold_balance" :label="$t('report.revenue.summary.gold_balance')" min-width="90px" align="center">
+              <template v-slot="data">{{data.row.gold_balance | localeNum2f}}</template>
+            </el-table-column>
 <!--            <el-table-column prop="merchant_balance" :label="$t('report.revenue.summary.merchant_balance')" min-width="90px" align="center">-->
 <!--              <template v-slot="data">{{data.row.merchant_balance | localeNum2f}}</template>-->
 <!--            </el-table-column>-->
@@ -177,21 +180,51 @@
             <el-table-column prop="recharge_amount" :label="$t('report.revenue.summary.recharge_amount')" min-width="90px" align="center">
               <template v-slot="data">{{data.row.recharge_amount | localeNum2f}}</template>
             </el-table-column>
+            <el-table-column prop="discount_amount" :label="$t('report.revenue.summary.discount_amount')" min-width="90px" align="center">
+              <template v-slot="data">{{data.row.discount_amount | localeNum2f}}</template>
+            </el-table-column>
+            <el-table-column prop="saving_amount" :label="$t('report.revenue.summary.saving_amount')" min-width="90px" align="center">
+              <template v-slot="data">{{data.row.saving_amount | localeNum2f}}</template>
+            </el-table-column>
             <el-table-column prop="recharge_refund_amount" :label="$t('report.revenue.summary.recharge_refund_amount')" min-width="90px" align="center">
               <template v-slot="data">{{data.row.recharge_refund_amount | localeNum2f}}</template>
             </el-table-column>
-            <el-table-column prop="recharge_amount_wechat" :label="$t('report.revenue.summary.recharge_amount_wechat')" min-width="90px" align="center">
-              <template v-slot="data">{{data.row.recharge_amount_wechat | localeNum2f}}</template>
+            <el-table-column prop="saving_refund_amount" :label="$t('report.revenue.summary.saving_refund_amount')" min-width="90px" align="center">
+              <template v-slot="data">{{data.row.saving_refund_amount | localeNum2f}}</template>
             </el-table-column>
-            <el-table-column prop="recharge_refund_amount_wechat" :label="$t('report.revenue.summary.recharge_refund_amount_wechat')" min-width="90px" align="center">
-              <template v-slot="data">{{data.row.recharge_refund_amount_wechat | localeNum2f}}</template>
-            </el-table-column>
+
+<!--            <el-table-column prop="recharge_amount_wechat" :label="$t('report.revenue.summary.recharge_amount_wechat')" min-width="90px" align="center">-->
+<!--              <template v-slot="data">{{data.row.recharge_amount_wechat | localeNum2f}}</template>-->
+<!--            </el-table-column>-->
+<!--            <el-table-column prop="discount_amount_wechat" :label="$t('report.revenue.summary.discount_amount_wechat')" min-width="90px" align="center">-->
+<!--              <template v-slot="data">{{data.row.discount_amount_wechat | localeNum2f}}</template>-->
+<!--            </el-table-column>-->
+<!--            <el-table-column prop="saving_amount_wechat" :label="$t('report.revenue.summary.saving_amount_wechat')" min-width="90px" align="center">-->
+<!--              <template v-slot="data">{{data.row.saving_amount_wechat | localeNum2f}}</template>-->
+<!--            </el-table-column>-->
+<!--            <el-table-column prop="recharge_refund_amount_wechat" :label="$t('report.revenue.summary.recharge_refund_amount_wechat')" min-width="90px" align="center">-->
+<!--              <template v-slot="data">{{data.row.recharge_refund_amount_wechat | localeNum2f}}</template>-->
+<!--            </el-table-column>-->
+<!--            <el-table-column prop="saving_refund_amount_wechat" :label="$t('report.revenue.summary.saving_refund_amount_wechat')" min-width="90px" align="center">-->
+<!--              <template v-slot="data">{{data.row.saving_refund_amount_wechat | localeNum2f}}</template>-->
+<!--            </el-table-column>-->
+
             <el-table-column prop="recharge_amount_ali" :label="$t('report.revenue.summary.recharge_amount_ali')" min-width="90px" align="center">
               <template v-slot="data">{{data.row.recharge_amount_ali | localeNum2f}}</template>
+            </el-table-column>
+            <el-table-column prop="discount_amount_ali" :label="$t('report.revenue.summary.discount_amount_ali')" min-width="90px" align="center">
+              <template v-slot="data">{{data.row.discount_amount_ali | localeNum2f}}</template>
+            </el-table-column>
+            <el-table-column prop="saving_amount_ali" :label="$t('report.revenue.summary.saving_amount_ali')" min-width="90px" align="center">
+              <template v-slot="data">{{data.row.saving_amount_ali | localeNum2f}}</template>
             </el-table-column>
             <el-table-column prop="recharge_refund_amount_ali" :label="$t('report.revenue.summary.recharge_refund_amount_ali')" min-width="90px" align="center">
               <template v-slot="data">{{data.row.recharge_refund_amount_ali | localeNum2f}}</template>
             </el-table-column>
+            <el-table-column prop="saving_refund_amount_ali" :label="$t('report.revenue.summary.saving_refund_amount_ali')" min-width="90px" align="center">
+              <template v-slot="data">{{data.row.saving_refund_amount_ali | localeNum2f}}</template>
+            </el-table-column>
+
             <el-table-column prop="draw_amount" :label="$t('report.revenue.summary.draw_amount')" min-width="90px" align="center">
               <template v-slot="data">{{data.row.draw_amount | localeNum2f}}</template>
             </el-table-column>

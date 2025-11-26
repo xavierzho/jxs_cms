@@ -128,3 +128,12 @@ func (api *BalanceApi) Export(ctx *gin.Context) {
 		api.logger.Errorf("response.ExportFile err: %v", e.Error())
 	}
 }
+
+func (api *BalanceApi) OptionsBalanceType(ctx *gin.Context) {
+	response := app.NewResponse(ctx)
+
+	svc := service.NewBalanceSvc(ctx, local.CMSDB, local.CenterDB, local.RedisClient, api.logger, local.NewAlarm)
+	data := svc.OptionsBalanceType()
+
+	response.ToResponseData(data)
+}

@@ -19,8 +19,8 @@ import (
 )
 
 const (
-	update_file_path = "data/updatePermissions.json" // 更新文件地址
-	copy_file_path   = "data/permissions.json"       // 副本文件地址
+	updateFilePath = "data/updatePermissions.json" // 更新文件地址
+	copyFilePath   = "data/permissions.json"       // 副本文件地址
 )
 
 type jsonPermission struct {
@@ -28,7 +28,7 @@ type jsonPermission struct {
 }
 
 func (jp jsonPermission) writeJsonFile() error {
-	file, err := os.OpenFile(filepath.Join(global.StoragePath, copy_file_path), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
+	file, err := os.OpenFile(filepath.Join(global.StoragePath, copyFilePath), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
 	if err != nil {
 		return err
 	}
@@ -40,7 +40,7 @@ func (jp jsonPermission) writeJsonFile() error {
 	}
 
 	var out bytes.Buffer
-	json.Indent(&out, permissionJson, "", "\t")
+	_ = json.Indent(&out, permissionJson, "", "\t")
 	_, err = out.WriteTo(file)
 	if err != nil {
 		return err
@@ -73,7 +73,7 @@ func (svc *PermissionSvc) All(queryParams []database.QueryWhere) (data []*dao.Pe
 	return data, nil
 }
 
-// 更新权限表
+// Refresh 更新权限表
 // 增加权限：updatePermissions文件中增加
 // 修改权限：数据库中修改(不能修改name)
 // 删除权限：数据库删除（updatePermissions文件中不能再包含）
@@ -95,7 +95,7 @@ func (svc *PermissionSvc) Refresh() (e *errcode.Error) {
 	}
 
 	// 新增权限
-	if addPermissionMap, _ = svc.parseJson(update_file_path); len(addPermissionMap) > 0 {
+	if addPermissionMap, _ = svc.parseJson(updateFilePath); len(addPermissionMap) > 0 {
 		if updateFlag, err = svc.add(dbPermissionMap, addPermissionMap); err != nil {
 			return errcode.CreateFail.WithDetails(err.Error())
 		}
@@ -107,7 +107,7 @@ func (svc *PermissionSvc) Refresh() (e *errcode.Error) {
 	}
 
 	// 副本文件中权限
-	copyPermissionMap, _ = svc.parseJson(copy_file_path)
+	copyPermissionMap, _ = svc.parseJson(copyFilePath)
 	// 两个文件权限数不等 更新
 	if len(dbPermissionMap) != len(copyPermissionMap) {
 		isEqual = false
@@ -138,18 +138,18 @@ func (svc *PermissionSvc) Refresh() (e *errcode.Error) {
 }
 
 func (svc *PermissionSvc) parseJson(path string) (map[string]*dao.Permission, error) {
-	bytes, err := os.ReadFile(filepath.Join(global.StoragePath, path))
+	bs, err := os.ReadFile(filepath.Join(global.StoragePath, path))
 	if err != nil {
 		svc.alarm.AlertErrorMsg(fmt.Sprintf("读取本地权限文件失败: %v", err), message.CMS_ID)
 		return nil, err
 	}
-	if len(bytes) == 0 {
+	if len(bs) == 0 {
 		return nil, nil
 	}
 	p := &jsonPermission{
 		Permission: []*dao.Permission{},
 	}
-	err = json.Unmarshal(bytes, p)
+	err = json.Unmarshal(bs, p)
 	if err != nil {
 		svc.alarm.AlertErrorMsg(fmt.Sprintf("解析本地权限数据失败: %v", err), message.CMS_ID)
 		return nil, err

@@ -17,6 +17,7 @@ type Summary struct {
 	ActiveCnt                  uint            `json:"active_cnt"`                    // 日活;活跃用户数;登录用户数
 	WalletBalance              decimal.Decimal `json:"wallet_balance"`                // 钱包余额
 	MerchantBalance            decimal.Decimal `json:"merchant_balance"`              // 商户钱包余额
+	GoldBalance                decimal.Decimal `json:"gold_balance"`                  // 商户金币余额
 	PayAmount                  decimal.Decimal `json:"pay_amount"`                    // 总付费
 	PayAmountBet               decimal.Decimal `json:"pay_amount_bet"`                // 总付费(抽赏)
 	RechargeAmount             decimal.Decimal `json:"recharge_amount"`               // 充值金额
@@ -31,7 +32,15 @@ type Summary struct {
 	RevenueRate                decimal.Decimal `json:"revenue_rate"`                  // 营收率: 浮动营收/日付费
 	RevenueARPU                decimal.Decimal `json:"revenue_arpu"`                  // 营收ARPU: 浮动营收/日活
 	RefundAmount               decimal.Decimal `json:"refund_amount"`                 // 总退款(潮币)
-
+	DiscountAmount             decimal.Decimal `json:"discount_amount"`               // 总折扣金额
+	DiscountAmountWeChat       decimal.Decimal `json:"discount_amount_wechat"`        // 总折扣金额 微信
+	DiscountAmountAli          decimal.Decimal `json:"discount_amount_ali"`           // 总折扣金额 支付宝
+	SavingAmount               decimal.Decimal `json:"saving_amount"`                 // 储值金额
+	SavingAmountWeChat         decimal.Decimal `json:"saving_amount_wechat"`          // 储值金额 微信
+	SavingAmountAli            decimal.Decimal `json:"saving_amount_ali"`             // 储值金额 支付宝
+	SavingRefundAmount         decimal.Decimal `json:"saving_refund_amount"`          // 储值退款金额
+	SavingRefundAmountWeChat   decimal.Decimal `json:"saving_refund_amount_wechat"`   // 储值退款金额 微信
+	SavingRefundAmountAli      decimal.Decimal `json:"saving_refund_amount_ali"`      // 储值退款金额 支付宝
 }
 
 func FormatSummary(dateRange [2]time.Time, data []map[string]interface{}) (result []Summary, err error) {
@@ -53,6 +62,7 @@ func FormatSummary(dateRange [2]time.Time, data []map[string]interface{}) (resul
 			ActiveCnt:                  convert.GetUint(dataItem["active_cnt"]),
 			WalletBalance:              util.ConvertAmount2Decimal(dataItem["wallet_balance"]),
 			MerchantBalance:            util.ConvertAmount2Decimal(dataItem["merchant_balance"]),
+			GoldBalance:                util.ConvertAmount2Decimal(dataItem["gold_balance"]),
 			PayAmount:                  util.ConvertAmount2Decimal(dataItem["pay_amount"]),
 			PayAmountBet:               util.ConvertAmount2Decimal(dataItem["pay_amount_bet"]),
 			RechargeAmount:             util.ConvertAmount2Decimal(dataItem["recharge_amount"]),
@@ -64,10 +74,19 @@ func FormatSummary(dateRange [2]time.Time, data []map[string]interface{}) (resul
 			DrawAmount:                 util.ConvertAmount2Decimal(dataItem["draw_amount"]),
 			TaxAmount:                  util.ConvertAmount2Decimal(dataItem["tax_amount"]),
 			RefundAmount:               util.ConvertAmount2Decimal(dataItem["refund_amount"]),
+			DiscountAmount:             util.ConvertAmount2Decimal(dataItem["discount_amount"]),
+			DiscountAmountWeChat:       util.ConvertAmount2Decimal(dataItem["discount_amount_wechat"]),
+			DiscountAmountAli:          util.ConvertAmount2Decimal(dataItem["discount_amount_ali"]),
+			SavingAmount:               util.ConvertAmount2Decimal(dataItem["saving_amount"]),
+			SavingAmountWeChat:         util.ConvertAmount2Decimal(dataItem["saving_amount_wechat"]),
+			SavingAmountAli:            util.ConvertAmount2Decimal(dataItem["saving_amount_ali"]),
+			SavingRefundAmount:         util.ConvertAmount2Decimal(dataItem["saving_refund_amount"]),
+			SavingRefundAmountWeChat:   util.ConvertAmount2Decimal(dataItem["saving_refund_amount_wechat"]),
+			SavingRefundAmountAli:      util.ConvertAmount2Decimal(dataItem["saving_refund_amount_ali"]),
 		}
 
-		item.Revenue = item.RechargeAmount.Sub(item.RechargeRefundAmount).Sub(item.DrawAmount)
-		item.RevenueRate = util.SaveRatio2Decimal(item.Revenue, item.RechargeAmount)
+		item.Revenue = item.RechargeAmount.Add(item.SavingAmount).Sub(item.RechargeRefundAmount).Sub(item.DrawAmount).Sub(item.SavingRefundAmount)
+		item.RevenueRate = util.SaveRatio2Decimal(item.Revenue, item.RechargeAmount.Add(item.SavingAmount))
 		item.RevenueARPU = util.SaveDivide2Decimal(item.Revenue, item.ActiveCnt)
 
 		result = append(result, item)

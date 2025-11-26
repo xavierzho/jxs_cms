@@ -26,10 +26,34 @@ const state = {
     {"value": "parent_user", "label": i18n.t("option.inviteUserType[1]")},
   ],
 
-  prizeType: [
-    {"value": 1, "label": i18n.t("option.prizeType[0]")},
-    {"value": 10, "label": i18n.t("option.prizeType[1]")},
-    {"value": 20, "label": i18n.t("option.prizeType[2]")},
+  pointType: [
+    {"value": 0, "label": i18n.t("option.pointType[0]")},
+    {"value": 2, "label": i18n.t("option.pointType[2]")},
+    {"value": 10, "label": i18n.t("option.pointType[10]")},
+    {"value": 11, "label": i18n.t("option.pointType[11]")},
+    {"value": 100, "label": i18n.t("option.pointType[100]")},
+  ],
+
+  awardType: [
+    {"value": 10, "label": i18n.t("option.awardType[10]")},
+    {"value": 20, "label": i18n.t("option.awardType[20]")},
+    {"value": 30, "label": i18n.t("option.awardType[30]")},
+  ],
+
+  recallUserType: [
+    {"value": "user", "label": i18n.t("option.recallUserType[0]")},
+    {"value": "parent_user", "label": i18n.t("option.recallUserType[1]")},
+  ],
+
+  userChannel: [
+    {"value": 1, "label": i18n.t("option.userChannel[1]")},
+    {"value": 2, "label": i18n.t("option.userChannel[2]")},
+    {"value": 4, "label": i18n.t("option.userChannel[4]")},
+    {"value": 8, "label": i18n.t("option.userChannel[8]")},
+    {"value": 16, "label": i18n.t("option.userChannel[16]")},
+    {"value": 32, "label": i18n.t("option.userChannel[32]")},
+    {"value": 64, "label": i18n.t("option.userChannel[64]")},
+    {"value": 128, "label": i18n.t("option.userChannel[128]")},
   ],
 
   inquireItemLogType: [],
@@ -40,6 +64,9 @@ const state = {
   inquireCouponType: [],
   inquireCouponActionType: [],
   activityCostAwardLogType: [],
+  inquireTaskType: [],
+  inquireTaskKey: [],
+  inquireBalanceType:[],
 }
 
 const actions = {
@@ -59,6 +86,7 @@ const actions = {
 const mutations = {
   SET_OPTION(state, payload) {
     state[payload.name] = payload.data
+    // getters[payload.name]()
   },
 }
 
@@ -84,6 +112,9 @@ const getters = {
   inviteUserType(state){
     return state.inviteUserType
   },
+  recallUserType(state){
+    return state.recallUserType
+  },
   inquireItemLogType(state){
     return state.inquireItemLogType
   },
@@ -108,8 +139,23 @@ const getters = {
   inquireCouponActionType(){
     return state.inquireCouponActionType
   },
-  prizeType(state){
-    return state.prizeType
+  pointType(state){
+    return state.pointType
+  },
+  awardType(state){
+    return state.awardType
+  },
+  inquireTaskType(state){
+    return state.inquireTaskType
+  },
+  inquireTaskKey(state){
+    return state.inquireTaskKey
+  },
+  inquireBalanceType(){
+    return state.inquireBalanceType
+  },
+  userChannel(state){
+    return state.userChannel
   },
 }
 

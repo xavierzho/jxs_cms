@@ -12,11 +12,11 @@ import (
 func TestDemo(t *testing.T) {
 	ctx := context.Background()
 	bundle := NewI18n(language.English)
-	err := bundle.SetPath("../../internal/i18n/en", language.English, I18N_FILE_TYPE_TOML)
+	err := bundle.SetPath("../../internal/i18n/en", language.English, FileTypeToml)
 	if err != nil {
 		fmt.Println("en:", err)
 	}
-	err = bundle.SetPath("../../internal/i18n/zh-CN", language.Chinese, I18N_FILE_TYPE_TOML)
+	err = bundle.SetPath("../../internal/i18n/zh-CN", language.Chinese, FileTypeToml)
 	if err != nil {
 		fmt.Println("zh:", err)
 	}
@@ -51,7 +51,7 @@ func TestDemo(t *testing.T) {
 func TestErrorCodeT(t *testing.T) {
 	ctx := context.Background()
 	bundle := NewI18n(language.Chinese)
-	err := bundle.SetPath("../../cmd/cms_backend/storage/i18n/zh", language.Chinese, I18N_FILE_TYPE_TOML)
+	err := bundle.SetPath("../../cmd/cms_backend/storage/i18n/zh", language.Chinese, FileTypeToml)
 	if err != nil {
 		fmt.Println("zh:", err)
 	}
@@ -66,7 +66,7 @@ func TestErrorCodeT(t *testing.T) {
 func TestAllType(t *testing.T) {
 	ctx := context.Background()
 	bundle := NewI18n(language.English)
-	err := bundle.SetPath("./test.toml", language.Chinese, I18N_FILE_TYPE_TOML)
+	err := bundle.SetPath("./test.toml", language.Chinese, FileTypeToml)
 	if err != nil {
 		fmt.Println("zh:", err)
 	}
@@ -84,7 +84,7 @@ func TestAllType(t *testing.T) {
 func TestAllTypeJson(t *testing.T) {
 	ctx := context.Background()
 	bundle := NewI18n(language.English)
-	err := bundle.SetPath("./test.json", language.Chinese, I18N_FILE_TYPE_JSON)
+	err := bundle.SetPath("./test.json", language.Chinese, FileTypeJson)
 	if err != nil {
 		fmt.Println("zh:", err)
 	}
@@ -102,7 +102,7 @@ func TestAllTypeJson(t *testing.T) {
 func TestNestedMenu(t *testing.T) {
 	ctx := context.Background()
 	bundle := NewI18n(language.Chinese)
-	err := bundle.SetPath("../../cmd/cms_backend/storage/i18n/zh", language.Chinese, I18N_FILE_TYPE_TOML)
+	err := bundle.SetPath("../../cmd/cms_backend/storage/i18n/zh", language.Chinese, FileTypeToml)
 	if err != nil {
 		fmt.Println("error zh:", err)
 	}

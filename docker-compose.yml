@@ -11,15 +11,15 @@ services:
     restart: always
     tty: true
     volumes:
-      - "./start.log:/app/start.log"
-      - "./panic.log:/app/panic.log"
-      - "./logs:/app/storage/logs"
-      - "./data_backend/configs:/app/configs"
+      - "./deploy/start.log:/app/start.log"
+      - "./deploy/panic.log:/app/panic.log"
+      - "./deploy/logs:/app/storage/logs"
+      - "./cms/configs:/app/configs"
 
   frontend:
     image: lucky/lucky_box/cms_frontend:latest
     ports:
-      - 8080:8080
+      - 8081:8081
     networks:
       net:
         aliases:

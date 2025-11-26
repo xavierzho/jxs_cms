@@ -33,7 +33,7 @@ type Excel[T any] struct {
 type SheetName string
 type SheetData[T any] []T
 
-// 反射行的值
+// RowReflect 反射行的值
 type RowReflect[T any] map[string]func(source T) interface{}
 
 func (excelFile *Excel[T]) InitExcelFile() error {
@@ -45,9 +45,9 @@ func (excelFile *Excel[T]) InitExcelFile() error {
 		// 设置工作表名或者创建新的工作表
 		headNames := excelFile.SheetNameWithHead[sheetName]
 		if excel.GetSheetName(0) == "Sheet1" {
-			excel.SetSheetName("Sheet1", sheetName)
+			_ = excel.SetSheetName("Sheet1", sheetName)
 		} else {
-			excel.NewSheet(sheetName)
+			_, _ = excel.NewSheet(sheetName)
 		}
 
 		// 设置长度和宽度
@@ -152,7 +152,7 @@ func (excelFile *Excel[T]) Save(excelName string) (string, error) {
 	path := fmt.Sprintf("./tmp/%s", now.Format(pkg.FILE_DATE_FORMAT))
 	filePath := fmt.Sprintf("%s/%s_%d.xlsx", path, excelName, now.Unix())
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		os.Mkdir(path, 0777)
+		_ = os.Mkdir(path, 0777)
 	}
 	err := excelFile.Excelize.SaveAs(filePath)
 	if err != nil {

@@ -10,7 +10,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// 设置默认翻译器为英文
+// Translations 设置默认翻译器为英文
 func Translations() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		_, ok := binding.Validator.Engine().(*validator.Validate)

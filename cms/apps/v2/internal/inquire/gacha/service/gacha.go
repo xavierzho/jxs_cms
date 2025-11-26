@@ -35,6 +35,8 @@ func (svc *GachaSvc) OptionsGachaType() []map[string]string {
 		{"value": "102", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "102")},
 		{"value": "103", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "103")},
 		{"value": "104", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "104")},
+		{"value": "105", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "105")},
+		{"value": "106", "label": global.I18n.T(svc.ctx.Request.Context(), "source_type", "106")},
 	}
 }
 

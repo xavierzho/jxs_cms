@@ -33,7 +33,6 @@ type UserSvc struct {
 	rdb      *redisdb.RedisClient
 	logger   *logger.Logger
 	roleSvc  *RoleSvc
-	logSvc   *OperationLogSvc
 	dao      *dao.UserDao
 	newAlarm func(log *logger.Logger) message.Alarm
 }
@@ -107,7 +106,6 @@ func (svc *UserSvc) Login(params *form.LoginRequest) (*form.UserLoginInfo, *errc
 
 func (svc *UserSvc) Create(params *form.UserCreateRequest) *errcode.Error {
 	svc.roleSvc = NewRoleSvc(svc.ctx, svc.engine, svc.rdb, svc.logger, svc.newAlarm)
-	svc.logSvc = NewOperationLogSvc(svc.ctx, svc.engine, svc.logger, svc.newAlarm)
 
 	// 查找用户
 	flag, err := svc.checkExist(0, params.UserName, params.Email)
@@ -139,8 +137,6 @@ func (svc *UserSvc) Create(params *form.UserCreateRequest) *errcode.Error {
 		return errcode.CreateFail.WithDetails(err.Error())
 	}
 
-	go svc.logSvc.Create(&dao.OperationLog{ModuleName: user.TableName(), Operation: "Create", ModuleID: convert.GetString(user.ID)})
-
 	return nil
 }
 
@@ -157,7 +153,7 @@ func (svc *UserSvc) checkExist(id uint32, userName, email string) (bool, error) 
 	return true, nil
 }
 
-// 获取当前登录用户的信息
+// CurrentUser 获取当前登录用户的信息
 // * 注意分别处理返回的不同异常
 func (svc *UserSvc) CurrentUser() (user *dao.User, e *errcode.Error) {
 	if userID, ok := svc.ctx.Get(app.USER_ID_KEY); !ok {
@@ -195,7 +191,6 @@ func (svc *UserSvc) Update(id uint32, params *form.UserUpdateRequest) (e *errcod
 		return errcode.InvalidParams.WithDetails(err.Error())
 	}
 	svc.roleSvc = NewRoleSvc(svc.ctx, svc.engine, svc.rdb, svc.logger, svc.newAlarm)
-	svc.logSvc = NewOperationLogSvc(svc.ctx, svc.engine, svc.logger, svc.newAlarm)
 
 	// 查找用户
 	user, err := svc.dao.First([]database.QueryWhere{
@@ -239,7 +234,6 @@ func (svc *UserSvc) Update(id uint32, params *form.UserUpdateRequest) (e *errcod
 		return errcode.UpdateFail.WithDetails(err.Error())
 	}
 
-	go svc.logSvc.Create(&dao.OperationLog{ModuleName: user.TableName(), Operation: "Update", ModuleID: convert.GetString(user.ID)})
 	go svc.delUserRoleCache(user.ID)
 
 	return nil
@@ -249,7 +243,6 @@ func (svc *UserSvc) UpdateSelf(params *form.UserUpdateSelfRequest) (user *dao.Us
 	if err := params.Valid(); err != nil {
 		return nil, errcode.InvalidParams.WithDetails(err.Error())
 	}
-	svc.logSvc = NewOperationLogSvc(svc.ctx, svc.engine, svc.logger, svc.newAlarm)
 
 	user, e = svc.CurrentUser()
 	if e.Is(errcode.UnauthorizedTokenError) {
@@ -274,17 +267,15 @@ func (svc *UserSvc) UpdateSelf(params *form.UserUpdateSelfRequest) (user *dao.Us
 		return nil, errcode.UpdateFail.WithDetails(err.Error())
 	}
 
-	go svc.logSvc.Create(&dao.OperationLog{ModuleName: user.TableName(), Operation: "UpdateSelf", ModuleID: convert.GetString(user.ID)})
-
 	return user, nil
 }
 
 // 优先从缓存获取
 func (svc *UserSvc) getRoleIDList(userID uint32) (roleIDList []uint32, err error) {
-	userRoleRKey := dao.User{Model: dao.Model{ID: userID}}.UserRoleRKey()
+	userRoleRKey := (&dao.User{Model: dao.Model{ID: userID}}).UserRoleRKey()
 	roleIDListStr, err := svc.rdb.Get(svc.ctx, userRoleRKey).Result()
 	if err != nil {
-		if err != redis.Nil {
+		if !errors.Is(err, redis.Nil) {
 			svc.logger.Errorf("GetRoleByID rdb.Get: %v", err)
 		}
 		roleIDList, err := svc.dao.GetRoleIDList(database.QueryWhereGroup{{Prefix: "u.id = ?", Value: []interface{}{userID}}})
@@ -318,7 +309,7 @@ func (svc *UserSvc) cachedUserRole(userRoleRKey string, roleIDList []uint32) {
 }
 
 func (svc *UserSvc) delUserRoleCache(userID uint32) (err error) {
-	_, err = svc.rdb.Del(svc.ctx, dao.User{Model: dao.Model{ID: userID}}.UserRoleRKey()).Result()
+	_, err = svc.rdb.Del(svc.ctx, (&dao.User{Model: dao.Model{ID: userID}}).UserRoleRKey()).Result()
 	if err != nil {
 		svc.logger.Errorf("DelRoleCache: %v", err)
 		return err
@@ -355,13 +346,10 @@ func (svc *UserSvc) GetPermIDList(userID uint32) ([]uint32, *errcode.Error) {
 	return permIDList, nil
 }
 
-// 中间件调用， 需要修改为运行时ctx
+// CheckPerm 中间件调用， 需要修改为运行时ctx
 // 不可用结构体指针 避免竞态
-func (svc UserSvc) CheckPerm(ctx *gin.Context, userID uint32, permission []string) (bool, error) {
-	if svc.ctx != ctx {
-		svc.ctx = ctx
-		svc.logger.WithContext(ctx)
-	}
+func (svc *UserSvc) CheckPerm(ctx *gin.Context, userID uint32, permission []string) (bool, error) {
+	svc.logger.WithContext(ctx)
 
 	// 获取该用户所有的权限
 	allPermission, e := svc.GetPermNameList(userID)
@@ -373,12 +361,9 @@ func (svc UserSvc) CheckPerm(ctx *gin.Context, userID uint32, permission []strin
 	return allow, nil
 }
 
-// 不可用结构体指针 避免竞态
-func (svc UserSvc) CheckPermOr(ctx *gin.Context, userID uint32, permission []string) (bool, error) {
-	if svc.ctx != ctx {
-		svc.ctx = ctx
-		svc.logger.WithContext(ctx)
-	}
+// CheckPermOr 不可用结构体指针 避免竞态
+func (svc *UserSvc) CheckPermOr(ctx *gin.Context, userID uint32, permission []string) (bool, error) {
+	svc.logger.WithContext(ctx)
 
 	// 获取该用户所有的权限
 	allPermission, e := svc.GetPermNameList(userID)

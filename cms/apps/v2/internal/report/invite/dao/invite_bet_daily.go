@@ -50,7 +50,7 @@ func (d *InviteBetDailyDao) Generate(cDate time.Time) (data []*InviteBetDaily, e
 		).
 		Table("users u, balance_log bl").
 		Joins("left join user_invite ui on bl.user_id = ui.user_id").
-		Where("bl.user_id = u.id and u.is_admin = 0").
+		Where("bl.user_id = u.id and u.role = 0").
 		Where("bl.source_type BETWEEN 100 AND 199").
 		Where("bl.created_at BETWEEN ? AND ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
 		Group(fmt.Sprintf("date_format(bl.created_at, '%s')", pkg.SQL_DATE_FORMAT)).

@@ -15,6 +15,7 @@ type Balance struct {
 	iDao.DailyModel
 	Wallet   uint `gorm:"column:wallet; default:0" json:"wallet"`     // 用户钱包余额
 	Merchant uint `gorm:"column:merchant; default:0" json:"merchant"` // 用户商户余额
+	Gold     uint `gorm:"column:gold; default:0" json:"gold"`         // 用户金币余额
 }
 
 func (Balance) TableName() string {
@@ -40,10 +41,13 @@ func NewBalanceDao(engine, center *gorm.DB, log *logger.Logger) *BalanceDao {
 
 func (d *BalanceDao) Generate() (data *Balance, err error) {
 	err = d.center.
-		Select("sum(balance) as wallet").
+		Select(
+			"ifnull(sum(case `type` when 0 then balance else 0 end), 0) as wallet",
+			"ifnull(sum(case `type` when 2 then balance else 0 end), 0) as gold",
+		).
 		Table("wallet w, users u").
 		Where("w.user_id = u.id").
-		Where("u.is_admin = 0").
+		Where("u.role = 0").
 		Find(&data).Error
 	if err != nil {
 		d.logger.Errorf("Generate: %v", err)

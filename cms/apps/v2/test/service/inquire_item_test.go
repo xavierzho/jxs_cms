@@ -98,9 +98,9 @@ func TestItemGetDetail(t *testing.T) {
 			},
 			LogTypeList:       nil,
 			GachaName:         "test",
-			UpdateAmountRange: &[2]int64{1, 2},
-			ShowPriceRange:    &[2]int64{3, 4},
-			InnerPriceRange:   &[2]int64{5, 6},
+			UpdateAmountRange: &[2]float64{1, 2},
+			ShowPriceRange:    &[2]float64{3, 4},
+			InnerPriceRange:   &[2]float64{5, 6},
 		},
 	}
 

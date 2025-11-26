@@ -12,13 +12,15 @@ import (
 )
 
 const (
-	BET_TYPE_FIRST_PRIZE = "FirstPrize" // 一番赏 // gacha_type = 1 source_type = 101
-	BET_TYPE_GASHAPON    = "Gashapon"   // 扭蛋机 // gacha_type = 2 source_type = 102
-	BET_TYPE_CHAO        = "Chao"       // 潮玩赏 // gacha_type = 3 source_type = 103
-	BET_TYPE_HOLE        = "Hole"       // 洞洞乐 // gacha_type = 4 source_type = 104
+	BET_TYPE_FIRST_PRIZE = "FirstPrize" // 一番赏   // gacha_type = 1 source_type = 101
+	BET_TYPE_GASHAPON    = "Gashapon"   // 扭蛋机   // gacha_type = 2 source_type = 102
+	BET_TYPE_CHAO        = "Chao"       // 潮玩赏   // gacha_type = 3 source_type = 103
+	BET_TYPE_HOLE        = "Hole"       // 洞洞乐   // gacha_type = 4 source_type = 104
+	BET_TYPE_CHAO_SHE    = "ChaoShe"    // 潮社赏   // gacha_type = 5 source_type = 105
+	BET_TYPE_SHARE_BILL  = "ShareBill"  // 一网打尽 // gacha_type = 6 source_type = 106
 )
 
-var BET_TYPE_LIST = []string{BET_TYPE_FIRST_PRIZE, BET_TYPE_GASHAPON, BET_TYPE_CHAO, BET_TYPE_HOLE}
+var BET_TYPE_LIST = []string{BET_TYPE_FIRST_PRIZE, BET_TYPE_GASHAPON, BET_TYPE_CHAO, BET_TYPE_HOLE, BET_TYPE_CHAO_SHE, BET_TYPE_SHARE_BILL}
 
 type GenerateRequest struct {
 	DateRange [2]string `form:"date_range[]" binding:"required"`
@@ -51,7 +53,7 @@ func (q *AllRequest) Parse() (dateRange [2]time.Time, err error) {
 
 func (q *AllRequest) Valid() (err error) {
 	switch q.DataType {
-	case BET_TYPE_FIRST_PRIZE, BET_TYPE_GASHAPON, BET_TYPE_CHAO, BET_TYPE_HOLE:
+	case BET_TYPE_FIRST_PRIZE, BET_TYPE_GASHAPON, BET_TYPE_CHAO, BET_TYPE_HOLE, BET_TYPE_CHAO_SHE, BET_TYPE_SHARE_BILL:
 	default:
 		return fmt.Errorf("not expected data_type: " + q.DataType)
 	}

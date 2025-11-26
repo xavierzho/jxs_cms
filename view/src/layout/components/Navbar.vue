@@ -84,7 +84,7 @@ export default {
         rules: {},
       },
       polling: null,
-      nowTime: moment().utcOffset('+05:30').format('YYYY-MM-DD HH:mm:ss'),
+      nowTime: moment().format('YYYY-MM-DD HH:mm:ss'),
     }
   },
   computed: {
@@ -128,7 +128,7 @@ export default {
   methods: {
     initTime() {
       this.polling = setInterval(() => {
-        this.nowTime = moment().utcOffset('+05:30').format('YYYY-MM-DD HH:mm:ss')
+        this.nowTime = moment().format('YYYY-MM-DD HH:mm:ss')
       }, 500)
     },
     toggleSideBar() {

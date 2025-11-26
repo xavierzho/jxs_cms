@@ -14,8 +14,8 @@ import (
 func TestRevenueGenerate(t *testing.T) {
 	svc := service.NewRevenueSvc(&gin.Context{}, local.CMSDB, local.CenterDB, local.Logger)
 	svc.Generate(&form.GenerateRequest{
-		DateRange: [2]string{"2024-05-09", "2024-05-09"},
-		// DataTypeList: []string{"draw"},
+		DateRange:    [2]string{"2024-10-01", "2024-10-30"},
+		DataTypeList: []string{"pay"},
 	})
 }
 

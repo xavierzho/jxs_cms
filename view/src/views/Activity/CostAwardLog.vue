@@ -27,6 +27,11 @@
               <el-option v-for="(item, index) in userType" :key="index" :label="item.label" :value="item.value"></el-option>
             </el-select>
           </el-form-item>
+          <el-form-item :label="$t('user.UserChannel')">
+            <el-select v-model="searchForm.channel" clearable>
+              <el-option v-for="(item, index) in userChannel" :key="index" :label="item.label" :value="item.value"></el-option>
+            </el-select>
+          </el-form-item>
 
           <el-form-item :label="$t('activity.costAwardLog.log_type')">
             <el-select v-model="searchForm.log_type" multiple clearable>
@@ -78,6 +83,7 @@ export default {
         user_name: '',
         tel: '',
         is_admin: false,
+        channel: null,
         log_type: [],
       },
       total: 0,
@@ -88,6 +94,7 @@ export default {
   computed: {
     ...mapGetters({
       userType: 'option/userType',
+      userChannel: 'option/userChannel',
       activityCostAwardLogType: 'option/activityCostAwardLogType',
     }),
   },

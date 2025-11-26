@@ -1,6 +1,7 @@
 package global
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"path/filepath"
@@ -12,8 +13,8 @@ import (
 	"github.com/go-playground/locales/zh"
 	ut "github.com/go-playground/universal-translator"
 	validatorPkg "github.com/go-playground/validator/v10"
-	en_translations "github.com/go-playground/validator/v10/translations/en"
-	zh_translations "github.com/go-playground/validator/v10/translations/zh"
+	entranslations "github.com/go-playground/validator/v10/translations/en"
+	zhtranslations "github.com/go-playground/validator/v10/translations/zh"
 	"golang.org/x/text/language"
 )
 
@@ -22,23 +23,21 @@ var (
 	UT   *ut.UniversalTranslator
 )
 
-// 配置i18n
+// SetupI18n 配置i18n
 func SetupI18n() (err error) {
 	I18n = i18n.NewI18n(Language)
-	err = I18n.SetPath(filepath.Join(StoragePath, "i18n", "en"), language.English, i18n.I18N_FILE_TYPE_TOML)
+	err = I18n.SetPath(filepath.Join(StoragePath, "i18n", "en"), language.English, i18n.FileTypeToml)
 	if err != nil {
-		if _, ok := err.(*fs.PathError); ok {
+		var pathError *fs.PathError
+		if errors.As(err, &pathError) {
 			Logger.Warn("i18n/en is not exist")
-		} else {
-			return err
 		}
 	}
-	err = I18n.SetPath(filepath.Join(StoragePath, "i18n", "zh"), language.Chinese, i18n.I18N_FILE_TYPE_TOML)
+	err = I18n.SetPath(filepath.Join(StoragePath, "i18n", "zh"), language.Chinese, i18n.FileTypeToml)
 	if err != nil {
-		if _, ok := err.(*fs.PathError); ok {
+		var pathError *fs.PathError
+		if errors.As(err, &pathError) {
 			Logger.Warn("i18n/zh is not exist")
-		} else {
-			return err
 		}
 	}
 	return nil
@@ -57,11 +56,11 @@ func SetupValidator() (err error) {
 	}
 	v, ok := binding.Validator.Engine().(*validatorPkg.Validate)
 	if ok {
-		err = en_translations.RegisterDefaultTranslations(v, enTrans)
+		err = entranslations.RegisterDefaultTranslations(v, enTrans)
 		if err != nil {
 			return err
 		}
-		err = zh_translations.RegisterDefaultTranslations(v, zhTrans)
+		err = zhtranslations.RegisterDefaultTranslations(v, zhTrans)
 		if err != nil {
 			return err
 		}

@@ -39,6 +39,7 @@ type AllRequest struct {
 	ChannelType       []int            `form:"channel_type[]"` // 1 支付宝 2 微信
 	UpdateAmountRange *[2]int64        `form:"update_amount_range[]"`
 	PaySourceType     []int            `form:"pay_source_type[]"` // 充值目标
+	BalanceType       []int            `form:"balance_type[]"`
 }
 
 func (q *AllRequest) Parse() (dateTimeRange [2]time.Time, queryParams database.QueryWhereGroup, err error) {
@@ -119,6 +120,13 @@ func (q *AllRequest) Parse() (dateTimeRange [2]time.Time, queryParams database.Q
 		})
 	}
 
+	if len(q.BalanceType) != 0 {
+		queryParams = append(queryParams, database.QueryWhere{
+			Prefix: "bl.type in ?",
+			Value:  []any{q.BalanceType},
+		})
+	}
+
 	return
 }
 
@@ -131,12 +139,13 @@ func (q *AllRequest) Valid() (err error) {
 
 	for _, sourceType := range q.SourceType {
 		switch sourceType {
-		case 1, 2, 3:
-		case 101, 102, 103, 104:
+		case 1, 2, 3, 12, 13:
+		case 101, 102, 103, 104, 105, 106:
 		case 201, 202, 203, 204:
 		case 301, 302, 303, 304:
 		case 400:
 		case 601:
+		case 100005:
 		case 999999:
 		default:
 			return fmt.Errorf("not expected sourceType: %d", q.SourceType)
@@ -183,6 +192,7 @@ type Balance struct {
 	AfterBalance     decimal.Decimal                         `json:"after_balance"`
 	UpdateAmount     decimal.Decimal                         `json:"update_amount"`
 	Comment          datatypes.JSONSlice[dao.BalanceComment] `json:"comment"`
+	BalanceTypeName  string                                  `json:"balance_type_name"`
 }
 
 func Format(ctx context.Context, _summary map[string]any, data []*dao.Balance) (summary map[string]any, result []*Balance) {
@@ -206,7 +216,7 @@ func Format(ctx context.Context, _summary map[string]any, data []*dao.Balance) (
 
 		platformOrderId := ""
 		switch item.SourceType {
-		case 1:
+		case 1, 12:
 			platformOrderId = item.PlatformOrderIdPay
 		case 2:
 			platformOrderId = item.PlatformOrderIdDraw
@@ -217,7 +227,6 @@ func Format(ctx context.Context, _summary map[string]any, data []*dao.Balance) (
 		if item.PaySourceType != 0 {
 			paySourceTypeStr = global.I18n.T(ctx, "source_type", convert.GetString(item.PaySourceType))
 		}
-
 		result = append(result, &Balance{
 			ID:               item.ID,
 			CreatedAt:        item.CreatedAt,
@@ -232,6 +241,7 @@ func Format(ctx context.Context, _summary map[string]any, data []*dao.Balance) (
 			AfterBalance:     util.ConvertAmount2Decimal(item.AfterBalance),
 			UpdateAmount:     util.ConvertAmount2Decimal(item.UpdateAmount),
 			Comment:          item.Comment,
+			BalanceTypeName:  global.I18n.T(ctx, "balance_type", fmt.Sprintf("%d", item.BalanceType)),
 		})
 	}
 

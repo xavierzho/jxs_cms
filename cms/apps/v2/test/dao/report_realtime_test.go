@@ -11,11 +11,12 @@ import (
 )
 
 func TestRealtimeGet(t *testing.T) {
-	startTime, _ := time.Parse(pkg.DATE_FORMAT, "2023-12-01")
-	endTime, _ := time.Parse(pkg.DATE_FORMAT, "2023-12-02")
+	startTime, _ := time.Parse(pkg.DATE_FORMAT, "2025-04-24")
+	endTime, _ := time.Parse(pkg.DATE_FORMAT, "2025-04-25")
 	realTimeDao := dao.NewRealtimeDao(local.CenterDB, local.Logger)
-	fmt.Println(realTimeDao.GetActiveUserCnt(startTime, endTime))
-	fmt.Println(realTimeDao.GetPatingUserCnt(startTime, endTime))
-	fmt.Println(realTimeDao.GetPayData(startTime, endTime))
-	fmt.Println(realTimeDao.GetNewUserCnt(startTime, endTime))
+	// fmt.Println(realTimeDao.GetActiveUserCnt(startTime, endTime))
+	// fmt.Println(realTimeDao.GetPatingUserCnt(startTime, endTime))
+	// fmt.Println(realTimeDao.GetPayData(startTime, endTime))
+	// fmt.Println(realTimeDao.GetNewUserCnt(startTime, endTime))
+	fmt.Println(realTimeDao.GetDrawData(startTime, endTime))
 }

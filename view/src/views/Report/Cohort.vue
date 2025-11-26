@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-form :inline="true" :model="searchForm">
-      <el-form-item>
+      <el-form-item v-if="$checkPermission('report_cohort_filter')">
         <date-picker v-model="searchForm.date_range" type="daterange" :clearable="false"></date-picker>
       </el-form-item>
       <el-form-item>
@@ -251,13 +251,13 @@ export default {
           if (key === 'date' || key === 'data_type' || key === 'created_at' || key === 'updated_at') {
             return
           }
-        
+
           if (!_seriesData.hasOwnProperty(key)){
             _seriesData[key] = []
           }
           _seriesData[key].push(dataItem[key] || 0)
         })
-      })  
+      })
       Object.keys(_seriesData).forEach(seriesName => {
         let name = this.$t('report.cohort.' + seriesName)
         if (this.tabActiveName === 'new_user_validated'){

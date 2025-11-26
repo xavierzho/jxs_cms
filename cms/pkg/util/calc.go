@@ -10,7 +10,7 @@ import (
 
 var DECIMAL_THOUSAND = decimal.NewFromInt(1000)
 var DECIMAL_HUNDRED = decimal.NewFromInt(100)
-var amount_precision decimal.Decimal = DECIMAL_HUNDRED
+var amount_precision = DECIMAL_HUNDRED
 
 func SetPrecision(precision decimal.Decimal) {
 	amount_precision = precision

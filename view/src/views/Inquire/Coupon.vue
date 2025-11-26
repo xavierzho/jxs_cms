@@ -27,6 +27,11 @@
               <el-option v-for="(item, index) in userType" :key="index" :label="item.label" :value="item.value"></el-option>
             </el-select>
           </el-form-item>
+          <el-form-item :label="$t('user.UserChannel')">
+            <el-select v-model="searchForm.channel" clearable>
+              <el-option v-for="(item, index) in userChannel" :key="index" :label="item.label" :value="item.value"></el-option>
+            </el-select>
+          </el-form-item>
 
           <el-form-item :label="$t('inquire.coupon.coupon_id')">
             <input-number v-model="searchForm.coupon_id" clearable></input-number>
@@ -89,6 +94,7 @@ export default {
         user_name: '',
         tel: '',
         is_admin: false,
+        channel: null,
         coupon_id: "",
         coupon_type: "",
         coupon_name: "",
@@ -101,6 +107,7 @@ export default {
   computed: {
     ...mapGetters({
       userType: 'option/userType',
+      userChannel: 'option/userChannel',
       inquireCouponType: 'option/inquireCouponType',
       inquireCouponActionType: 'option/inquireCouponActionType'
     }),

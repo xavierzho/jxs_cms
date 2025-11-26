@@ -55,6 +55,7 @@ type Balance struct {
 	AfterBalance        int64                               `gorm:"column:after_balance; type:bigint" json:"after_balance"`
 	UpdateAmount        int64                               `gorm:"column:update_amount; type:bigint" json:"update_amount"`
 	Comment             datatypes.JSONSlice[BalanceComment] `gorm:"column:comment; type:json" json:"comment"`
+	BalanceType         int                                 `gorm:"column:balance_type; type:int" json:"balance_type"`
 }
 
 var selectField = []string{
@@ -74,6 +75,7 @@ var selectField = []string{
 	"bl.after_balance",
 	"bl.update_amount",
 	"bl.comment",
+	"bl.type as balance_type",
 }
 
 type BalanceDao struct {
@@ -164,37 +166,49 @@ func (d *BalanceDao) allDB(tx *gorm.DB, queryParams database.QueryWhereGroup) *g
 		Table("users u, balance_log bl").
 		Joins("left join gacha_machine gm on bl.source_type between 100 and 199 and bl.source_id = gm.id").
 		Joins("left join (select distinct config_id, name from activity_cost_award_config) cac on bl.source_type = 601 and bl.source_id = cac.config_id").
-		Joins("left join pay_payment_order ppo on bl.source_type = 1 and bl.source_id = ppo.id").
-		Joins("left join pay_payout_order pdo on bl.source_type = 2 and bl.source_id = pdo.id").
+		Joins("left join pay_payment_order ppo on bl.source_type in (1, 12) and bl.source_id = ppo.id"). // 金币退款 source_id 是退款订单id 没有第三方id
+		Joins("left join pay_payout_order pdo on bl.source_type in (2) and bl.source_id = pdo.id").
 		Where("bl.user_id = u.id").
 		Scopes(database.ScopeQuery(queryParams))
 }
 
+// AddComment 使用 GORM 的 gorm.Expr 进行安全的参数绑定
 func (d *BalanceDao) AddComment(id int64, comment *BalanceComment) (err error) {
-	err = d.center.Exec(`
-	update balance_log bl
-	set comment = JSON_ARRAY_INSERT(if(comment=cast('null' as json), JSON_ARRAY(), comment) , '$[0]', cast(? as json))
-	where bl.id = ?
-	`, comment, id).Error
+
+	jsonExpr := gorm.Expr(
+		"JSON_ARRAY_INSERT(IF(comment IS NULL OR comment = '', JSON_ARRAY(), comment), '$[0]', ?)",
+		comment,
+	)
+
+	err = d.center.Table("balance_log").
+		Where("id = ?", id).
+		Update("comment", jsonExpr).
+		Error
+
 	if err != nil {
 		d.logger.Errorf("AddComment: %v", err)
-		return
+		return err
 	}
-
-	return
+	return nil
 }
 
-// ! 直接用 exec 有奇怪的 bug 'sql: expected 1 arguments, got 2' 可能是因为有 $ 符号
+// DeleteComment 使用 gorm.Expr 避免字符串拼接
 func (d *BalanceDao) DeleteComment(id int64, index int) (err error) {
-	err = d.center.Exec(fmt.Sprintf(`
-	update balance_log bl
-	set comment = JSON_REMOVE(comment, '$[%d]')
-	where bl.id = %d and comment is not null
-	`, index, id)).Error
+
+	jsonPath := fmt.Sprintf("$[%d]", index)
+
+	jsonExpr := gorm.Expr(
+		"JSON_REMOVE(comment, ?)",
+		jsonPath,
+	)
+	err = d.center.Table("balance_log").
+		Where("id = ? AND comment IS NOT NULL", id).
+		Update("comment", jsonExpr).
+		Error
+
 	if err != nil {
 		d.logger.Errorf("DeleteComment: %v", err)
-		return
+		return err
 	}
-
-	return
+	return nil
 }

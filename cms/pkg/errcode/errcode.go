@@ -45,7 +45,7 @@ func (e *Error) Msg() string {
 	return e.msg
 }
 
-// 替换msg
+// WithMsg 替换msg
 func (e *Error) WithMsg(msg string) *Error {
 	newError := *e
 	newError.msg = msg
@@ -57,7 +57,7 @@ func (e *Error) Details() []string {
 	return e.details
 }
 
-// 追加 details
+// WithDetails 追加 details
 func (e *Error) WithDetails(details ...string) *Error {
 	newError := *e
 	newError.details = append(newError.details, details...)
@@ -65,7 +65,7 @@ func (e *Error) WithDetails(details ...string) *Error {
 	return &newError
 }
 
-// 判断 e 是否是传入的该种 Error
+// Is 判断 e 是否是传入的该种 Error
 func (e *Error) Is(err *Error) bool {
 	return e != nil && e.code == err.code
 }

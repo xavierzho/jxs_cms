@@ -70,7 +70,7 @@ export default {
       },
       chartTypeMap: {
         active: ['active'],
-        pating: ['pating', 'patingFirstPrize', 'patingGashapon', 'patingChao', 'patingHole', 'patingMarket', 'patingDeliver', 'patingShop'],
+        pating: ['pating', 'patingFirstPrize', 'patingGashapon', 'patingChao', 'patingHole', 'patingChaoShe', 'patingMarket', 'patingDeliver', 'patingShop'],
         payAmountSummary: ['payAmountSummary'],
         rechargeAmountSummary: ['rechargeAmountSummary'],
         newUserCnt: ['newUserCnt'],

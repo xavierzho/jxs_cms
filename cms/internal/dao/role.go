@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"data_backend/internal/app"
@@ -63,7 +64,7 @@ func (d *RoleDao) Create(data *Role) (err error) {
 
 func (d *RoleDao) First(queryParams database.QueryWhereGroup) (data *Role, err error) {
 	err = d.engine.Model(data).Preload("Permission").Scopes(database.ScopeQuery(queryParams)).First(&data).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		d.logger.Errorf("First: %v", err)
 		return nil, err
 	}

@@ -95,7 +95,7 @@ func (svc *RevenueSvc) generatePay(cDate time.Time) (err error) {
 
 // 集市, 发货, 存在退款(潮币)情况。统计消费金额时 按完成时间统计 所以这里不再统计 退款(潮币)
 func (svc *RevenueSvc) _generatePay(payDao *dao.PayDao, cDate time.Time) (data *dao.Pay, err error) {
-	dataPay, _, dataRecharge, dataRechargeRefund, err := payDao.Generate(cDate)
+	payGroup, err := payDao.Generate(cDate)
 	if err != nil {
 		return nil, err
 	}
@@ -104,22 +104,31 @@ func (svc *RevenueSvc) _generatePay(payDao *dao.PayDao, cDate time.Time) (data *
 		DailyModel: iDao.DailyModel{
 			Date: cDate.Format(pkg.DATE_FORMAT),
 		},
-		Amount:       dataPay.Amount,
-		AmountBet:    dataPay.AmountBet,
-		AmountNew:    dataPay.AmountNew,
-		AmountOld:    dataPay.AmountOld,
-		UserCnt:      dataPay.UserCnt,
-		UserCntNew:   dataPay.UserCntNew,
-		UserCntOld:   dataPay.UserCntOld,
-		UserCntFirst: dataPay.UserCntFirst,
-		// RefundAmount:         dataRefund.RefundAmount,
-		// RefundUserCnt:        dataRefund.RefundUserCnt,
-		RechargeAmount:             dataRecharge.RechargeAmount,
-		RechargeAmountWeChat:       dataRecharge.RechargeAmountWeChat,
-		RechargeAmountAli:          dataRecharge.RechargeAmountAli,
-		RechargeRefundAmount:       dataRechargeRefund.RechargeRefundAmount,
-		RechargeRefundAmountWeChat: dataRechargeRefund.RechargeRefundAmountWeChat,
-		RechargeRefundAmountAli:    dataRechargeRefund.RechargeRefundAmountAli,
+		Amount:       payGroup.Pay.Amount,
+		AmountBet:    payGroup.Pay.AmountBet,
+		AmountNew:    payGroup.Pay.AmountNew,
+		AmountOld:    payGroup.Pay.AmountOld,
+		UserCnt:      payGroup.Pay.UserCnt,
+		UserCntNew:   payGroup.Pay.UserCntNew,
+		UserCntOld:   payGroup.Pay.UserCntOld,
+		UserCntFirst: payGroup.Pay.UserCntFirst,
+		// RefundAmount:         payGroup.Refund.RefundAmount,
+		// RefundUserCnt:        payGroup.Refund.RefundUserCnt,
+		RechargeAmount:             payGroup.Recharge.RechargeAmount,
+		RechargeAmountWeChat:       payGroup.Recharge.RechargeAmountWeChat,
+		RechargeAmountAli:          payGroup.Recharge.RechargeAmountAli,
+		RechargeRefundAmount:       payGroup.RechargeRefund.RechargeRefundAmount,
+		RechargeRefundAmountWeChat: payGroup.RechargeRefund.RechargeRefundAmountWeChat,
+		RechargeRefundAmountAli:    payGroup.RechargeRefund.RechargeRefundAmountAli,
+		DiscountAmount:             payGroup.Recharge.DiscountAmount,
+		DiscountAmountWeChat:       payGroup.Recharge.DiscountAmountWeChat,
+		DiscountAmountAli:          payGroup.Recharge.DiscountAmountAli,
+		SavingAmount:               payGroup.Saving.SavingAmount,
+		SavingAmountWeChat:         payGroup.Saving.SavingAmountWeChat,
+		SavingAmountAli:            payGroup.Saving.SavingAmountAli,
+		SavingRefundAmount:         payGroup.SavingRefund.SavingRefundAmount,
+		SavingRefundAmountWeChat:   payGroup.SavingRefund.SavingRefundAmountWeChat,
+		SavingRefundAmountAli:      payGroup.SavingRefund.SavingRefundAmountAli,
 	}, nil
 }
 
@@ -264,7 +273,6 @@ func (svc *RevenueSvc) All(params *form.AllRequest) (data interface{}, e *errcod
 	now := time.Now()
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, pkg.Location)
 	hasToday := !dateRange[0].After(today) && !dateRange[1].Before(today)
-
 	switch params.DataType {
 	case form.REVENUE_REPORT_TYPE_ACTIVE:
 		return svc.allActive(dateRange, hasToday, today)
@@ -466,6 +474,7 @@ func (svc *RevenueSvc) allSummary(dateRange [2]time.Time, hasToday bool, today t
 			"date":                          todayStr,
 			"wallet_balance":                balanceTodayData.Wallet,
 			"merchant_balance":              balanceTodayData.Merchant,
+			"gold_balance":                  balanceTodayData.Gold,
 			"pay_amount":                    payTodayData.Amount,
 			"pay_amount_bet":                payTodayData.AmountBet,
 			"recharge_amount":               payTodayData.RechargeAmount,
@@ -478,6 +487,15 @@ func (svc *RevenueSvc) allSummary(dateRange [2]time.Time, hasToday bool, today t
 			"tax_amount":                    0,
 			"refund_amount":                 payTodayData.RefundAmount,
 			"active_cnt":                    activeTodayData.ActiveCnt,
+			"discount_amount":               payTodayData.DiscountAmount,
+			"discount_amount_wechat":        payTodayData.DiscountAmountWeChat,
+			"discount_amount_ali":           payTodayData.DiscountAmountAli,
+			"saving_amount":                 payTodayData.SavingAmount,
+			"saving_amount_wechat":          payTodayData.SavingAmountWeChat,
+			"saving_amount_ali":             payTodayData.SavingAmountAli,
+			"saving_refund_amount":          payTodayData.SavingRefundAmount,
+			"saving_refund_amount_wechat":   payTodayData.SavingRefundAmountWeChat,
+			"saving_refund_amount_ali":      payTodayData.SavingRefundAmountAli,
 		}
 
 		summaryData = append(summaryData, summaryTodayData)

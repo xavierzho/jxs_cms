@@ -29,8 +29,8 @@ func (d *CostAwardLogDao) List(dateTimeRange [2]time.Time, queryParams database.
 	err = d.all(dateTimeRange, queryParams).
 		Select(
 			"count(0) as total",
-			"count(distinct caul.user_id) as user_cnt",
-			"sum(caul.update_point) as update_point",
+			"count(distinct bl.user_id) as user_cnt",
+			"sum(bl.update_amount) as update_point",
 		).
 		Find(&summary).Error
 	if err != nil {
@@ -39,8 +39,8 @@ func (d *CostAwardLogDao) List(dateTimeRange [2]time.Time, queryParams database.
 	}
 
 	err = d.all(dateTimeRange, queryParams).
-		Select("caul.*, u.nickname as user_name").
-		Order("caul.created_at desc, caul.user_id").
+		Select("bl.*, u.nickname as user_name").
+		Order("bl.created_at desc, bl.user_id").
 		Scopes(database.Paginate(paper.Page, paper.PageSize)).
 		Find(&data).Error
 	if err != nil {
@@ -53,7 +53,7 @@ func (d *CostAwardLogDao) List(dateTimeRange [2]time.Time, queryParams database.
 
 func (d *CostAwardLogDao) All(dateTimeRange [2]time.Time, queryParams database.QueryWhereGroup) (data []map[string]any, err error) {
 	err = d.all(dateTimeRange, queryParams).
-		Select("caul.*, u.nickname as user_name").
+		Select("bl.*, u.nickname as user_name").
 		Find(&data).Error
 	if err != nil {
 		d.logger.Errorf("All err: %v", err)
@@ -65,8 +65,9 @@ func (d *CostAwardLogDao) All(dateTimeRange [2]time.Time, queryParams database.Q
 
 func (d *CostAwardLogDao) all(dateTimeRange [2]time.Time, queryParams database.QueryWhereGroup) *gorm.DB {
 	return d.center.
-		Table("activity_cost_award_user_log as caul, users u").
-		Where("caul.created_at between ? and ?", dateTimeRange[0].Format(pkg.DATE_TIME_MIL_FORMAT), dateTimeRange[1].Add(time.Second-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
-		Where("caul.user_id = u.id").
+		Table("balance_log bl, users u").
+		Where("type = 3").
+		Where("bl.created_at between ? and ?", dateTimeRange[0].Format(pkg.DATE_TIME_MIL_FORMAT), dateTimeRange[1].Add(time.Second-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
+		Where("bl.user_id = u.id").
 		Scopes(database.ScopeQuery(queryParams))
 }

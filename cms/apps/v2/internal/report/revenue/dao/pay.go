@@ -33,10 +33,28 @@ type Pay struct {
 	RechargeRefundAmount       uint `gorm:"column:recharge_refund_amount; default:0" json:"recharge_refund_amount"`               // 充值退款金额
 	RechargeRefundAmountWeChat uint `gorm:"column:recharge_refund_amount_wechat; default:0" json:"recharge_refund_amount_wechat"` // 充值退款金额(微信)
 	RechargeRefundAmountAli    uint `gorm:"column:recharge_refund_amount_ali; default:0" json:"recharge_refund_amount_ali"`       // 充值退款金额(支付宝)
+	DiscountAmount             uint `gorm:"column:discount_amount; default:0" json:"discount_amount"`                             // 总折扣金额
+	DiscountAmountWeChat       uint `gorm:"column:discount_amount_wechat; default:0" json:"discount_amount_wechat"`               // 总折扣金额(微信)
+	DiscountAmountAli          uint `gorm:"column:discount_amount_ali; default:0" json:"discount_amount_ali"`                     // 总折扣金额(支付宝)
+	SavingAmount               uint `gorm:"column:saving_amount; default:0" json:"saving_amount"`                                 // 储值金额
+	SavingAmountWeChat         uint `gorm:"column:saving_amount_wechat; default:0" json:"saving_amount_wechat"`                   // 储值金额(微信)
+	SavingAmountAli            uint `gorm:"column:saving_amount_ali; default:0" json:"saving_amount_ali"`                         // 储值金额(支付宝)
+	SavingRefundAmount         uint `gorm:"column:saving_refund_amount; default:0" json:"saving_refund_amount"`                   // 储值退款金额
+	SavingRefundAmountWeChat   uint `gorm:"column:saving_refund_amount_wechat; default:0" json:"saving_refund_amount_wechat"`     // 储值退款金额(微信)
+	SavingRefundAmountAli      uint `gorm:"column:saving_refund_amount_ali; default:0" json:"SavingRefundAmountAli"`              // 储值退款金额(支付宝)
 }
 
 func (Pay) TableName() string {
 	return "revenue_pay"
+}
+
+type PayGroup struct {
+	Pay            *Pay
+	Refund         *Pay
+	Recharge       *Pay
+	RechargeRefund *Pay
+	Saving         *Pay
+	SavingRefund   *Pay
 }
 
 type PayDao struct {
@@ -56,26 +74,36 @@ func NewPayDao(engine, center *gorm.DB, log *logger.Logger) *PayDao {
 	}
 }
 
-func (d *PayDao) Generate(cDate time.Time) (dataPay, dataRefund, dataRecharge, dataRechargeRefund *Pay, err error) {
+func (d *PayDao) Generate(cDate time.Time) (payGroup PayGroup, err error) {
 	eg := errgroup.Group{}
 
 	eg.Go(func() (err error) {
-		dataPay, err = d.generatePay(cDate)
+		payGroup.Pay, err = d.generatePay(cDate)
 		return err
 	})
 
 	eg.Go(func() (err error) {
-		dataRefund, err = d.generateRefund(cDate)
+		payGroup.Refund, err = d.generateRefund(cDate)
 		return err
 	})
 
 	eg.Go(func() (err error) {
-		dataRecharge, err = d.generateRecharge(cDate)
+		payGroup.Recharge, err = d.generateRecharge(cDate)
 		return err
 	})
 
 	eg.Go(func() (err error) {
-		dataRechargeRefund, err = d.generateRechargeRefund(cDate)
+		payGroup.RechargeRefund, err = d.generateRechargeRefund(cDate)
+		return err
+	})
+
+	eg.Go(func() (err error) {
+		payGroup.Saving, err = d.generateSaving(cDate)
+		return err
+	})
+
+	eg.Go(func() (err error) {
+		payGroup.SavingRefund, err = d.generateSavingRefund(cDate)
 		return err
 	})
 
@@ -84,6 +112,7 @@ func (d *PayDao) Generate(cDate time.Time) (dataPay, dataRefund, dataRecharge, d
 	return
 }
 
+// 需要限制 bl.update_amount <= 0; 退款的订单直接完成了，而消费的订单只有在成功时才会有完成时间
 func (d *PayDao) generatePay(cDate time.Time) (data *Pay, err error) {
 	err = d.center.
 		Select(
@@ -97,7 +126,7 @@ func (d *PayDao) generatePay(cDate time.Time) (data *Pay, err error) {
 			"count(distinct (case when datediff(bl.finish_at, u.created_at) <> 0 then u.id else null end)) as user_cnt_old",
 		).
 		Table("balance_log bl").
-		Joins("join users u on bl.user_id = u.id and u.is_admin = 0").
+		Joins("join users u on bl.user_id = u.id and u.role = 0").
 		Where("bl.finish_at between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
 		Where("(bl.source_type between 100 and 199 or bl.source_type in (201,202,300,301,302,303,304,601)) and bl.update_amount <= 0").
 		Group(fmt.Sprintf("date_format(bl.finish_at, '%s')", pkg.SQL_DATE_FORMAT)).
@@ -110,18 +139,19 @@ func (d *PayDao) generatePay(cDate time.Time) (data *Pay, err error) {
 	return data, nil
 }
 
+// 这个是潮币的退款 // 不应包括 3
 func (d *PayDao) generateRefund(cDate time.Time) (data *Pay, err error) {
 	err = d.center.
 		Select(
-			fmt.Sprintf("date_format(bl.created_at, '%s') as date", pkg.SQL_DATE_FORMAT),
+			fmt.Sprintf("date_format(bl.finish_at, '%s') as date", pkg.SQL_DATE_FORMAT),
 			"cast(sum(bl.update_amount) as UNSIGNED) as refund_amount",
 			"count(distinct u.id) as refund_user_cnt",
 		).
 		Table("balance_log bl").
-		Joins("join users u on bl.user_id = u.id and u.is_admin = 0").
-		Where("bl.created_at between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
-		Where("bl.source_type in (3, 201, 202, 301) and bl.update_amount > 0").
-		Group(fmt.Sprintf("date_format(bl.created_at, '%s')", pkg.SQL_DATE_FORMAT)).
+		Joins("join users u on bl.user_id = u.id and u.role = 0").
+		Where("bl.finish_at between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
+		Where("bl.source_type in (201, 202, 301) and bl.update_amount > 0").
+		Group(fmt.Sprintf("date_format(bl.finish_at, '%s')", pkg.SQL_DATE_FORMAT)).
 		Find(&data).Error
 	if err != nil {
 		d.logger.Errorf("generateRefund: %v", err)
@@ -136,13 +166,17 @@ func (d *PayDao) generateRecharge(cDate time.Time) (data *Pay, err error) {
 		Select(
 			fmt.Sprintf("date_format(ppo.finish_time, '%s') as date", pkg.SQL_DATE_FORMAT),
 			"sum(ppo.amount) as recharge_amount",
-			"sum(case ppo.platform_id when 'wechatapp' then ppo.amount when 'wechatjs' then ppo.amount else 0 end) as  recharge_amount_wechat",
-			"sum(case ppo.platform_id when 'alipay' then ppo.amount else 0 end) as  recharge_amount_ali",
+			"sum(case ppo.platform_id when 'wechatapp' then ppo.amount when 'wechatjs' then ppo.amount else 0 end) as recharge_amount_wechat",
+			"sum(case ppo.platform_id when 'alipay' then ppo.amount else 0 end) as recharge_amount_ali",
+			"sum(ppo.discount_really) as discount_amount",
+			"sum(case ppo.platform_id when 'wechatapp' then ppo.discount_really when 'wechatjs' then ppo.discount_really else 0 end) as discount_amount_wechat",
+			"sum(case ppo.platform_id when 'alipay' then ppo.discount_really else 0 end) as discount_amount_ali",
 		).
 		Table("pay_payment_order ppo").
-		Joins("join users u on ppo.user_id = u.id and u.is_admin = 0").
+		Joins("join users u on ppo.user_id = u.id and u.role = 0").
 		Where("ppo.finish_time between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
 		Where("ppo.status in (4,7,8,9,10,11,12,13,14)").
+		Where("ppo.pay_source_type <> 12"). // 金币储值单独统计
 		Group(fmt.Sprintf("date_format(ppo.finish_time, '%s')", pkg.SQL_DATE_FORMAT)).
 		Find(&data).Error
 	if err != nil {
@@ -158,17 +192,67 @@ func (d *PayDao) generateRechargeRefund(cDate time.Time) (data *Pay, err error) 
 		Select(
 			fmt.Sprintf("date_format(ppo.refund_time, '%s') as date", pkg.SQL_DATE_FORMAT),
 			"sum(refund_amount) as recharge_refund_amount",
-			"sum(case ppo.platform_id when 'wechatapp' then ppo.refund_amount when 'wechatjs' then ppo.refund_amount else 0 end) as  recharge_refund_amount_wechat",
-			"sum(case ppo.platform_id when 'alipay' then ppo.refund_amount else 0 end) as  recharge_refund_amount_ali",
+			"sum(case ppo.platform_id when 'wechatapp' then ppo.refund_amount when 'wechatjs' then ppo.refund_amount else 0 end) as recharge_refund_amount_wechat",
+			"sum(case ppo.platform_id when 'alipay' then ppo.refund_amount else 0 end) as recharge_refund_amount_ali",
 		).
 		Table("pay_payment_order ppo").
-		Joins("join users u on ppo.user_id = u.id and u.is_admin = 0").
+		Joins("join users u on ppo.user_id = u.id and u.role = 0").
 		Where("ppo.refund_time between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
 		Where("ppo.status = 9").
+		Where("ppo.pay_source_type <> 12"). // 金币储值 不算在 Refund 中
 		Group(fmt.Sprintf("date_format(ppo.refund_time, '%s')", pkg.SQL_DATE_FORMAT)).
 		Find(&data).Error
 	if err != nil {
 		d.logger.Errorf("generateRechargeRefund: %v", err)
+		return nil, err
+	}
+
+	return data, nil
+}
+
+// 储值
+func (d *PayDao) generateSaving(cDate time.Time) (data *Pay, err error) {
+	err = d.center.
+		Select(
+			fmt.Sprintf("date_format(ppo.finish_time, '%s') as date", pkg.SQL_DATE_FORMAT),
+			"sum(ppo.amount) as saving_amount",
+			"sum(case ppo.platform_id when 'wechatapp' then ppo.amount when 'wechatjs' then ppo.amount else 0 end) as saving_amount_wechat",
+			"sum(case ppo.platform_id when 'alipay' then ppo.amount else 0 end) as saving_amount_ali",
+		).
+		Table("pay_payment_order ppo").
+		Joins("join users u on ppo.user_id = u.id and u.role = 0").
+		Where("ppo.finish_time between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
+		Where("ppo.status in (4,7,8,9,10,11,12,13,14)").
+		Where("ppo.pay_source_type = 12").
+		Group(fmt.Sprintf("date_format(ppo.finish_time, '%s')", pkg.SQL_DATE_FORMAT)).
+		Find(&data).Error
+	if err != nil {
+		d.logger.Errorf("generateSaving: %v", err)
+		return nil, err
+	}
+
+	return data, nil
+}
+
+// 储值退款
+func (d *PayDao) generateSavingRefund(cDate time.Time) (data *Pay, err error) {
+	err = d.center.
+		Select(
+			fmt.Sprintf("date_format(rod.refund_time, '%s') as date", pkg.SQL_DATE_FORMAT),
+			"sum(rod.amount) as saving_refund_amount",
+			"sum(case ppo.platform_id when 'wechatapp' then rod.amount when 'wechatjs' then rod.amount else 0 end) as saving_refund_amount_wechat",
+			"sum(case ppo.platform_id when 'alipay' then rod.amount else 0 end) as saving_refund_amount_ali",
+		).
+		Table("refund_order_detail rod, users u, pay_payment_order ppo").
+		Where("rod.refund_time between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
+		Where("rod.status = 3").
+		Where("rod.user_id = u.id").
+		Where("u.role = 0").
+		Where("rod.pay_order_id = ppo.id").
+		Group(fmt.Sprintf("date_format(rod.refund_time, '%s')", pkg.SQL_DATE_FORMAT)).
+		Find(&data).Error
+	if err != nil {
+		d.logger.Errorf("generateSavingRefund: %v", err)
 		return nil, err
 	}
 

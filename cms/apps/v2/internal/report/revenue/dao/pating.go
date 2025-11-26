@@ -54,21 +54,21 @@ from
 		(case when datediff(tv.created_at, u.created_at) = 0 then 1 else 0 end) is_new,
 		tv.user_id
 	from market_order tv, users u -- 集市 创建者
-	where tv.created_at between '%s' and '%s' and tv.user_id = u.id and u.is_admin = 0
+	where tv.created_at between '%s' and '%s' and tv.user_id = u.id and u.role = 0
 	union
 	select distinct
 		date_format(muo.created_at, '%[1]s') as date,
 		(case when datediff(muo.created_at, u.created_at) = 0 then 1 else 0 end) is_new,
 		muo.user_id
 	from market_user_offer muo, users u -- 集市 交易者
-	where muo.created_at between '%s' and '%s' and muo.user_id = u.id and u.is_admin = 0
+	where muo.created_at between '%s' and '%s' and muo.user_id = u.id and u.role = 0
 	union
 	SELECT distinct
 		FROM_UNIXTIME(left(o.pay_time, 10), '%[1]s') as date,
 		(case when datediff(FROM_UNIXTIME(left(o.pay_time, 10)), u.created_at) = 0 then 1 else 0 end) is_new,
 		o.user_id
 	FROM %[4]s o, users u -- 发货用户
-	Where o.pay_time between %[5]d and %d and o.user_id = u.id and u.is_admin = 0
+	Where o.pay_time between %[5]d and %d and o.user_id = u.id and u.role = 0
 	union
 	select distinct
 		date_format(bl.created_at, '%[1]s') as date, 
@@ -79,7 +79,7 @@ from
 		bl.created_at between '%s' and '%s'
 		and (bl.source_type between 100 and 199 or bl.source_type in (601)) -- 抽赏 + 商城
 		and bl.update_amount <= 0
-		and bl.user_id = u.id and u.is_admin = 0
+		and bl.user_id = u.id and u.role = 0
 	) t
 group by
 	t.date

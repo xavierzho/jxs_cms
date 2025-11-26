@@ -12,21 +12,24 @@ const JobRKey = "v2Jobs"
 
 var JobWorker *cronjob.JobWorker
 var JobWorkerLogger *logger.Logger
-var CronChain, QueueCronChain cronjob.CronChain
+var (
+	QueueCronChain cronjob.CronChain
+	CronChain      cronjob.CronChain
+)
 
 func SetupJobs() (err error) {
 	ctx := context.WithValue(Ctx, logger.ModuleKey, Module.Add(".job"))
 	JobWorkerLogger = Logger.WithContext(ctx)
 	alarm := NewAlarm(JobWorkerLogger)
-	cronMessage := cronjob.NewCronMessage(ctx, JobWorkerLogger, alarm)
+	cronMessage := cronjob.NewJobConfig(ctx, JobWorkerLogger, alarm)
 
-	CronChain = cronjob.NewCronChain([]cronjob.CronJobWrapper{
+	CronChain = cronjob.NewCronChain([]cronjob.Wrapper{
 		cronjob.RecoverWrapper(cronMessage),
 		cronjob.SkipIfStillRunningWrapper(cronMessage),
 		cronjob.LoggerWrapper(cronMessage),
 		cronjob.TimeoutReminderWrapper(cronMessage, time.Minute),
 	}...)
-	QueueCronChain = cronjob.NewCronChain([]cronjob.CronJobWrapper{
+	QueueCronChain = cronjob.NewCronChain([]cronjob.Wrapper{
 		cronjob.RecoverWrapper(cronMessage),
 		cronjob.SkipIfStillRunningWrapper(cronMessage),
 		cronjob.LoggerWrapper(cronMessage),

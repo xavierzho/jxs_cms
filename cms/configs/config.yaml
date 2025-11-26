@@ -2,7 +2,7 @@ Server:
   ServerName: cms
   Version: v2
   # release, debug, migrate
-  RunMode: release
+  RunMode: debug
   HttpPort: 8003
   ReadTimeout: 60
   WriteTimeout: 60
@@ -22,13 +22,13 @@ Tel:
   FullPhoneNumLength: 11
 
 JWT:
-  Secret: ChaoShe
-  Issuer: ChaoShe-cms
+  Secret: Jixianshang
+  Issuer: Jixianshang-cms
   Expire: 24
 
 SecretKey:
-  AesKey: ChaoShe2023!@
-  AesVi: ChaoShe2023!@
+  AesKey: "!2023chaoshe"
+  AesVi: "!2023chaoshe"
 
 Logger:
   LogSavePath: storage/logs
@@ -36,10 +36,11 @@ Logger:
   LogFileExt: .log
 
 WeChat:
-  WebHook: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=267aed8c-af84-420e-9248-f53ed3cd7905
+  WebHook: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=bbd2cb35-b214-44a2-a7cb-8a9e6679697a
 
 Database:
-  CenterDB: "root:123456@tcp(192.168.0.93:3306)/blind_box?charset=utf8mb4&parseTime=True&loc=Asia%2FShanghai&multiStatements=True"
+  CenterDB: "root:BfoofPx9gPvpd2isRHKH@tcp(118.89.55.18:13306)/blind_box?charset=utf8mb4&parseTime=True&loc=Asia%2FShanghai&multiStatements=True"
+#  CenterDB: "root:123456@tcp(192.168.0.93:3306)/blind_box?charset=utf8mb4&parseTime=True&loc=Asia%2FShanghai&multiStatements=True"
   CMSDB: "root:123456@tcp(192.168.0.93:3306)/cms_data?charset=utf8mb4&parseTime=True&loc=Asia%2FShanghai&multiStatements=True"
   # 数据库连接池大小
   Pool: 5

@@ -99,7 +99,7 @@ from
 		left join logon_logs l on l.user_id = u.id and l.created_at between '%s' and '%s'
 	where
 		u.created_at between '%s' and '%s'
-		and u.is_admin = 0
+		and u.role = 0
 	) t
 group by
 	date
@@ -163,7 +163,7 @@ from
 			left join logon_logs l on l.user_id = u.id and l.created_at between '%s' and '%s'
 		where
 			u.created_at between '%s' and '%s'
-			and u.is_admin = 0
+			and u.role = 0
 		) l
 	group by
 		user_id, date
@@ -190,7 +190,7 @@ from
 			and (bl.source_type between 100 and 199 or bl.source_type in (201,202,300,301,302,303,304,601)) and bl.update_amount <= 0
 	where
 		u.created_at between '%s' and '%s'
-		and u.is_admin = 0
+		and u.role = 0
 	group by
 		u.id,
 		date_format(u.created_at, '%[1]s')
@@ -243,7 +243,7 @@ from
 			and (bl.source_type between 100 and 199 or bl.source_type in (201,202,300,301,302,303,304,601)) and bl.update_amount <= 0
 	where
 		u.created_at between '%s' and '%s'
-		and u.is_admin = 0
+		and u.role = 0
 	) t
 group by 
 	date
@@ -283,22 +283,22 @@ func (d *CohortDao) GeneratePatingUserActive(patingDate time.Time, startUpdateDa
 		(
 		select distinct date_format(tv.created_at, '%[1]s') as date, tv.user_id
 		from market_order tv, users u -- 集市 创建者
-		where tv.created_at between '%s' and '%s' and tv.user_id = u.id and u.is_admin = 0
+		where tv.created_at between '%s' and '%s' and tv.user_id = u.id and u.role = 0
 		union
 		select distinct date_format(muo.created_at, '%[1]s') as date, muo.user_id
 		from market_user_offer muo, users u -- 集市 交易者
-		where muo.created_at between '%s' and '%s' and muo.user_id = u.id and u.is_admin = 0
+		where muo.created_at between '%s' and '%s' and muo.user_id = u.id and u.role = 0
 		union
 		SELECT distinct FROM_UNIXTIME(left(o.pay_time, 10), '%[1]s') as date, o.user_id
 		FROM %[6]s o, users u -- 发货用户
-		Where o.pay_time between %[7]d and %d and o.user_id = u.id and u.is_admin = 0
+		Where o.pay_time between %[7]d and %d and o.user_id = u.id and u.role = 0
 		union
 		select distinct date_format(bl.created_at, '%[1]s') as date, bl.user_id
 		from balance_log bl, users u -- bet 用户
 		where
 			bl.created_at between '%s' and '%s'
 			and (bl.source_type between 100 and 199 or bl.source_type in (601)) and bl.update_amount <= 0
-			and bl.user_id = u.id and u.is_admin = 0
+			and bl.user_id = u.id and u.role = 0
 		) t
 		left join logon_logs l on l.user_id = t.user_id and l.created_at between '%s' and '%s'
 	group by
@@ -349,7 +349,7 @@ from
 	where
 		bl.finish_at between '%s' and '%s'
 		and (bl.source_type between 100 and 199 or bl.source_type in (201,202,300,301,302,303,304,601)) and bl.update_amount <= 0
-		and bl.user_id = u.id and u.is_admin = 0
+		and bl.user_id = u.id and u.role = 0
 	) t
 group by
 	date
@@ -397,7 +397,7 @@ from
 		left join logon_logs l on l.user_id = u.id and l.created_at between '%s' and '%s'
 	where
 		u.created_at between '%s' and '%s' and u.id = ru.task_obj_id and ru.task_type = 1
-		and u.is_admin = 0
+		and u.role = 0
 	) t
 group by
 	date
@@ -446,7 +446,7 @@ from
 		-- 1-一番赏 2-盲盒机 3-集市-交易 4-潮玩赏 5-发货订单  6-集市-换购
 	where
 		u.created_at between '%s' and '%s' and u.id = ru.task_obj_id and ru.task_type = 1
-		and u.is_admin = 0
+		and u.role = 0
 	) t
 group by 
 	date
@@ -485,7 +485,7 @@ func (d *CohortDao) GetNewUserCnt(dateRange [2]time.Time, queryParams []database
 		Select("count(distinct u.id)").
 		Table("users u").
 		Where("u.created_at between ? and ?", dateRange[0].Format(pkg.DATE_TIME_MIL_FORMAT), dateRange[1].Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
-		Where("u.is_admin = 0").
+		Where("u.role = 0").
 		Scopes(database.ScopeQuery(queryParams)).
 		Scan(&count).Error // 新增注册
 	if err != nil {
@@ -505,7 +505,7 @@ func (d *CohortDao) GetNewUserCntList(dateRange [2]time.Time, queryParams []data
 		).
 		Table("users u").
 		Where("u.created_at between ? and ?", dateRange[0].Format(pkg.DATE_TIME_MIL_FORMAT), dateRange[1].Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
-		Where("u.is_admin = 0").
+		Where("u.role = 0").
 		Scopes(database.ScopeQuery(queryParams)).
 		Group(fmt.Sprintf("date_format(u.created_at, '%s')", pkg.SQL_DATE_FORMAT)).
 		Find(&data).Error
@@ -532,22 +532,22 @@ from
 	(
 	select distinct tv.user_id
 	from market_order tv, users u
-	where tv.created_at between '%[1]s' and '%s' %s and tv.user_id = u.id and u.is_admin = 0
+	where tv.created_at between '%[1]s' and '%s' %s and tv.user_id = u.id and u.role = 0
 	union
 	select distinct muo.user_id
 	from market_user_offer muo, users u
-	where muo.created_at between '%[1]s' and '%s' %s and muo.user_id = u.id and u.is_admin = 0
+	where muo.created_at between '%[1]s' and '%s' %s and muo.user_id = u.id and u.role = 0
 	union
 	SELECT distinct o.user_id
 	FROM %s o, users u -- 发货用户
-	Where o.pay_time between %[5]d and %d %[3]s and o.user_id = u.id and u.is_admin = 0
+	Where o.pay_time between %[5]d and %d %[3]s and o.user_id = u.id and u.role = 0
 	union
 	select distinct bl.user_id
 	from balance_log bl, users u
 	where
 		bl.created_at between '%[1]s' and '%s' %s
 		and (bl.source_type between 100 and 199 or bl.source_type in (601)) and bl.update_amount <= 0
-		and bl.user_id = u.id and u.is_admin = 0
+		and bl.user_id = u.id and u.role = 0
 	) t
 	`,
 		dateRange[0].Format(pkg.DATE_TIME_MIL_FORMAT), dateRange[1].Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT),
@@ -572,7 +572,7 @@ func (d *CohortDao) GetPayUserCnt(dateRange [2]time.Time, queryParams []database
 		Where("bl.finish_at between ? and ?", dateRange[0].Format(pkg.DATE_TIME_MIL_FORMAT), dateRange[1].Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
 		Where("(bl.source_type between 100 and 199 or bl.source_type in (201,202,300,301,302,303,304,601)) and bl.update_amount <= 0").
 		Where("bl.user_id = u.id").
-		Where("u.is_admin = 0").
+		Where("u.role = 0").
 		Scopes(database.ScopeQuery(queryParams)).
 		Scan(&count).Error
 	if err != nil {
@@ -591,7 +591,7 @@ func (d *CohortDao) GetInvitedUserCnt(dateRange [2]time.Time, queryParams []data
 		Where("u.id = ru.task_obj_id").
 		Where("ru.task_type = 1").
 		Where("ru.created_at between ? and ?", dateRange[0].Format(pkg.DATE_TIME_MIL_FORMAT), dateRange[1].Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
-		Where("u.is_admin = 0").
+		Where("u.role = 0").
 		Scopes(database.ScopeQuery(queryParams)).
 		Scan(&count).Error // 新增注册
 	if err != nil {

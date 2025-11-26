@@ -9,12 +9,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type AccessLogWriter struct {
+type Writer struct {
 	gin.ResponseWriter
 	body io.Writer
 }
 
-func (w AccessLogWriter) Write(p []byte) (int, error) {
+func (w Writer) Write(p []byte) (int, error) {
 	if n, err := w.body.Write(p); err != nil {
 		return n, err
 	}
@@ -23,7 +23,7 @@ func (w AccessLogWriter) Write(p []byte) (int, error) {
 
 func AccessLog(body io.Writer) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		bodyWriter := &AccessLogWriter{body: body, ResponseWriter: ctx.Writer}
+		bodyWriter := &Writer{body: body, ResponseWriter: ctx.Writer}
 		ctx.Writer = bodyWriter
 
 		ctx.Next()

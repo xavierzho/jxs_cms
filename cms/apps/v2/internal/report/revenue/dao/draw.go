@@ -55,11 +55,54 @@ func (d *DrawDao) Generate(cDate time.Time) (data *Draw, err error) {
 		Where("pdo.finish_time between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
 		Where("pdo.state in (6, 12)").
 		Where("pdo.user_id = u.id").
-		Where("u.is_admin = 0").
+		Where("u.role = 0").
 		Group(fmt.Sprintf("date_format(pdo.finish_time, '%s')", pkg.SQL_DATE_FORMAT)).
 		Find(&data).Error
 	if err != nil {
 		d.logger.Errorf("Generate: %v", err)
+		return nil, err
+	}
+
+	return data, nil
+}
+
+// draw union all savingRefund
+func (d *DrawDao) Generate2(cDate time.Time) (data *Draw, err error) {
+	pdoDB := d.center.
+		Select(
+			fmt.Sprintf("date_format(pdo.finish_time, '%s') as date", pkg.SQL_DATE_FORMAT),
+			"pdo.amount",
+			"pdo.user_id",
+		).
+		Table("pay_payout_order pdo, users u").
+		Where("pdo.finish_time between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
+		Where("pdo.state in (6, 12)").
+		Where("pdo.user_id = u.id").
+		Where("u.role = 0")
+
+	rodDB := d.center.
+		Select(
+			fmt.Sprintf("date_format(rod.refund_time, '%s') as date", pkg.SQL_DATE_FORMAT),
+			"rod.amount",
+			"rod.user_id",
+		).
+		Table("refund_order_detail rod, users u").
+		Where("rod.refund_time between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
+		Where("rod.status = 3").
+		Where("rod.user_id = u.id").
+		Where("u.role = 0")
+
+	err = d.center.
+		Select(
+			"date",
+			"cast(sum(t.amount) as UNSIGNED) as amount",
+			"count(distinct t.user_id) as user_cnt",
+		).
+		Table("(? union all ?) t", pdoDB, rodDB).
+		Group("date").
+		Find(&data).Error
+	if err != nil {
+		d.logger.Errorf("GetDrawData: %v", err)
 		return nil, err
 	}
 
