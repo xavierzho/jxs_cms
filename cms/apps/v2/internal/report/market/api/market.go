@@ -37,7 +37,7 @@ func (api *MarketApi) Generate(ctx *gin.Context) {
 	svc := service.NewMarketSvc(ctx, local.CMSDB, local.CenterDB, api.logger)
 	go func() {
 		if err := svc.Generate(params); err != nil {
-			api.alarm.AlertErrorMsg(fmt.Sprintf("MarketSvc.Generate: %v", err), message.CMS_ID)
+			api.alarm.AlertErrorMsg(fmt.Sprintf("MarketSvc.Generate: %v", err), message.CmsId)
 		}
 	}()
 

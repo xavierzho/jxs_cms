@@ -28,7 +28,7 @@ func NewRedisClient(host, password string, db int) (*RedisClient, error) {
 	}, nil
 }
 
-// TODO 锁通过 第三方包来实现
+// Lock TODO 锁通过 第三方包来实现
 func (r *RedisClient) Lock(ctx context.Context, key string) (err error) {
 	lockRKey := getLockRKey(key)
 	unlockChannel := getUnlockRKey(key)

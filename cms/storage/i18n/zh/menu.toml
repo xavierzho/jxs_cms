@@ -14,14 +14,19 @@ Market = "集市报表"
 Bet = "潮玩报表"
 Invite = "邀请报表"
 Order = "发货报表"
+Recall = "召回报表"
 
 [menu.Inquire]
 "" = "数据查询"
 Item = "用户物品日志"
+RevenueItem = "用户物品营收"
+BetItem = "用户抽赏物品日志"
 Gacha = "奖箱营收"
 Balance = "用户流水"
 Coupon = "用户优惠券日志"
 Invite = "邀请记录"
+Recall = "召回记录"
+Task = "任务记录"
 
 
 [menu.Activity]
@@ -29,6 +34,10 @@ Invite = "邀请记录"
 CostAward = "欧气值报表"
 CostAwardLog = "欧气值流水"
 Turntable = "转盘抽奖记录"
+StepByStep = "步步高升记录"
+SignIn = "签到记录"
+TeamPK = "组队PK"
+RedemptionCode = "兑换记录"
 
 [menu.Management]
 "" = "用户管理"

@@ -40,7 +40,7 @@ func (api *CostAwardApi) Generate(ctx *gin.Context) {
 	svc := service.NewCostAwardSvc(ctx, local.CMSDB, local.CenterDB, api.logger)
 	go func() {
 		if err := svc.Generate(params); err != nil {
-			api.alarm.AlertErrorMsg(fmt.Sprintf("CostAwardSvc.Generate: %v", err), message.CMS_ID)
+			api.alarm.AlertErrorMsg(fmt.Sprintf("CostAwardSvc.Generate: %v", err), message.CmsId)
 		}
 	}()
 

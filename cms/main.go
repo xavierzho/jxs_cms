@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -103,7 +104,7 @@ func SetupGlobalSetting(port, runMode, configPath string) (err error) {
 
 	config.WatchSettingChange(initSetting, func(str string) {
 		if global.Alarm != nil {
-			global.Alarm.SendMsg(str, message.CMS_ID)
+			global.Alarm.SendMsg(str, message.CmsId)
 		} else {
 			log.Fatal(str)
 		}
@@ -146,13 +147,13 @@ func main() {
 		MaxHeaderBytes: 1 << 20,
 	}
 	go func() {
-		if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := s.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			global.Alarm.SendMsg(fmt.Sprintf("CMS ListenAndServe error: %v", err), int32(message.CmsId))
 			log.Fatalf("s.ListenAndServe: %v", err)
-			global.Alarm.SendMsg(fmt.Sprintf("CMS ListenAndServe error: %v", err), message.CMS_ID)
 		}
 	}()
 	if global.ServerSetting.RunMode == global.RUN_MODE_RELEASE {
-		global.Alarm.SendMsg("Start CMS", message.CMS_ID)
+		global.Alarm.SendMsg("Start CMS", message.CmsId)
 	}
 
 	// 重定向

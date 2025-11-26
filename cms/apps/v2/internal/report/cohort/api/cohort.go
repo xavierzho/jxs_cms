@@ -37,7 +37,7 @@ func (api *CohortApi) Generate(ctx *gin.Context) {
 	svc := service.NewCohortSvc(ctx, local.CMSDB, local.CenterDB, api.logger)
 	go func() {
 		if err := svc.Generate(params); err != nil {
-			api.alarm.AlertErrorMsg(fmt.Sprintf("CohortSvc.Generate: %v", err), message.CMS_ID)
+			api.alarm.AlertErrorMsg(fmt.Sprintf("CohortSvc.Generate: %v", err), message.CmsId)
 		}
 	}()
 

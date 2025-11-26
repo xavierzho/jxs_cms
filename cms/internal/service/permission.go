@@ -129,7 +129,7 @@ func (svc *PermissionSvc) Refresh() (e *errcode.Error) {
 		err = jsonPermission{Permission: dbPermission}.writeJsonFile()
 		if err != nil {
 			errMsg := fmt.Sprintf("写入本地权限文件失败: %v", err)
-			svc.alarm.AlertErrorMsg(errMsg, message.CMS_ID)
+			svc.alarm.AlertErrorMsg(errMsg, message.CmsId)
 			return errcode.ExecuteFail.WithDetails(errMsg)
 		}
 	}
@@ -140,7 +140,7 @@ func (svc *PermissionSvc) Refresh() (e *errcode.Error) {
 func (svc *PermissionSvc) parseJson(path string) (map[string]*dao.Permission, error) {
 	bs, err := os.ReadFile(filepath.Join(global.StoragePath, path))
 	if err != nil {
-		svc.alarm.AlertErrorMsg(fmt.Sprintf("读取本地权限文件失败: %v", err), message.CMS_ID)
+		svc.alarm.AlertErrorMsg(fmt.Sprintf("读取本地权限文件失败: %v", err), message.CmsId)
 		return nil, err
 	}
 	if len(bs) == 0 {
@@ -151,7 +151,7 @@ func (svc *PermissionSvc) parseJson(path string) (map[string]*dao.Permission, er
 	}
 	err = json.Unmarshal(bs, p)
 	if err != nil {
-		svc.alarm.AlertErrorMsg(fmt.Sprintf("解析本地权限数据失败: %v", err), message.CMS_ID)
+		svc.alarm.AlertErrorMsg(fmt.Sprintf("解析本地权限数据失败: %v", err), message.CmsId)
 		return nil, err
 	}
 	permissionMap := make(map[string]*dao.Permission)

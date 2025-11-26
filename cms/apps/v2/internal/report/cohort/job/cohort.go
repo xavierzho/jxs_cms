@@ -65,7 +65,7 @@ func (j *CohortJob) Work() {
 			DataTypeList:   form.COHORT_TYPE_LIST_DAY_1_TO_180,
 		})
 		if err != nil {
-			j.alarm.AlertErrorMsg(fmt.Sprintf("CohortSvc.Generate %s 1~7th: %v", now.Format(pkg.DATE_FORMAT), err), message.CMS_ID)
+			j.alarm.AlertErrorMsg(fmt.Sprintf("CohortSvc.Generate %s 1~7th: %v", now.Format(pkg.DATE_FORMAT), err), message.CmsId)
 			return err
 		}
 
@@ -83,7 +83,7 @@ func (j *CohortJob) Work() {
 			DataTypeList:   []string{form.COHORT_TYPE_NEW_USER_VALIDATED},
 		})
 		if err != nil {
-			j.alarm.AlertErrorMsg(fmt.Sprintf("CohortSvc.Generate %s 7~13th: %v", now.Format(pkg.DATE_FORMAT), err), message.CMS_ID)
+			j.alarm.AlertErrorMsg(fmt.Sprintf("CohortSvc.Generate %s 7~13th: %v", now.Format(pkg.DATE_FORMAT), err), message.CmsId)
 			return err
 		}
 
@@ -101,7 +101,7 @@ func (j *CohortJob) Work() {
 			DataTypeList:   form.COHORT_TYPE_LIST,
 		})
 		if err != nil {
-			j.alarm.AlertErrorMsg(fmt.Sprintf("CohortSvc.Generate %s 14th: %v", now.Format(pkg.DATE_FORMAT), err), message.CMS_ID)
+			j.alarm.AlertErrorMsg(fmt.Sprintf("CohortSvc.Generate %s 14th: %v", now.Format(pkg.DATE_FORMAT), err), message.CmsId)
 			return err
 		}
 
@@ -119,7 +119,7 @@ func (j *CohortJob) Work() {
 			DataTypeList:   form.COHORT_TYPE_LIST,
 		})
 		if err != nil {
-			j.alarm.AlertErrorMsg(fmt.Sprintf("CohortSvc.Generate %s 30th: %v", now.Format(pkg.DATE_FORMAT), err), message.CMS_ID)
+			j.alarm.AlertErrorMsg(fmt.Sprintf("CohortSvc.Generate %s 30th: %v", now.Format(pkg.DATE_FORMAT), err), message.CmsId)
 			return err
 		}
 
@@ -137,7 +137,7 @@ func (j *CohortJob) Work() {
 			DataTypeList:   form.COHORT_TYPE_LIST,
 		})
 		if err != nil {
-			j.alarm.AlertErrorMsg(fmt.Sprintf("CohortSvc.Generate %s 60th: %v", now.Format(pkg.DATE_FORMAT), err), message.CMS_ID)
+			j.alarm.AlertErrorMsg(fmt.Sprintf("CohortSvc.Generate %s 60th: %v", now.Format(pkg.DATE_FORMAT), err), message.CmsId)
 			return err
 		}
 
@@ -155,7 +155,7 @@ func (j *CohortJob) Work() {
 			DataTypeList:   form.COHORT_TYPE_LIST,
 		})
 		if err != nil {
-			j.alarm.AlertErrorMsg(fmt.Sprintf("CohortSvc.Generate %s 90th: %v", now.Format(pkg.DATE_FORMAT), err), message.CMS_ID)
+			j.alarm.AlertErrorMsg(fmt.Sprintf("CohortSvc.Generate %s 90th: %v", now.Format(pkg.DATE_FORMAT), err), message.CmsId)
 			return err
 		}
 
@@ -173,7 +173,7 @@ func (j *CohortJob) Work() {
 			DataTypeList:   form.COHORT_TYPE_LIST,
 		})
 		if err != nil {
-			j.alarm.AlertErrorMsg(fmt.Sprintf("CohortSvc.Generate %s 180th: %v", now.Format(pkg.DATE_FORMAT), err), message.CMS_ID)
+			j.alarm.AlertErrorMsg(fmt.Sprintf("CohortSvc.Generate %s 180th: %v", now.Format(pkg.DATE_FORMAT), err), message.CmsId)
 			return err
 		}
 

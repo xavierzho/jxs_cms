@@ -19,7 +19,7 @@ func TestSendTelMsg(t *testing.T) {
 		TelSendMsgLevel: 40,
 	}
 
-	alarm.SendMsg("dev", RISK_ID)
-	alarm.SendMsg("server", CMS_ID)
+	alarm.SendMsg("dev", RiskId)
+	alarm.SendMsg("server", CmsId)
 
 }

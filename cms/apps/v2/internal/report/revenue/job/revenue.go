@@ -56,6 +56,6 @@ func (j *RevenueBalanceJob) Work() {
 		},
 	})
 	if err != nil {
-		j.alarm.AlertErrorMsg(fmt.Sprintf("RevenueSvc.Generate: %v", err), message.CMS_ID)
+		j.alarm.AlertErrorMsg(fmt.Sprintf("RevenueSvc.Generate: %v", err), message.CmsId)
 	}
 }

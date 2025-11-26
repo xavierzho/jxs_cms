@@ -36,9 +36,9 @@ func NewTelegramAlarm(log telegramLogger) *TelegramAlarm {
 
 func getMsgID(msgType int32) string {
 	switch msgType {
-	case CMS_ID:
+	case CmsId:
 		return TelegramSetting.CMSID
-	case RISK_ID:
+	case RiskId:
 		return TelegramSetting.RiskID
 	default:
 		return TelegramSetting.CMSID
@@ -82,9 +82,9 @@ func (t *TelegramAlarm) SendMsg(msg string, msgType int32) {
 func (t *TelegramAlarm) Alarm(level logrus.Level, msg string) {
 	switch level {
 	case logrus.DebugLevel, logrus.InfoLevel:
-		t.NotifyInfoMsg(msg, CMS_ID)
+		t.NotifyInfoMsg(msg, CmsId)
 	case logrus.WarnLevel, logrus.ErrorLevel, logrus.FatalLevel, logrus.PanicLevel:
-		t.AlertErrorMsg(msg, CMS_ID)
+		t.AlertErrorMsg(msg, CmsId)
 	}
 }
 

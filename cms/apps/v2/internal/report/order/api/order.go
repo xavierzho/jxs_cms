@@ -39,7 +39,7 @@ func (api *DeliveryOrderApi) Generate(ctx *gin.Context) {
 	svc := service.NewDeliveryOrderSvc(ctx, local.CMSDB, local.CenterDB, api.logger)
 	go func() {
 		if err := svc.Generate(params); err != nil {
-			api.alarm.AlertErrorMsg(fmt.Sprintf("DeliveryOrderSvc.Generate: %v", err), message.CMS_ID)
+			api.alarm.AlertErrorMsg(fmt.Sprintf("DeliveryOrderSvc.Generate: %v", err), message.CmsId)
 		}
 	}()
 

@@ -38,7 +38,7 @@ func (api *RevenueApi) Generate(ctx *gin.Context) {
 	svc := service.NewRevenueSvc(ctx, local.CMSDB, local.CenterDB, api.logger)
 	go func() {
 		if err := svc.Generate(params); err != nil {
-			api.alarm.AlertErrorMsg(fmt.Sprintf("RevenueSvc.Generate: %v", err), message.CMS_ID)
+			api.alarm.AlertErrorMsg(fmt.Sprintf("RevenueSvc.Generate: %v", err), message.CmsId)
 		}
 	}()
 

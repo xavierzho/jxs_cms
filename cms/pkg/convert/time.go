@@ -36,7 +36,7 @@ func Parse(format, dateTime string) (Time, error) {
 	return Time{result}, err
 }
 
-// 转换类型 使数据库能插入Time类型数据
+// Value 转换类型 使数据库能插入Time类型数据
 func (t *Time) Value() (driver.Value, error) {
 	return t.Time, nil
 }
@@ -66,7 +66,7 @@ func (t *Time) UnmarshalJSON(data []byte) (err error) {
 func (t *Time) MarshalJSON() ([]byte, error) {
 	b := make([]byte, 0, len(pkg.DATE_TIME_FORMAT)+2)
 	b = append(b, '"')
-	b = time.Time(t.Time).In(pkg.Location).AppendFormat(b, pkg.DATE_TIME_FORMAT)
+	b = t.Time.In(pkg.Location).AppendFormat(b, pkg.DATE_TIME_FORMAT)
 	b = append(b, '"')
 	return b, nil
 }

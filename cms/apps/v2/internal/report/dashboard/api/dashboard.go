@@ -38,7 +38,7 @@ func (api *DashboardApi) Generate(ctx *gin.Context) {
 	svc := service.NewDashboardSvc(ctx, local.CMSDB, local.CenterDB, api.logger)
 	go func() {
 		if err := svc.Generate(params); err != nil {
-			api.alarm.AlertErrorMsg(fmt.Sprintf("DashboardSvc.Generate: %v", err), message.CMS_ID)
+			api.alarm.AlertErrorMsg(fmt.Sprintf("DashboardSvc.Generate: %v", err), message.CmsId)
 		}
 	}()
 

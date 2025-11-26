@@ -59,7 +59,7 @@ func (j *YesterdayRevenueJob) Work() {
 		},
 	})
 	if err != nil {
-		j.alarm.AlertErrorMsg(fmt.Sprintf("RevenueSvc.Generate: %v", err), message.CMS_ID)
+		j.alarm.AlertErrorMsg(fmt.Sprintf("RevenueSvc.Generate: %v", err), message.CmsId)
 	}
 
 	// 更新昨天的 支付, 退款(￥), 钱包, 活跃, 参与数据
@@ -70,6 +70,6 @@ func (j *YesterdayRevenueJob) Work() {
 		},
 	})
 	if err != nil {
-		j.alarm.AlertErrorMsg(fmt.Sprintf("RevenueSvc.Generate: %v", err), message.CMS_ID)
+		j.alarm.AlertErrorMsg(fmt.Sprintf("RevenueSvc.Generate: %v", err), message.CmsId)
 	}
 }

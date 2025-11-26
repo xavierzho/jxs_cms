@@ -56,6 +56,6 @@ func (j *DeliveryOrderJob) Work() {
 	// 初始化成本奖励服务
 	svc := service.NewDeliveryOrderSvc(j.ctx, local.CMSDB, local.CenterDB, j.logger)
 	if err := svc.Generate(&form.GenerateRequest{DateRangeRequest: iForm.DateRangeRequest{DateRange: [2]string{cDateStr, cDateStr}}}); err != nil {
-		j.alarm.AlertErrorMsg(fmt.Sprintf("DeliveryOrderSvc.Generate error: %v", err), message.CMS_ID)
+		j.alarm.AlertErrorMsg(fmt.Sprintf("DeliveryOrderSvc.Generate error: %v", err), message.CmsId)
 	}
 }

@@ -48,6 +48,6 @@ func (j *RealtimeJob) Work() {
 
 	svc := service.NewRealtimeSvc(j.ctx, local.CenterDB, local.RedisClient, j.logger)
 	if err := svc.Cached(&form.CachedRequest{DateTime: now.Format(pkg.DATE_TIME_FORMAT)}); err != nil {
-		j.alarm.AlertErrorMsg(fmt.Sprintf("RealtimeSvc.Cached: %v", err), message.CMS_ID)
+		j.alarm.AlertErrorMsg(fmt.Sprintf("RealtimeSvc.Cached: %v", err), message.CmsId)
 	}
 }

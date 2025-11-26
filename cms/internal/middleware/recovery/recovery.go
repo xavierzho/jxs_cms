@@ -30,7 +30,7 @@ func (r Recovery) Recovery() gin.HandlerFunc {
 		defer func() {
 			if err := recover(); err != nil {
 				r.logger.WithContext(ctx).WithCallersFrames().Errorf("panic recover: %v", err)
-				r.alarm.SendMsg(fmt.Sprintf("[%s] %v", time.Now().Format(pkg.DATE_TIME_FORMAT), err), message.CMS_ID)
+				r.alarm.SendMsg(fmt.Sprintf("[%s] %v", time.Now().Format(pkg.DATE_TIME_FORMAT), err), message.CmsId)
 
 				app.NewResponse(ctx).ToErrorResponse(errcode.ServerError)
 				ctx.Abort()

@@ -48,6 +48,6 @@ func (j *CostAwardJob) Work() {
 	cDateStr := time.Now().AddDate(0, 0, -1).Format(pkg.DATE_FORMAT)
 	svc := service.NewCostAwardSvc(j.ctx, local.CMSDB, local.CenterDB, j.logger)
 	if err := svc.Generate(&form.GenerateRequest{DateRangeRequest: iForm.DateRangeRequest{DateRange: [2]string{cDateStr, cDateStr}}}); err != nil {
-		j.alarm.AlertErrorMsg(fmt.Sprintf("CostAwardSvc.Generate: %v", err), message.CMS_ID)
+		j.alarm.AlertErrorMsg(fmt.Sprintf("CostAwardSvc.Generate: %v", err), message.CmsId)
 	}
 }

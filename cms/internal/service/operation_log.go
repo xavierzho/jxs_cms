@@ -78,11 +78,11 @@ func (svc *OperationLogSvc) initModel(data *dao.OperationLog) (form url.Values, 
 func (svc *OperationLogSvc) Create(data *dao.OperationLog) {
 	formVal, err := svc.initModel(data)
 	if err != nil {
-		svc.alarm.AlertErrorMsg(fmt.Sprintf("OperationLogSvc.initModel\n%#v\n%v", data, err), message.CMS_ID)
+		svc.alarm.AlertErrorMsg(fmt.Sprintf("OperationLogSvc.initModel\n%#v\n%v", data, err), message.CmsId)
 	}
 
 	if err = svc.dao.Create(formVal, data); err != nil {
-		svc.alarm.AlertErrorMsg(fmt.Sprintf("OperationLogSvc.dao.Create\n%#v\n%#v\n%v", formVal, data, err), message.CMS_ID)
+		svc.alarm.AlertErrorMsg(fmt.Sprintf("OperationLogSvc.dao.Create\n%#v\n%#v\n%v", formVal, data, err), message.CmsId)
 	}
 }
 

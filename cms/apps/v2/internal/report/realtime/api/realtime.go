@@ -38,7 +38,7 @@ func (api *RealtimeApi) Cached(ctx *gin.Context) {
 	svc := service.NewRealtimeSvc(ctx, local.CenterDB, local.RedisClient, api.logger)
 	go func() {
 		if err := svc.Cached(params); err != nil {
-			api.alarm.AlertErrorMsg(fmt.Sprintf("RealtimeSvc.Cached: %v", err), message.CMS_ID)
+			api.alarm.AlertErrorMsg(fmt.Sprintf("RealtimeSvc.Cached: %v", err), message.CmsId)
 		}
 	}()
 

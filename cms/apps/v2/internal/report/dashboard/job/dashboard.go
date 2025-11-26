@@ -47,6 +47,6 @@ func (j *DashboardJob) Work() {
 	cDateStr := time.Now().AddDate(0, 0, -1).Format(pkg.DATE_FORMAT)
 	svc := service.NewDashboardSvc(j.ctx, local.CMSDB, local.CenterDB, j.logger)
 	if err := svc.Generate(&form.GenerateRequest{DateRange: [2]string{cDateStr, cDateStr}}); err != nil {
-		j.alarm.AlertErrorMsg(fmt.Sprintf("DashboardSvc.Generate: %v", err), message.CMS_ID)
+		j.alarm.AlertErrorMsg(fmt.Sprintf("DashboardSvc.Generate: %v", err), message.CmsId)
 	}
 }

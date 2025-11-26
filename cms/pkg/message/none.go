@@ -31,9 +31,9 @@ func (t *NoneAlarm) SendMsg(msg string, msgType int32) {
 func (t *NoneAlarm) Alarm(level logrus.Level, msg string) {
 	switch level {
 	case logrus.DebugLevel, logrus.InfoLevel:
-		t.NotifyInfoMsg(msg, CMS_ID)
+		t.NotifyInfoMsg(msg, CmsId)
 	case logrus.WarnLevel, logrus.ErrorLevel, logrus.FatalLevel, logrus.PanicLevel:
-		t.AlertErrorMsg(msg, CMS_ID)
+		t.AlertErrorMsg(msg, CmsId)
 	}
 }
 
