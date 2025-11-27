@@ -113,7 +113,7 @@ type CostAwardLog struct {
 func FormatLog(ctx *gin.Context, _summary map[string]any, data []map[string]any) (summary map[string]any, result []*CostAwardLog) {
 	summary = _summary
 	if summary != nil {
-		summary["update_amount"] = util.ConvertAmount2Decimal(summary["update_amount"]).Mul(cForm.COST_AWARD_POINT_STEP)
+		summary["update_amount"] = util.ConvertAmount2Decimal(summary["update_amount"])
 	}
 
 	for _, item := range data {
@@ -122,9 +122,9 @@ func FormatLog(ctx *gin.Context, _summary map[string]any, data []map[string]any)
 			UserID:      convert.GetInt64(item["user_id"]),
 			UserName:    convert.GetString(item["user_name"]),
 			LogTypeStr:  global.I18n.T(ctx, "source_type", convert.GetString(item["source_type"])),
-			UpdatePoint: util.ConvertAmount2Decimal(item["update_amount"]).Mul(cForm.COST_AWARD_POINT_STEP),
-			BeforePoint: util.ConvertAmount2Decimal(item["before_balance"]).Mul(cForm.COST_AWARD_POINT_STEP),
-			AfterPoint:  util.ConvertAmount2Decimal(item["after_balance"]).Mul(cForm.COST_AWARD_POINT_STEP),
+			UpdatePoint: util.ConvertAmount2Decimal(item["update_amount"]),
+			BeforePoint: util.ConvertAmount2Decimal(item["before_balance"]),
+			AfterPoint:  util.ConvertAmount2Decimal(item["after_balance"]),
 		})
 	}
 

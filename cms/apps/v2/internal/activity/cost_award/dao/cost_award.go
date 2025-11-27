@@ -18,7 +18,7 @@ type CostAward struct {
 	GetUserCnt          uint  `gorm:"column:get_user_cnt; type:int unsigned; default:0; comment:获得用户数" json:"get_user_cnt"`
 	GetAmount           uint  `gorm:"column:get_amount; type:bigint; default:0; comment:获得总额" json:"get_amount"`
 	AcceptUserCnt       uint  `gorm:"column:accept_user_cnt; type:int unsigned; default:0; comment:领取用户数" json:"accept_user_cnt"`
-	AcceptAmount        uint  `gorm:"column:accept_amount; type:bigint; default:0; comment:领取总额" json:"accept_amount"`
+	AcceptAmount        int64 `gorm:"column:accept_amount; type:bigint; default:0; comment:领取总额" json:"accept_amount"`
 	AwardAmount         int64 `gorm:"column:award_amount; type:bigint; default:0; comment:现金奖励总额" json:"award_amount"`
 	AwardItemShowPrice  int64 `gorm:"column:award_item_show_price; type:bigint; default:0; comment:物品奖励展示价总额" json:"award_item_show_price"`
 	AwardItemInnerPrice int64 `gorm:"column:award_item_inner_price; type:bigint; default:0; comment:物品奖励成本价总额" json:"award_item_inner_price"`
@@ -88,12 +88,12 @@ func (d *CostAwardDao) generateAward(cDate time.Time) (data *CostAward, err erro
 	err = d.center.
 		Select(
 			fmt.Sprintf("date_format(ua.created_at, '%s') as date", pkg.SQL_DATE_FORMAT),
-			"sum(case type when 0 then award_value else 0 end) as award_amount",
+			"sum(case type when 0 then value else 0 end) as award_amount",
 			"sum(case type when 20 then cac.num * ifnull(i.show_price, 0) else 0 end) as award_item_show_price",
 			"sum(case type when 20 then cac.num * ifnull(i.inner_price, 0) else 0 end) as award_item_inner_price",
 		).
 		Table("users u, activity a, user_activity ua, activity_cost_award_config cac").
-		Joins("left join item i on cac.type = 20 and cac.award_value = i.id").
+		Joins("left join item i on cac.type = 20 and cac.value = i.id").
 		Where("a.key = 'CostAward'").
 		Where("a.id = ua.activity_id").
 		Where("ua.created_at between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).

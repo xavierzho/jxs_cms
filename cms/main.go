@@ -54,7 +54,7 @@ func init() {
 
 func initSetting() (err error) {
 	// 设置金额精度
-	util.SetPrecision(util.DECIMAL_HUNDRED)
+	util.SetPrecision(util.DecimalHundred)
 
 	if err = internal.InitSetting(config); err != nil {
 		return fmt.Errorf("internal.InitSetting: %w", err)
@@ -161,7 +161,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer f.Close()
+	defer func() {
+		_ = f.Close()
+	}()
 	redirectStderr(f)
 
 	// 退出处理
