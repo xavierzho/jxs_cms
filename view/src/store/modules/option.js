@@ -17,8 +17,10 @@ const state = {
   ],
 
   userType: [
-    {"value": true, "label": i18n.t("option.YesOrNo[0]")},
-    {"value": false, "label": i18n.t("option.YesOrNo[1]")},
+    {"value": 0, "label": i18n.t("option.userType[0]")},
+    {"value": 1, "label": i18n.t("option.userType[1]")},
+    {"value": 2, "label": i18n.t("option.userType[2]")},
+    {"value": 3, "label": i18n.t("option.userType[3]")},
   ],
 
   inviteUserType: [

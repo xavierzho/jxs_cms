@@ -28,8 +28,8 @@
           <el-form-item :label="$t('user.Tel')">
             <input-number v-model="searchFormLog.tel" :range="[0,99999999999]" clearable></input-number>
           </el-form-item>
-          <el-form-item :label="$t('user.IsAdmin')">
-            <el-select v-model="searchFormLog.is_admin" clearable @change="changeIsAmin">
+          <el-form-item :label="$t('user.UserType')">
+            <el-select v-model="searchFormLog.role" clearable multiple>
               <el-option v-for="(item, index) in userType" :key="index" :label="item.label"
                          :value="item.value"></el-option>
             </el-select>
@@ -321,7 +321,7 @@ export default {
         user_ids: '',
         user_name: '',
         tel: '',
-        is_admin: false,
+        role: [],
         channel: null,
         log_type_list: ['101', '102', '103', '104', '105','106'],
         gacha_name: '',

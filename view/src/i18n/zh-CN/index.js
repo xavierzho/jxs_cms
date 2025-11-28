@@ -69,6 +69,12 @@ export default {
   },
   option:{
     YesOrNo: ['是', '否'],
+    userType: {
+      0: '用户',
+      1: '内部',
+      2: '客服',
+      3: '博主'
+    },
     DatePickerOptions: ['一周内', '一个月内', '三个月内', '六个月内', '一年内'],
     OperationLogModule: ["路由", "角色", "用户", "流水"],
     BetOptions: ['一番赏', '扭蛋机', '潮玩赏', '洞洞乐', '潮社赏'],

@@ -10,12 +10,12 @@ import (
 )
 
 type UserInfoRequest struct {
-	UserID   int64  `form:"user_id"`
-	UserIDS  string `form:"user_ids"`
-	UserName string `form:"user_name"`
-	Tel      string `form:"tel"`
-	IsAdmin  *bool  `form:"is_admin"`
-	Channel  int32  `form:"channel"`
+	UserID   int64   `form:"user_id"`
+	UserIDS  string  `form:"user_ids"`
+	UserName string  `form:"user_name"`
+	Tel      string  `form:"tel"`
+	Roles    []int32 `form:"role[]"`
+	Channel  int32   `form:"channel"`
 }
 
 func (q *UserInfoRequest) Parse() (queryParams database.QueryWhereGroup, err error) {
@@ -64,14 +64,10 @@ func (q *UserInfoRequest) Parse() (queryParams database.QueryWhereGroup, err err
 		})
 	}
 
-	if q.IsAdmin != nil {
-		var isAdmin = 0
-		if *q.IsAdmin {
-			isAdmin = 1
-		}
+	if len(q.Roles) != 0 {
 		queryParams = append(queryParams, database.QueryWhere{
-			Prefix: "u.role = ?",
-			Value:  []any{isAdmin},
+			Prefix: "u.role in ?",
+			Value:  []any{q.Roles},
 		})
 	}
 

@@ -6,7 +6,6 @@ import (
 	"data_backend/apps/v2/internal/activity/cost_award/dao"
 	"data_backend/apps/v2/internal/activity/cost_award/form"
 	"data_backend/internal/global"
-	"data_backend/pkg/convert"
 	"data_backend/pkg/errcode"
 	"data_backend/pkg/excel"
 	"data_backend/pkg/logger"
@@ -32,20 +31,11 @@ func NewCostAwardLogSvc(ctx *gin.Context, center *gorm.DB, log *logger.Logger) *
 
 func (svc *CostAwardLogSvc) OptionsLogType() []map[string]string {
 	return []map[string]string{
-		{"value": convert.GetString(form.CostAwardLogType_Normal), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_Normal))},
-		{"value": convert.GetString(form.CostAwardLogType_Invite), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_Invite))},
-		{"value": convert.GetString(form.CostAwardLogType_Accept), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_Accept))},
-		{"value": convert.GetString(form.CostAwardLogType_Admin), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_Admin))},
-		{"value": convert.GetString(form.CostAwardLogType_Turntable), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_Turntable))}, //转盘抽奖
-		{"value": convert.GetString(form.CostAwardLogType_StepByStep), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_StepByStep))},
-		{"value": convert.GetString(form.CostAwardLogType_SignIn), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_SignIn))},
-		{"value": convert.GetString(form.CostAwardLogType_LuckyNum), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_LuckyNum))},
-		{"value": convert.GetString(form.CostAwardLogType_CostAwardOffset), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_CostAwardOffset))},
-		{"value": convert.GetString(form.CostAwardLogType_Recall), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_Recall))},
-		{"value": convert.GetString(form.CostAwardLogType_RedemptionCode), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_RedemptionCode))},
-		{"value": convert.GetString(form.CostAwardLogType_Task_CostAmount), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_Task_CostAmount))},
-		{"value": convert.GetString(form.CostAwardLogType_Task_PrizeValue), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_Task_PrizeValue))},
-		{"value": convert.GetString(form.CostAwardLogType_Task_Week), "label": global.I18n.T(svc.ctx, "cost_award.log_type", convert.GetString(form.CostAwardLogType_Task_Week))},
+		{"value": "100002", "label": global.I18n.T(svc.ctx, "source_type", "100002")},
+		{"value": "100008", "label": global.I18n.T(svc.ctx, "source_type", "100008")},
+		{"value": "100009", "label": global.I18n.T(svc.ctx, "source_type", "100009")},
+		{"value": "100010", "label": global.I18n.T(svc.ctx, "source_type", "100010")},
+		{"value": "200000", "label": global.I18n.T(svc.ctx, "source_type", "200000")},
 	}
 }
 

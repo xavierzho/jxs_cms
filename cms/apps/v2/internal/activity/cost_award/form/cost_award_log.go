@@ -18,23 +18,6 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-const (
-	CostAwardLogType_Normal          = 0   // 消费返欧气值
-	CostAwardLogType_Invite          = 1   // 邀请用户消费返欧气值
-	CostAwardLogType_Accept          = 100 // 欧气值兑换
-	CostAwardLogType_Turntable       = 101 // 转盘抽奖
-	CostAwardLogType_StepByStep      = 102 // 步步高升
-	CostAwardLogType_SignIn          = 103 // 签到
-	CostAwardLogType_LuckyNum        = 104 // 幸运数
-	CostAwardLogType_CostAwardOffset = 105 // 欧气值抵扣
-	CostAwardLogType_Recall          = 106 // 好友召回
-	CostAwardLogType_RedemptionCode  = 107 // 兑换码
-	CostAwardLogType_Task_CostAmount = 201 // 任务 抽赏有送
-	CostAwardLogType_Task_PrizeValue = 202 // 任务 SP悬赏
-	CostAwardLogType_Task_Week       = 203 // 任务 周任务（统一使用这个）
-	CostAwardLogType_Admin           = 999 // 管理员手动修改
-)
-
 type ListLogRequest struct {
 	app.Pager
 	AllLogRequest
@@ -49,7 +32,7 @@ func (q *ListLogRequest) Parse() (dateTimeRange [2]time.Time, queryParams databa
 type AllLogRequest struct {
 	iForm.DateTimeRangeRequest
 	cForm.UserInfoRequest
-	LogType []uint32 `form:"log_type[]"`
+	LogType []int32 `form:"log_type[]"`
 }
 
 func (q *AllLogRequest) Parse() (dateTimeRange [2]time.Time, queryParams database.QueryWhereGroup, err error) {
@@ -67,7 +50,7 @@ func (q *AllLogRequest) Parse() (dateTimeRange [2]time.Time, queryParams databas
 
 	if len(q.LogType) != 0 {
 		queryParams = append(queryParams, database.QueryWhere{
-			Prefix: "caul.log_type in ?",
+			Prefix: "bl.source_type in ?",
 			Value:  []any{q.LogType},
 		})
 	}
@@ -78,20 +61,7 @@ func (q *AllLogRequest) Parse() (dateTimeRange [2]time.Time, queryParams databas
 func (q *AllLogRequest) Valid() error {
 	for _, logType := range q.LogType {
 		switch logType {
-		case CostAwardLogType_Normal:
-		case CostAwardLogType_Invite:
-		case CostAwardLogType_Accept:
-		case CostAwardLogType_Turntable:
-		case CostAwardLogType_StepByStep:
-		case CostAwardLogType_SignIn:
-		case CostAwardLogType_LuckyNum:
-		case CostAwardLogType_CostAwardOffset:
-		case CostAwardLogType_Recall:
-		case CostAwardLogType_RedemptionCode:
-		case CostAwardLogType_Task_CostAmount:
-		case CostAwardLogType_Task_PrizeValue:
-		case CostAwardLogType_Task_Week:
-		case CostAwardLogType_Admin:
+		case 100002, 100009, 100008, 100010, 200000:
 		default:
 			return fmt.Errorf("not expected LogType: %d", q.LogType)
 		}
