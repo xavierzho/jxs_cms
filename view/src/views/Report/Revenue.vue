@@ -225,6 +225,22 @@
               <template v-slot="data">{{data.row.saving_refund_amount_ali | localeNum2f}}</template>
             </el-table-column>
 
+            <el-table-column prop="recharge_amount_huifu" :label="$t('report.revenue.summary.recharge_amount_huifu')" min-width="90px" align="center">
+              <template v-slot="data">{{data.row.recharge_amount_huifu | localeNum2f}}</template>
+            </el-table-column>
+            <el-table-column prop="discount_amount_huifu" :label="$t('report.revenue.summary.discount_amount_huifu')" min-width="90px" align="center">
+              <template v-slot="data">{{data.row.discount_amount_huifu | localeNum2f}}</template>
+            </el-table-column>
+            <el-table-column prop="saving_amount_huifu" :label="$t('report.revenue.summary.saving_amount_huifu')" min-width="90px" align="center">
+              <template v-slot="data">{{data.row.saving_amount_huifu | localeNum2f}}</template>
+            </el-table-column>
+            <el-table-column prop="recharge_refund_amount_huifu" :label="$t('report.revenue.summary.recharge_refund_amount_huifu')" min-width="90px" align="center">
+              <template v-slot="data">{{data.row.recharge_refund_amount_huifu | localeNum2f}}</template>
+            </el-table-column>
+            <el-table-column prop="saving_refund_amount_huifu" :label="$t('report.revenue.summary.saving_refund_amount_huifu')" min-width="90px" align="center">
+              <template v-slot="data">{{data.row.saving_refund_amount_huifu | localeNum2f}}</template>
+            </el-table-column>
+
             <el-table-column prop="draw_amount" :label="$t('report.revenue.summary.draw_amount')" min-width="90px" align="center">
               <template v-slot="data">{{data.row.draw_amount | localeNum2f}}</template>
             </el-table-column>

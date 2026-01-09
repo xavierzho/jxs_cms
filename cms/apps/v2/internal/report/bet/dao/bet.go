@@ -23,6 +23,7 @@ type Bet struct {
 	Amount          uint `gorm:"column:amount; default:0;" json:"amount"`
 	AmountWeChat    uint `gorm:"column:amount_wechat; default:0;" json:"amount_wechat"`
 	AmountAli       uint `gorm:"column:amount_ali; default:0;" json:"amount_ali"`
+	AmountHuiFu     uint `gorm:"column:amount_huifu; default:0;" json:"amount_huifu"`
 }
 
 func (Bet) TableName() string {
@@ -146,6 +147,7 @@ func (d *BetDao) generatePay(cDate time.Time) (data []*Bet, err error) {
 			"gm.type as data_type",
 			"sum(case ppo.platform_id when 'wechatapp' then ppo.amount-ppo.refund_amount when 'wechatjs' then ppo.amount-ppo.refund_amount else 0 end) as  amount_wechat",
 			"sum(case ppo.platform_id when 'alipay' then ppo.amount-ppo.refund_amount else 0 end) as  amount_ali",
+			"sum(case ppo.platform_id when 'huifu' then ppo.amount-ppo.refund_amount else 0 end) as  amount_huifu",
 		).
 		Table("pay_payment_order ppo, users u, gacha_machine gm").
 		Where("ppo.finish_time between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).

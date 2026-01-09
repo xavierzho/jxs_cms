@@ -31,6 +31,9 @@
       <el-table-column prop="amount_ali" :label="$t('report.bet.amount_ali')" min-width="90px" align="center">
         <template v-slot="data">{{ data.row.amount_ali | localeNum2f }}</template>
       </el-table-column>
+      <el-table-column prop="amount_huifu" :label="$t('report.bet.amount_huifu')" min-width="90px" align="center">
+        <template v-slot="data">{{ data.row.amount_huifu | localeNum2f }}</template>
+      </el-table-column>
     </el-table>
   </div>
 </template>

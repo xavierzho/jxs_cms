@@ -30,18 +30,23 @@ type Pay struct {
 	RechargeAmount             uint `gorm:"column:recharge_amount; default:0" json:"recharge_amount"`                             // 充值金额
 	RechargeAmountWeChat       uint `gorm:"column:recharge_amount_wechat; default:0" json:"recharge_amount_wechat"`               // 充值金额(微信)
 	RechargeAmountAli          uint `gorm:"column:recharge_amount_ali; default:0" json:"recharge_amount_ali"`                     // 充值金额(支付宝)
+	RechargeAmountHuiFu        uint `gorm:"column:recharge_amount_huifu; default:0" json:"recharge_amount_huifu"`                 // 充值金额(汇付)
 	RechargeRefundAmount       uint `gorm:"column:recharge_refund_amount; default:0" json:"recharge_refund_amount"`               // 充值退款金额
 	RechargeRefundAmountWeChat uint `gorm:"column:recharge_refund_amount_wechat; default:0" json:"recharge_refund_amount_wechat"` // 充值退款金额(微信)
 	RechargeRefundAmountAli    uint `gorm:"column:recharge_refund_amount_ali; default:0" json:"recharge_refund_amount_ali"`       // 充值退款金额(支付宝)
+	RechargeRefundAmountHuiFu  uint `gorm:"column:recharge_refund_amount_huifu; default:0" json:"recharge_refund_amount_huifu"`   // 充值退款金额(汇付)
 	DiscountAmount             uint `gorm:"column:discount_amount; default:0" json:"discount_amount"`                             // 总折扣金额
 	DiscountAmountWeChat       uint `gorm:"column:discount_amount_wechat; default:0" json:"discount_amount_wechat"`               // 总折扣金额(微信)
 	DiscountAmountAli          uint `gorm:"column:discount_amount_ali; default:0" json:"discount_amount_ali"`                     // 总折扣金额(支付宝)
+	DiscountAmountHuiFu        uint `gorm:"column:discount_amount_huifu; default:0" json:"discount_amount_huifu"`                 // 总折扣金额(汇付)
 	SavingAmount               uint `gorm:"column:saving_amount; default:0" json:"saving_amount"`                                 // 储值金额
 	SavingAmountWeChat         uint `gorm:"column:saving_amount_wechat; default:0" json:"saving_amount_wechat"`                   // 储值金额(微信)
 	SavingAmountAli            uint `gorm:"column:saving_amount_ali; default:0" json:"saving_amount_ali"`                         // 储值金额(支付宝)
+	SavingAmountHuiFu          uint `gorm:"column:saving_amount_huifu; default:0" json:"saving_amount_huifu"`                     // 储值金额(汇付)
 	SavingRefundAmount         uint `gorm:"column:saving_refund_amount; default:0" json:"saving_refund_amount"`                   // 储值退款金额
 	SavingRefundAmountWeChat   uint `gorm:"column:saving_refund_amount_wechat; default:0" json:"saving_refund_amount_wechat"`     // 储值退款金额(微信)
 	SavingRefundAmountAli      uint `gorm:"column:saving_refund_amount_ali; default:0" json:"SavingRefundAmountAli"`              // 储值退款金额(支付宝)
+	SavingRefundAmountHuiFu    uint `gorm:"column:saving_refund_amount_huifu; default:0" json:"saving_refund_amount_huifu"`       // 储值退款金额(汇付)
 }
 
 func (Pay) TableName() string {
@@ -168,9 +173,11 @@ func (d *PayDao) generateRecharge(cDate time.Time) (data *Pay, err error) {
 			"sum(ppo.amount) as recharge_amount",
 			"sum(case ppo.platform_id when 'wechatapp' then ppo.amount when 'wechatjs' then ppo.amount else 0 end) as recharge_amount_wechat",
 			"sum(case ppo.platform_id when 'alipay' then ppo.amount else 0 end) as recharge_amount_ali",
+			"sum(case ppo.platform_id when 'huifu' then ppo.amount else 0 end) as recharge_amount_huifu",
 			"sum(ppo.discount_really) as discount_amount",
 			"sum(case ppo.platform_id when 'wechatapp' then ppo.discount_really when 'wechatjs' then ppo.discount_really else 0 end) as discount_amount_wechat",
 			"sum(case ppo.platform_id when 'alipay' then ppo.discount_really else 0 end) as discount_amount_ali",
+			"sum(case ppo.platform_id when 'huifu' then ppo.discount_really else 0 end) as discount_amount_huifu",
 		).
 		Table("pay_payment_order ppo").
 		Joins("join users u on ppo.user_id = u.id and u.role = 0").
@@ -194,6 +201,7 @@ func (d *PayDao) generateRechargeRefund(cDate time.Time) (data *Pay, err error) 
 			"sum(refund_amount) as recharge_refund_amount",
 			"sum(case ppo.platform_id when 'wechatapp' then ppo.refund_amount when 'wechatjs' then ppo.refund_amount else 0 end) as recharge_refund_amount_wechat",
 			"sum(case ppo.platform_id when 'alipay' then ppo.refund_amount else 0 end) as recharge_refund_amount_ali",
+			"sum(case ppo.platform_id when 'huifu' then ppo.refund_amount else 0 end) as recharge_refund_amount_huifu",
 		).
 		Table("pay_payment_order ppo").
 		Joins("join users u on ppo.user_id = u.id and u.role = 0").
@@ -218,6 +226,7 @@ func (d *PayDao) generateSaving(cDate time.Time) (data *Pay, err error) {
 			"sum(ppo.amount) as saving_amount",
 			"sum(case ppo.platform_id when 'wechatapp' then ppo.amount when 'wechatjs' then ppo.amount else 0 end) as saving_amount_wechat",
 			"sum(case ppo.platform_id when 'alipay' then ppo.amount else 0 end) as saving_amount_ali",
+			"sum(case ppo.platform_id when 'huifu' then ppo.amount else 0 end) as saving_amount_huifu",
 		).
 		Table("pay_payment_order ppo").
 		Joins("join users u on ppo.user_id = u.id and u.role = 0").
@@ -242,6 +251,7 @@ func (d *PayDao) generateSavingRefund(cDate time.Time) (data *Pay, err error) {
 			"sum(rod.amount) as saving_refund_amount",
 			"sum(case ppo.platform_id when 'wechatapp' then rod.amount when 'wechatjs' then rod.amount else 0 end) as saving_refund_amount_wechat",
 			"sum(case ppo.platform_id when 'alipay' then rod.amount else 0 end) as saving_refund_amount_ali",
+			"sum(case ppo.platform_id when 'huifu' then rod.amount else 0 end) as saving_refund_amount_huifu",
 		).
 		Table("refund_order_detail rod, users u, pay_payment_order ppo").
 		Where("rod.refund_time between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).

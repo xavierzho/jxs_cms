@@ -12,15 +12,15 @@ import (
 )
 
 const (
-	BET_TYPE_FIRST_PRIZE = "FirstPrize" // 一番赏   // gacha_type = 1 source_type = 101
-	BET_TYPE_GASHAPON    = "Gashapon"   // 扭蛋机   // gacha_type = 2 source_type = 102
-	BET_TYPE_CHAO        = "Chao"       // 潮玩赏   // gacha_type = 3 source_type = 103
-	BET_TYPE_HOLE        = "Hole"       // 洞洞乐   // gacha_type = 4 source_type = 104
-	BET_TYPE_CHAO_SHE    = "ChaoShe"    // 潮社赏   // gacha_type = 5 source_type = 105
-	BET_TYPE_SHARE_BILL  = "ShareBill"  // 一网打尽 // gacha_type = 6 source_type = 106
+	BET_TYPE_FIRST_PRIZE = "FirstPrize" // 一番赏 // gacha_type = 1 source_type = 101
+	BET_TYPE_GASHAPON    = "Gashapon"   // 扭蛋机 // gacha_type = 2 source_type = 102
+	BET_TYPE_CHAO        = "Chao"       // 潮玩赏 // gacha_type = 3 source_type = 103
+	BET_TYPE_HOLE        = "Hole"       // 洞洞乐 // gacha_type = 4 source_type = 104
+	BET_TYPE_CLUSTER     = "ClusterBox" // 擂台赏 // gacha_type = 5 source_type = 105
+	BET_TYPE_CHUANCHUAN  = "ChuanChuan" // 串串赏 // gacha_type = 6 source_type = 106
 )
 
-var BET_TYPE_LIST = []string{BET_TYPE_FIRST_PRIZE, BET_TYPE_GASHAPON, BET_TYPE_CHAO, BET_TYPE_HOLE, BET_TYPE_CHAO_SHE, BET_TYPE_SHARE_BILL}
+var BET_TYPE_LIST = []string{BET_TYPE_FIRST_PRIZE, BET_TYPE_GASHAPON, BET_TYPE_CHAO, BET_TYPE_HOLE, BET_TYPE_CLUSTER, BET_TYPE_CHUANCHUAN}
 
 type GenerateRequest struct {
 	DateRange [2]string `form:"date_range[]" binding:"required"`
@@ -53,7 +53,7 @@ func (q *AllRequest) Parse() (dateRange [2]time.Time, err error) {
 
 func (q *AllRequest) Valid() (err error) {
 	switch q.DataType {
-	case BET_TYPE_FIRST_PRIZE, BET_TYPE_GASHAPON, BET_TYPE_CHAO, BET_TYPE_HOLE, BET_TYPE_CHAO_SHE, BET_TYPE_SHARE_BILL:
+	case BET_TYPE_FIRST_PRIZE, BET_TYPE_GASHAPON, BET_TYPE_CHAO, BET_TYPE_HOLE, BET_TYPE_CLUSTER, BET_TYPE_CHUANCHUAN:
 	default:
 		return fmt.Errorf("not expected data_type: " + q.DataType)
 	}
@@ -72,6 +72,7 @@ type Bet struct {
 	AmountBalance   decimal.Decimal `json:"amount_balance"`
 	AmountWeChat    decimal.Decimal `json:"amount_wechat"`
 	AmountAli       decimal.Decimal `json:"amount_ali"`
+	AmountHuiFu     decimal.Decimal `json:"amount_huifu"`
 }
 
 func Format(dateRange [2]time.Time, data []*dao.Bet) (result []Bet, err error) {
@@ -92,6 +93,7 @@ func Format(dateRange [2]time.Time, data []*dao.Bet) (result []Bet, err error) {
 			Amount:          util.ConvertAmount2Decimal(dataMap[cDateStr].Amount),
 			AmountWeChat:    util.ConvertAmount2Decimal(dataMap[cDateStr].AmountWeChat),
 			AmountAli:       util.ConvertAmount2Decimal(dataMap[cDateStr].AmountAli),
+			AmountHuiFu:     util.ConvertAmount2Decimal(dataMap[cDateStr].AmountHuiFu),
 		}
 
 		result = append(result, item)

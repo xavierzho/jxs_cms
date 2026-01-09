@@ -1,6 +1,6 @@
 export default {
   revenue: {
-    type:{
+    type: {
       active: "活跃用户",
       pating: "参与用户",
       pay: "付费数据",
@@ -79,9 +79,14 @@ export default {
       revenue_rate: "营收率",
       revenue_arpu: "营收ARPU",
       refund_amount: "总退款(潮币)",
-      discount_amount:"总折扣",
-      discount_amount_wechat:"总折扣(微信)",
-      discount_amount_ali:"总折扣(支付宝)",
+      discount_amount: "总折扣",
+      discount_amount_wechat: "总折扣(微信)",
+      discount_amount_ali: "总折扣(支付宝)",
+      recharge_amount_huifu: "总充值(汇付)",
+      recharge_refund_amount_huifu: "总充值退款(汇付)",
+      saving_amount_huifu: "总储值(汇付)",
+      saving_refund_amount_huifu: "总储值退款(汇付)",
+      discount_amount_huifu: "总折扣(汇付)",
     },
   },
 
@@ -122,7 +127,7 @@ export default {
     ninety_day_rate: "第90天占比",
     no_180_day_rate: "第180天占比",
 
-    new_user_validated:{
+    new_user_validated: {
       total: "总数",
       first_day: "第7天",
       second_day: "第8天",
@@ -166,7 +171,7 @@ export default {
       rechargeAmountSummaryToday: "今日充值",
     },
 
-    type:{
+    type: {
       active: "日活用户",
       pating: "参与用户",
       payAmountSummary: "累计付费总额",
@@ -227,8 +232,8 @@ export default {
       Gashapon: "扭蛋机",
       Chao: "潮玩赏",
       Hole: "洞洞乐",
-      ChaoShe: "潮社赏",
-      ShareBill: "一网打尽",
+      ClusterBox: "擂台赏",
+      ChuanChuan: "串串赏",
     },
   },
 
@@ -255,7 +260,7 @@ export default {
     recycling_price: "回收价",
   },
 
-  dashboard:{
+  dashboard: {
     recharge_amount: '总充值',
     recharge_amount_wechat: '总充值(微信)',
     recharge_amount_ali: '总充值(支付宝)',

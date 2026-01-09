@@ -101,6 +101,7 @@ func (svc *BetSvc) _generate(cDate time.Time) (dataList []*dao.Bet, err error) {
 		betType := convertBetType(item.DataType)
 		dataMap[betType].AmountWeChat = item.AmountWeChat
 		dataMap[betType].AmountAli = item.AmountAli
+		dataMap[betType].AmountHuiFu = item.AmountHuiFu
 	}
 
 	return
@@ -117,9 +118,9 @@ func convertBetType(dataType string) string {
 	case "4", "104":
 		return form.BET_TYPE_HOLE
 	case "5", "105":
-		return form.BET_TYPE_CHAO_SHE
+		return form.BET_TYPE_CLUSTER
 	case "6", "106":
-		return form.BET_TYPE_SHARE_BILL
+		return form.BET_TYPE_CHUANCHUAN
 	default:
 		return ""
 	}

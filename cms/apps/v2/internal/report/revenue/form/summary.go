@@ -23,9 +23,11 @@ type Summary struct {
 	RechargeAmount             decimal.Decimal `json:"recharge_amount"`               // 充值金额
 	RechargeAmountWeChat       decimal.Decimal `json:"recharge_amount_wechat"`        // 充值金额 微信
 	RechargeAmountAli          decimal.Decimal `json:"recharge_amount_ali"`           // 充值金额 支付宝
+	RechargeAmountHuiFu        decimal.Decimal `json:"recharge_amount_huifu"`         // 充值金额 汇付
 	RechargeRefundAmount       decimal.Decimal `json:"recharge_refund_amount"`        // 充值退款金额
 	RechargeRefundAmountWeChat decimal.Decimal `json:"recharge_refund_amount_wechat"` // 充值退款金额 微信
 	RechargeRefundAmountAli    decimal.Decimal `json:"recharge_refund_amount_ali"`    // 充值退款金额 支付宝
+	RechargeRefundAmountHuiFu  decimal.Decimal `json:"recharge_refund_amount_huifu"`  // 充值退款金额 汇付
 	DrawAmount                 decimal.Decimal `json:"draw_amount"`                   // 总退款(￥)
 	TaxAmount                  decimal.Decimal `json:"tax_amount"`                    // 总抽水
 	Revenue                    decimal.Decimal `json:"revenue"`                       // 总营收: 日付费-日退款(￥)
@@ -35,12 +37,15 @@ type Summary struct {
 	DiscountAmount             decimal.Decimal `json:"discount_amount"`               // 总折扣金额
 	DiscountAmountWeChat       decimal.Decimal `json:"discount_amount_wechat"`        // 总折扣金额 微信
 	DiscountAmountAli          decimal.Decimal `json:"discount_amount_ali"`           // 总折扣金额 支付宝
+	DiscountAmountHuiFu        decimal.Decimal `json:"discount_amount_huifu"`         // 总折扣金额 汇付
 	SavingAmount               decimal.Decimal `json:"saving_amount"`                 // 储值金额
 	SavingAmountWeChat         decimal.Decimal `json:"saving_amount_wechat"`          // 储值金额 微信
 	SavingAmountAli            decimal.Decimal `json:"saving_amount_ali"`             // 储值金额 支付宝
+	SavingAmountHuiFu          decimal.Decimal `json:"saving_amount_huifu"`           // 储值金额 汇付
 	SavingRefundAmount         decimal.Decimal `json:"saving_refund_amount"`          // 储值退款金额
 	SavingRefundAmountWeChat   decimal.Decimal `json:"saving_refund_amount_wechat"`   // 储值退款金额 微信
 	SavingRefundAmountAli      decimal.Decimal `json:"saving_refund_amount_ali"`      // 储值退款金额 支付宝
+	SavingRefundAmountHuiFu    decimal.Decimal `json:"saving_refund_amount_huifu"`    // 储值退款金额 汇付
 }
 
 func FormatSummary(dateRange [2]time.Time, data []map[string]interface{}) (result []Summary, err error) {
@@ -68,21 +73,25 @@ func FormatSummary(dateRange [2]time.Time, data []map[string]interface{}) (resul
 			RechargeAmount:             util.ConvertAmount2Decimal(dataItem["recharge_amount"]),
 			RechargeAmountWeChat:       util.ConvertAmount2Decimal(dataItem["recharge_amount_wechat"]),
 			RechargeAmountAli:          util.ConvertAmount2Decimal(dataItem["recharge_amount_ali"]),
+			RechargeAmountHuiFu:        util.ConvertAmount2Decimal(dataItem["recharge_amount_huifu"]),
 			RechargeRefundAmount:       util.ConvertAmount2Decimal(dataItem["recharge_refund_amount"]),
 			RechargeRefundAmountWeChat: util.ConvertAmount2Decimal(dataItem["recharge_refund_amount_wechat"]),
 			RechargeRefundAmountAli:    util.ConvertAmount2Decimal(dataItem["recharge_refund_amount_ali"]),
+			RechargeRefundAmountHuiFu:  util.ConvertAmount2Decimal(dataItem["recharge_refund_amount_huifu"]),
 			DrawAmount:                 util.ConvertAmount2Decimal(dataItem["draw_amount"]),
 			TaxAmount:                  util.ConvertAmount2Decimal(dataItem["tax_amount"]),
 			RefundAmount:               util.ConvertAmount2Decimal(dataItem["refund_amount"]),
 			DiscountAmount:             util.ConvertAmount2Decimal(dataItem["discount_amount"]),
 			DiscountAmountWeChat:       util.ConvertAmount2Decimal(dataItem["discount_amount_wechat"]),
 			DiscountAmountAli:          util.ConvertAmount2Decimal(dataItem["discount_amount_ali"]),
+			DiscountAmountHuiFu:        util.ConvertAmount2Decimal(dataItem["discount_amount_huifu"]),
 			SavingAmount:               util.ConvertAmount2Decimal(dataItem["saving_amount"]),
 			SavingAmountWeChat:         util.ConvertAmount2Decimal(dataItem["saving_amount_wechat"]),
 			SavingAmountAli:            util.ConvertAmount2Decimal(dataItem["saving_amount_ali"]),
 			SavingRefundAmount:         util.ConvertAmount2Decimal(dataItem["saving_refund_amount"]),
 			SavingRefundAmountWeChat:   util.ConvertAmount2Decimal(dataItem["saving_refund_amount_wechat"]),
 			SavingRefundAmountAli:      util.ConvertAmount2Decimal(dataItem["saving_refund_amount_ali"]),
+			SavingRefundAmountHuiFu:    util.ConvertAmount2Decimal(dataItem["saving_refund_amount_huifu"]),
 		}
 
 		item.Revenue = item.RechargeAmount.Add(item.SavingAmount).Sub(item.RechargeRefundAmount).Sub(item.DrawAmount).Sub(item.SavingRefundAmount)

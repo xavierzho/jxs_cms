@@ -50,21 +50,21 @@
         >
         </bet-table>
       </el-tab-pane>
-      <el-tab-pane :label="$t('report.bet.type.ChaoShe')" name="ChaoShe">
+      <el-tab-pane :label="$t('report.bet.type.ClusterBox')" name="ClusterBox">
         <bet-table
           ref="betTable"
           :loading="loading"
-          :tableData="tableData.ChaoShe"
+          :tableData="tableData.ClusterBox"
           :show-summary="false"
           :summary-method="summaryMethod"
         >
         </bet-table>
       </el-tab-pane>
-      <el-tab-pane :label="$t('report.bet.type.ShareBill')" name="ShareBill">
+      <el-tab-pane :label="$t('report.bet.type.ChuanChuan')" name="ChuanChuan">
         <bet-table
           ref="betTable"
           :loading="loading"
-          :tableData="tableData.ShareBill"
+          :tableData="tableData.ChuanChuan"
           :show-summary="false"
           :summary-method="summaryMethod"
         >
@@ -96,8 +96,8 @@ export default {
         Gashapon: [],
         Chao: [],
         Hole: [],
-        ChaoShe: [],
-        ShareBill: [],
+        ClusterBox: [],
+        ChuanChuan: [],
       }
     }
   },
@@ -140,6 +140,7 @@ export default {
         "amount_balance": new Decimal(0),
         "amount_wechat": new Decimal(0),
         "amount_ali": new Decimal(0),
+        "amount_huifu": new Decimal(0),
       }
       data.forEach(item =>{
         Object.keys(item).forEach(key => {
