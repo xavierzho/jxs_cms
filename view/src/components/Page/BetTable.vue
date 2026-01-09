@@ -19,12 +19,21 @@
       <el-table-column prop="box_cnt_close" :label="$t('report.bet.box_cnt_close')" min-width="90px" align="center">
         <template v-slot="data">{{ data.row.box_cnt_close | localeNum }}</template>
       </el-table-column>
-      <el-table-column prop="amount" :label="$t('report.bet.amount')" min-width="90px" align="center">
+      <el-table-column prop="amount" :label="$t('option.balance_type.0')" min-width="90px" align="center">
         <template v-slot="data">{{ data.row.amount | localeNum2f }}</template>
       </el-table-column>
-<!--      <el-table-column prop="amount_balance" :label="$t('report.bet.amount_balance')" min-width="90px" align="center">-->
-<!--        <template v-slot="data">{{ data.row.amount_balance | localeNum2f }}</template>-->
-<!--      </el-table-column>-->
+      <el-table-column prop="amount_balance" :label="$t('option.balance_type.2')" min-width="90px" align="center">
+        <template v-slot="data">{{ data.row.amount_balance | localeNum2f }}</template>
+      </el-table-column>
+      <el-table-column prop="amount_jidou" :label="$t('option.balance_type.3')" min-width="90px" align="center">
+        <template v-slot="data">{{ data.row.amount_jidou | localeNum2f }}</template>
+      </el-table-column>
+      <el-table-column prop="amount_points" :label="$t('option.balance_type.10')" min-width="90px" align="center">
+        <template v-slot="data">{{ data.row.amount_points | localeNum2f }}</template>
+      </el-table-column>
+      <el-table-column prop="amount_loyalty" :label="$t('option.balance_type.11')" min-width="90px" align="center">
+        <template v-slot="data">{{ data.row.amount_loyalty | localeNum2f }}</template>
+      </el-table-column>
       <el-table-column prop="amount_wechat" :label="$t('report.bet.amount_wechat')" min-width="90px" align="center">
         <template v-slot="data">{{ data.row.amount_wechat | localeNum2f }}</template>
       </el-table-column>

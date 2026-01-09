@@ -70,6 +70,9 @@ type Bet struct {
 	BoxCntClose     uint            `json:"box_cnt_close"`
 	Amount          decimal.Decimal `json:"amount"`
 	AmountBalance   decimal.Decimal `json:"amount_balance"`
+	AmountJidou     decimal.Decimal `json:"amount_jidou"`
+	AmountPoints    decimal.Decimal `json:"amount_points"`
+	AmountLoyalty   decimal.Decimal `json:"amount_loyalty"`
 	AmountWeChat    decimal.Decimal `json:"amount_wechat"`
 	AmountAli       decimal.Decimal `json:"amount_ali"`
 	AmountHuiFu     decimal.Decimal `json:"amount_huifu"`
@@ -91,6 +94,10 @@ func Format(dateRange [2]time.Time, data []*dao.Bet) (result []Bet, err error) {
 			BoxCntNew:       dataMap[cDateStr].BoxCntNew,
 			BoxCntClose:     dataMap[cDateStr].BoxCntClose,
 			Amount:          util.ConvertAmount2Decimal(dataMap[cDateStr].Amount),
+			AmountBalance:   util.ConvertAmount2Decimal(dataMap[cDateStr].AmountBalance),
+			AmountJidou:     util.ConvertAmount2Decimal(dataMap[cDateStr].AmountJidou),
+			AmountPoints:    util.ConvertAmount2Decimal(dataMap[cDateStr].AmountPoints),
+			AmountLoyalty:   util.ConvertAmount2Decimal(dataMap[cDateStr].AmountLoyalty),
 			AmountWeChat:    util.ConvertAmount2Decimal(dataMap[cDateStr].AmountWeChat),
 			AmountAli:       util.ConvertAmount2Decimal(dataMap[cDateStr].AmountAli),
 			AmountHuiFu:     util.ConvertAmount2Decimal(dataMap[cDateStr].AmountHuiFu),

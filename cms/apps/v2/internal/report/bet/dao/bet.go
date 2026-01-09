@@ -21,6 +21,10 @@ type Bet struct {
 	BoxCntNew       uint `gorm:"column:box_cnt_new; default:0;" json:"box_cnt_new"`
 	BoxCntClose     uint `gorm:"column:box_cnt_close; default:0;" json:"box_cnt_close"`
 	Amount          uint `gorm:"column:amount; default:0;" json:"amount"`
+	AmountBalance   uint `gorm:"column:amount_balance; default:0;" json:"amount_balance"`
+	AmountJidou     uint `gorm:"column:amount_jidou; default:0;" json:"amount_jidou"`
+	AmountPoints    uint `gorm:"column:amount_points; default:0;" json:"amount_points"`
+	AmountLoyalty   uint `gorm:"column:amount_loyalty; default:0;" json:"amount_loyalty"`
 	AmountWeChat    uint `gorm:"column:amount_wechat; default:0;" json:"amount_wechat"`
 	AmountAli       uint `gorm:"column:amount_ali; default:0;" json:"amount_ali"`
 	AmountHuiFu     uint `gorm:"column:amount_huifu; default:0;" json:"amount_huifu"`
@@ -99,7 +103,11 @@ func (d *BetDao) generateAmount(cDate time.Time) (data []*Bet, err error) {
 		Select(
 			fmt.Sprintf("date_format(bl.finish_at, '%s') as date", pkg.SQL_DATE_FORMAT),
 			"bl.source_type as data_type",
-			"sum(-bl.update_amount) as amount",
+			"sum(case when bl.type = 0 then -bl.update_amount else 0 end) as amount",
+			"sum(case when bl.type = 2 then -bl.update_amount else 0 end) as amount_balance",
+			"sum(case when bl.type = 3 then -bl.update_amount else 0 end) as amount_jidou",
+			"sum(case when bl.type = 10 then -bl.update_amount else 0 end) as amount_points",
+			"sum(case when bl.type = 11 then -bl.update_amount else 0 end) as amount_loyalty",
 		).
 		Table("balance_log bl, users u").
 		Where("bl.finish_at between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).

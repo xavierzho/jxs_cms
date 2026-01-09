@@ -17,8 +17,15 @@ type Summary struct {
 	ActiveCnt                  uint            `json:"active_cnt"`                    // 日活;活跃用户数;登录用户数
 	WalletBalance              decimal.Decimal `json:"wallet_balance"`                // 钱包余额
 	MerchantBalance            decimal.Decimal `json:"merchant_balance"`              // 商户钱包余额
-	GoldBalance                decimal.Decimal `json:"gold_balance"`                  // 商户金币余额
-	PayAmount                  decimal.Decimal `json:"pay_amount"`                    // 总付费
+	GoldBalance                decimal.Decimal `json:"gold_balance"`                  // 余额余额
+	JidouBalance               decimal.Decimal `json:"jidou_balance"`                 // 吉豆余额
+	PointBalance               decimal.Decimal `json:"point_balance"`                 // 积分余额
+	LoyaltyBalance             decimal.Decimal `json:"loyalty_balance"`               // 吉祥值余额
+	PayAmount                  decimal.Decimal `json:"pay_amount"`                    // 总吉祥币付费
+	PayAmountBalance           decimal.Decimal `json:"pay_amount_balance"`            // 总余额付费
+	PayAmountJidou             decimal.Decimal `json:"pay_amount_jidou"`              // 总吉豆付费
+	PayAmountPoints            decimal.Decimal `json:"pay_amount_points"`             // 积分付费
+	PayAmountLoyalty           decimal.Decimal `json:"pay_amount_loyalty"`            // 吉祥值抵扣
 	PayAmountBet               decimal.Decimal `json:"pay_amount_bet"`                // 总付费(抽赏)
 	RechargeAmount             decimal.Decimal `json:"recharge_amount"`               // 充值金额
 	RechargeAmountWeChat       decimal.Decimal `json:"recharge_amount_wechat"`        // 充值金额 微信
@@ -68,7 +75,14 @@ func FormatSummary(dateRange [2]time.Time, data []map[string]interface{}) (resul
 			WalletBalance:              util.ConvertAmount2Decimal(dataItem["wallet_balance"]),
 			MerchantBalance:            util.ConvertAmount2Decimal(dataItem["merchant_balance"]),
 			GoldBalance:                util.ConvertAmount2Decimal(dataItem["gold_balance"]),
+			JidouBalance:               util.ConvertAmount2Decimal(dataItem["jidou_balance"]),
+			PointBalance:               util.ConvertAmount2Decimal(dataItem["point_balance"]),
+			LoyaltyBalance:             util.ConvertAmount2Decimal(dataItem["loyalty_balance"]),
 			PayAmount:                  util.ConvertAmount2Decimal(dataItem["pay_amount"]),
+			PayAmountBalance:           util.ConvertAmount2Decimal(dataItem["pay_amount_balance"]),
+			PayAmountJidou:             util.ConvertAmount2Decimal(dataItem["pay_amount_jidou"]),
+			PayAmountPoints:            util.ConvertAmount2Decimal(dataItem["pay_amount_points"]),
+			PayAmountLoyalty:           util.ConvertAmount2Decimal(dataItem["pay_amount_loyalty"]),
 			PayAmountBet:               util.ConvertAmount2Decimal(dataItem["pay_amount_bet"]),
 			RechargeAmount:             util.ConvertAmount2Decimal(dataItem["recharge_amount"]),
 			RechargeAmountWeChat:       util.ConvertAmount2Decimal(dataItem["recharge_amount_wechat"]),

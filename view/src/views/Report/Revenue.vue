@@ -168,11 +168,32 @@
             <el-table-column prop="gold_balance" :label="$t('report.revenue.summary.gold_balance')" min-width="90px" align="center">
               <template v-slot="data">{{data.row.gold_balance | localeNum2f}}</template>
             </el-table-column>
+            <el-table-column prop="jidou_balance" :label="$t('report.revenue.summary.jidou_balance')" min-width="90px" align="center">
+              <template v-slot="data">{{data.row.jidou_balance | localeNum2f}}</template>
+            </el-table-column>
+            <el-table-column prop="point_balance" :label="$t('report.revenue.summary.point_balance')" min-width="90px" align="center">
+              <template v-slot="data">{{data.row.point_balance | localeNum2f}}</template>
+            </el-table-column>
+            <el-table-column prop="loyalty_balance" :label="$t('report.revenue.summary.loyalty_balance')" min-width="90px" align="center">
+              <template v-slot="data">{{data.row.loyalty_balance | localeNum2f}}</template>
+            </el-table-column>
 <!--            <el-table-column prop="merchant_balance" :label="$t('report.revenue.summary.merchant_balance')" min-width="90px" align="center">-->
 <!--              <template v-slot="data">{{data.row.merchant_balance | localeNum2f}}</template>-->
 <!--            </el-table-column>-->
             <el-table-column prop="pay_amount" :label="$t('report.revenue.summary.pay_amount')" min-width="90px" align="center">
               <template v-slot="data">{{data.row.pay_amount | localeNum2f}}</template>
+            </el-table-column>
+            <el-table-column prop="pay_amount_balance" :label="$t('report.revenue.summary.pay_amount_balance')" min-width="90px" align="center">
+              <template v-slot="data">{{data.row.pay_amount_balance | localeNum2f}}</template>
+            </el-table-column>
+            <el-table-column prop="pay_amount_jidou" :label="$t('report.revenue.summary.pay_amount_jidou')" min-width="90px" align="center">
+              <template v-slot="data">{{data.row.pay_amount_jidou | localeNum2f}}</template>
+            </el-table-column>
+            <el-table-column prop="pay_amount_points" :label="$t('report.revenue.summary.pay_amount_points')" min-width="90px" align="center">
+              <template v-slot="data">{{data.row.pay_amount_points | localeNum2f}}</template>
+            </el-table-column>
+            <el-table-column prop="pay_amount_loyalty" :label="$t('report.revenue.summary.pay_amount_loyalty')" min-width="90px" align="center">
+              <template v-slot="data">{{data.row.pay_amount_loyalty | localeNum2f}}</template>
             </el-table-column>
             <el-table-column prop="pay_amount_bet" :label="$t('report.revenue.summary.pay_amount_bet')" min-width="90px" align="center">
               <template v-slot="data">{{data.row.pay_amount_bet | localeNum2f}}</template>

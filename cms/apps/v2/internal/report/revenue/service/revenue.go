@@ -128,7 +128,11 @@ func (svc *RevenueSvc) _generatePay(payDao *dao.PayDao, cDate time.Time) (data *
 		SavingAmountAli:            payGroup.Saving.SavingAmountAli,
 		SavingRefundAmount:         payGroup.SavingRefund.SavingRefundAmount,
 		SavingRefundAmountWeChat:   payGroup.SavingRefund.SavingRefundAmountWeChat,
-		SavingRefundAmountAli:      payGroup.SavingRefund.SavingRefundAmountAli,
+		SavingRefundAmountHuiFu:    payGroup.SavingRefund.SavingRefundAmountHuiFu,
+		AmountPoints:               payGroup.Pay.AmountPoints,
+		AmountLoyalty:              payGroup.Pay.AmountLoyalty,
+		AmountBalance:              payGroup.Pay.AmountBalance,
+		AmountJidou:                payGroup.Pay.AmountJidou,
 	}, nil
 }
 
@@ -475,7 +479,14 @@ func (svc *RevenueSvc) allSummary(dateRange [2]time.Time, hasToday bool, today t
 			"wallet_balance":                balanceTodayData.Wallet,
 			"merchant_balance":              balanceTodayData.Merchant,
 			"gold_balance":                  balanceTodayData.Gold,
+			"jidou_balance":                 balanceTodayData.Jidou,
+			"point_balance":                 balanceTodayData.Point,
+			"loyalty_balance":               balanceTodayData.Loyalty,
 			"pay_amount":                    payTodayData.Amount,
+			"pay_amount_balance":            payTodayData.AmountBalance,
+			"pay_amount_jidou":              payTodayData.AmountJidou,
+			"pay_amount_points":             payTodayData.AmountPoints,
+			"pay_amount_loyalty":            payTodayData.AmountLoyalty,
 			"pay_amount_bet":                payTodayData.AmountBet,
 			"recharge_amount":               payTodayData.RechargeAmount,
 			"recharge_amount_wechat":        payTodayData.RechargeAmountWeChat,
