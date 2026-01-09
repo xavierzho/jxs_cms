@@ -11,7 +11,7 @@ build-cms:
 .PHONY: build-frontend
 build-frontend:
 	@cd view; \
-	version=$$(jq -r '.version' package.json); \
+	version=$$(node -p "require('./package.json').version"); \
 	docker build -t $(repo)_frontend:$$version .; \
 	docker tag $(repo)_frontend:$$version $(repo)_frontend:latest
 

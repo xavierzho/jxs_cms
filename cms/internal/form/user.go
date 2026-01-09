@@ -13,8 +13,8 @@ import (
 
 // LoginRequest 登录请求信息
 type LoginRequest struct {
-	UserName string `form:"user_name" binding:"required,min=2,max=100"`
-	Password string `form:"password" binding:"required,min=6,max=20"`
+	UserName string `form:"user_name" json:"user_name" binding:"required,min=2,max=100"`
+	Password string `form:"password" json:"password" binding:"required,min=6,max=20"`
 }
 
 // UserLoginInfo 登录信息返回
