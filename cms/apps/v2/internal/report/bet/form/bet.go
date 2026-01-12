@@ -18,6 +18,7 @@ const (
 	BET_TYPE_HOLE        = "Hole"       // 洞洞乐 // gacha_type = 4 source_type = 104
 	BET_TYPE_CLUSTER     = "ClusterBox" // 擂台赏 // gacha_type = 5 source_type = 105
 	BET_TYPE_CHUANCHUAN  = "ChuanChuan" // 串串赏 // gacha_type = 6 source_type = 106
+	BET_TYPE_NIUDANGFULI = "NiuDangFuLi"
 )
 
 var BET_TYPE_LIST = []string{BET_TYPE_FIRST_PRIZE, BET_TYPE_GASHAPON, BET_TYPE_CHAO, BET_TYPE_HOLE, BET_TYPE_CLUSTER, BET_TYPE_CHUANCHUAN}

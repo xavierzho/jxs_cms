@@ -57,6 +57,10 @@ func (svc *BetSvc) generate(cDate time.Time) (err error) {
 	return nil
 }
 
+//func (svc *BetSvc) _generate(cDate time.Time) (dataList []*dao.Bet, err error) {
+//	return dataList, nil
+//}
+
 func (svc *BetSvc) _generate(cDate time.Time) (dataList []*dao.Bet, err error) {
 	dataList = make([]*dao.Bet, 0, len(form.BET_TYPE_LIST))
 	dataMap := make(map[string]*dao.Bet, len(form.BET_TYPE_LIST))
@@ -72,6 +76,7 @@ func (svc *BetSvc) _generate(cDate time.Time) (dataList []*dao.Bet, err error) {
 
 	dataBet, dataAmount, dataBox, dataPay, err := svc.dao.Generate(cDate)
 	if err != nil {
+		svc.logger.Errorf("【_generate】err: %+v", err)
 		return nil, err
 	}
 
@@ -88,13 +93,16 @@ func (svc *BetSvc) _generate(cDate time.Time) (dataList []*dao.Bet, err error) {
 
 	for _, item := range dataBox {
 		betType := convertBetType(item.DataType)
-		dataMap[betType].BoxCntRemaining = item.BoxCntRemaining
-		dataMap[betType].BoxCntNew = item.BoxCntNew
-		dataMap[betType].BoxCntClose = item.BoxCntClose
-		// 若跑历史数据则剩余箱子置为0
-		if dataMap[betType].Date < time.Now().Format(pkg.DATE_FORMAT) {
-			dataMap[betType].BoxCntRemaining = 0
+		if _, ok := dataMap[betType]; ok {
+			dataMap[betType].BoxCntRemaining = item.BoxCntRemaining
+			dataMap[betType].BoxCntNew = item.BoxCntNew
+			dataMap[betType].BoxCntClose = item.BoxCntClose
+			// 若跑历史数据则剩余箱子置为0
+			if dataMap[betType].Date < time.Now().Format(pkg.DATE_FORMAT) {
+				dataMap[betType].BoxCntRemaining = 0
+			}
 		}
+
 	}
 
 	for _, item := range dataPay {
@@ -104,7 +112,7 @@ func (svc *BetSvc) _generate(cDate time.Time) (dataList []*dao.Bet, err error) {
 		dataMap[betType].AmountHuiFu = item.AmountHuiFu
 	}
 
-	return
+	return dataList, nil
 }
 
 func convertBetType(dataType string) string {
@@ -121,6 +129,8 @@ func convertBetType(dataType string) string {
 		return form.BET_TYPE_CLUSTER
 	case "6", "106":
 		return form.BET_TYPE_CHUANCHUAN
+	case "7", "107":
+		return form.BET_TYPE_NIUDANGFULI
 	default:
 		return ""
 	}
@@ -129,22 +139,24 @@ func convertBetType(dataType string) string {
 func (svc *BetSvc) All(params *form.AllRequest) (result []form.Bet, e *errcode.Error) {
 	dateRange, err := params.Parse()
 	if err != nil {
+		svc.logger.Errorf("params parse error: %+v", err.Error())
 		return nil, errcode.InvalidParams.WithDetails(err.Error())
 	}
 
 	data, err := svc.dao.All(dateRange, params.DataType, nil)
 	if err != nil {
+		svc.logger.Errorf("dao.All error: %+v", err.Error())
 		return nil, errcode.QueryFail.WithDetails(err.Error())
 	}
-
 	now := time.Now()
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, pkg.Location)
+
 	if !dateRange[0].After(today) && !dateRange[1].Before(today) {
 		todayData, err := svc._generate(today)
 		if err != nil {
+			svc.logger.Errorf("svc.__generate  error: %+v", err.Error())
 			return nil, errcode.QueryFail.WithDetails(err.Error())
 		}
-
 		for _, item := range todayData {
 			if item.DataType == params.DataType {
 				data = append(data, item)
@@ -153,12 +165,10 @@ func (svc *BetSvc) All(params *form.AllRequest) (result []form.Bet, e *errcode.E
 		}
 
 	}
-
 	result, err = form.Format(dateRange, data)
 	if err != nil {
-		svc.logger.Errorf("All, Format: %v", err)
+		svc.logger.Errorf("form.Format error: %v", err)
 		return nil, errcode.TransformFail.WithDetails(err.Error())
 	}
-
 	return result, nil
 }

@@ -88,7 +88,7 @@ func (d *CostAwardDao) generateAward(cDate time.Time) (data *CostAward, err erro
 	err = d.center.
 		Select(
 			fmt.Sprintf("date_format(ua.created_at, '%s') as date", pkg.SQL_DATE_FORMAT),
-			"sum(case type when 0 then value else 0 end) as award_amount",
+			//"sum(case type when 0 then value else 0 end) as award_amount",
 			"sum(case type when 20 then cac.num * ifnull(i.show_price, 0) else 0 end) as award_item_show_price",
 			"sum(case type when 20 then cac.num * ifnull(i.inner_price, 0) else 0 end) as award_item_inner_price",
 		).
@@ -97,9 +97,9 @@ func (d *CostAwardDao) generateAward(cDate time.Time) (data *CostAward, err erro
 		Where("a.key = 'CostAward'").
 		Where("a.id = ua.activity_id").
 		Where("ua.created_at between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
-		Where("ua.params_3->'$.type' = '0'").
+		//Where("ua.params_3->'$.type' = '0'").
 		Where("cast(ua.params as SIGNED) = cac.config_id").
-		Where("ua.user_id = u.id and u.role=0").
+		Where("ua.user_id = u.id and u.role in (0)").
 		Group(fmt.Sprintf("date_format(ua.created_at, '%s')", pkg.SQL_DATE_FORMAT)).
 		Find(&data).Error
 	if err != nil {

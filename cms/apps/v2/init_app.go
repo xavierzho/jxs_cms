@@ -18,6 +18,7 @@ import (
 	"data_backend/apps/v2/internal/inquire/item"
 	iRecall "data_backend/apps/v2/internal/inquire/recall"
 	iTask "data_backend/apps/v2/internal/inquire/task"
+	"data_backend/apps/v2/internal/marketing"
 	"data_backend/apps/v2/internal/report/bet"
 	"data_backend/apps/v2/internal/report/cohort"
 	"data_backend/apps/v2/internal/report/dashboard"
@@ -148,6 +149,9 @@ func startJobs() (err error) {
 		if err = recall.AddJobList(); err != nil {
 			return err
 		}
+		if err = marketing.AddJobList(); err != nil {
+			return err
+		}
 	}
 
 	// inquire
@@ -262,6 +266,9 @@ func startQueue() (err error) {
 			return err
 		}
 		if err = recall.AddJobList(); err != nil {
+			return err
+		}
+		if err = marketing.AddQueueJob(); err != nil {
 			return err
 		}
 
@@ -402,6 +409,14 @@ func InitRouter(rg *gin.RouterGroup) (err error) {
 		}
 	}
 
+	// marketing
+	{
+		// marketing has its own group "marketing"
+		if err = marketing.InitRouter(rg); err != nil {
+			return fmt.Errorf("marketing.InitRouter: %v", err)
+		}
+	}
+
 	// activity
 	{
 		rg := rg.Group("activity")
@@ -461,6 +476,11 @@ func MigrateModel() (err error) {
 		iInvite.AppendMigrateModel()
 		iRecall.AppendMigrateModel()
 		iTask.AppendMigrateModel()
+	}
+
+	// marketing
+	{
+		marketing.AppendMigrateModel()
 	}
 
 	// activity
