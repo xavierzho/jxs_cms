@@ -17,7 +17,11 @@ import (
 // comment: 每次运行 传入 当前日期
 type Pay struct {
 	iDao.DailyModel
-	Amount                     uint `gorm:"column:amount; default:0" json:"amount"` // 总消费金额: 潮玩+集市+运费+商城
+	Amount                     uint `gorm:"column:amount; default:0" json:"amount"`                 // 总吉祥币消费 (0)
+	AmountBalance              uint `gorm:"column:amount_balance; default:0" json:"amount_balance"` // 总余额消费 (2)
+	AmountJidou                uint `gorm:"column:amount_jidou; default:0" json:"amount_jidou"`     // 总吉豆消费 (3)
+	AmountPoints               uint `gorm:"column:amount_points; default:0" json:"amount_points"`   // 总积分消费 (10)
+	AmountLoyalty              uint `gorm:"column:amount_loyalty; default:0" json:"amount_loyalty"` // 总吉祥值抵扣 (11)
 	AmountBet                  uint `gorm:"column:amount_bet; default:0" json:"amount_bet"`
 	AmountNew                  uint `gorm:"column:amount_new; default:0" json:"amount_new"`
 	AmountOld                  uint `gorm:"column:amount_old; default:0" json:"amount_old"`
@@ -122,7 +126,11 @@ func (d *PayDao) generatePay(cDate time.Time) (data *Pay, err error) {
 	err = d.center.
 		Select(
 			fmt.Sprintf("date_format(bl.finish_at, '%s') as date", pkg.SQL_DATE_FORMAT),
-			"cast(sum(-bl.update_amount) as UNSIGNED) as amount",
+			"cast(sum(case when bl.type = 0 then -bl.update_amount else 0 end) as UNSIGNED) as amount",
+			"cast(sum(case when bl.type = 2 then -bl.update_amount else 0 end) as UNSIGNED) as amount_balance",
+			"cast(sum(case when bl.type = 3 then -bl.update_amount else 0 end) as UNSIGNED) as amount_jidou",
+			"cast(sum(case when bl.type = 10 then -bl.update_amount else 0 end) as UNSIGNED) as amount_points",
+			"cast(sum(case when bl.type = 11 then -bl.update_amount else 0 end) as UNSIGNED) as amount_loyalty",
 			"cast(sum(case when bl.source_type between 100 and 199 then -bl.update_amount else 0 end) as UNSIGNED) as amount_bet",
 			"cast(sum(case when datediff(bl.finish_at, u.created_at) = 0 then -bl.update_amount else 0 end) as UNSIGNED) as amount_new",
 			"cast(sum(case when datediff(bl.finish_at, u.created_at) <> 0 then -bl.update_amount else 0 end) as UNSIGNED) as amount_old",

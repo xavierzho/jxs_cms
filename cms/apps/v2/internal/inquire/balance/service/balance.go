@@ -246,6 +246,8 @@ func (svc *BalanceSvc) OptionsBalanceType() []map[string]string {
 		{"value": "1", "label": global.I18n.T(svc.ctx.Request.Context(), "balance_type", "1")},
 		{"value": "2", "label": global.I18n.T(svc.ctx.Request.Context(), "balance_type", "2")},
 		{"value": "3", "label": global.I18n.T(svc.ctx.Request.Context(), "balance_type", "3")},
+		{"value": "10", "label": global.I18n.T(svc.ctx.Request.Context(), "balance_type", "10")},
+		{"value": "11", "label": global.I18n.T(svc.ctx.Request.Context(), "balance_type", "11")},
 		{"value": "100", "label": global.I18n.T(svc.ctx.Request.Context(), "balance_type", "100")},
 	}
 }
