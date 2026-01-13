@@ -6,6 +6,7 @@
   "scripts": {
     "local": "NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service serve --mode local",
     "dev": "NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service serve --mode development",
+    "prod": "NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service serve --mode production",
     "build:prod": "NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service build --mode production",
     "build:dev": "NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service build --mode development",
     "preview": "node build/index.js --preview",
