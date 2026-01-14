@@ -39,7 +39,7 @@ func (svc *CostAwardSvc) Generate(params *form.GenerateRequest) (e *errcode.Erro
 	}
 
 	for cDate := dateRange[0]; !cDate.After(dateRange[1]); cDate = cDate.AddDate(0, 0, 1) {
-		if err = svc.generate(cDate); err != nil {
+		if err = svc.generate(cDate, params.BalanceType); err != nil {
 			return iErrcode.SQLExecFail.WithDetails(err.Error())
 		}
 	}
@@ -47,8 +47,8 @@ func (svc *CostAwardSvc) Generate(params *form.GenerateRequest) (e *errcode.Erro
 	return nil
 }
 
-func (svc *CostAwardSvc) generate(cDate time.Time) (err error) {
-	data, err := svc._generate(cDate)
+func (svc *CostAwardSvc) generate(cDate time.Time, balanceType uint) (err error) {
+	data, err := svc._generate(cDate, balanceType)
 	if err != nil {
 		return err
 	}
@@ -60,8 +60,8 @@ func (svc *CostAwardSvc) generate(cDate time.Time) (err error) {
 	return
 }
 
-func (svc *CostAwardSvc) _generate(cDate time.Time) (data *dao.CostAward, err error) {
-	dataLog, dataAward, err := svc.dao.Generate(cDate)
+func (svc *CostAwardSvc) _generate(cDate time.Time, balanceType uint) (data *dao.CostAward, err error) {
+	dataLog, dataAward, err := svc.dao.Generate(cDate, balanceType)
 	if err != nil {
 		return nil, err
 	}
@@ -70,6 +70,7 @@ func (svc *CostAwardSvc) _generate(cDate time.Time) (data *dao.CostAward, err er
 		DailyModel: iDao.DailyModel{
 			Date: cDate.Format(pkg.DATE_FORMAT),
 		},
+		BalanceType:         balanceType,
 		GetUserCnt:          dataLog.GetUserCnt,
 		GetAmount:           dataLog.GetAmount,
 		AcceptUserCnt:       dataLog.AcceptUserCnt,
@@ -98,14 +99,15 @@ func (svc *CostAwardSvc) List(params *form.ListRequest) (summary map[string]any,
 		"sum(award_item_show_price) as award_item_show_price",
 		"sum(award_item_inner_price) as award_item_inner_price",
 	}
+
 	// 排除掉当天的数据 若 需要包含当天数据再加回到 summary, 避免出错
-	_summary, _data, err := svc.dao.ListAndSummary(summaryField, dateRange, database.QueryWhereGroup{{Prefix: "date <> ?", Value: []any{today.Format(pkg.DATE_FORMAT)}}}, params.Pager)
+	_summary, _data, err := svc.dao.ListAndSummary(summaryField, dateRange, database.QueryWhereGroup{{Prefix: "balance_type = ?", Value: []any{10}}, {Prefix: "date <> ?", Value: []any{today.Format(pkg.DATE_FORMAT)}}}, params.Pager)
 	if err != nil {
 		return nil, nil, errcode.QueryFail.WithDetails(err.Error())
 	}
 
 	if !dateRange[0].After(today) && !dateRange[1].Before(today) {
-		todayData, err := svc._generate(today)
+		todayData, err := svc._generate(today, params.BalanceType)
 		if err != nil {
 			return nil, nil, errcode.QueryFail.WithDetails(err.Error())
 		}
@@ -142,7 +144,7 @@ func (svc *CostAwardSvc) Export(params *form.AllRequest) (data *excel.Excel[*for
 	}
 
 	if !dateRange[0].After(today) && !dateRange[1].Before(today) {
-		todayData, err := svc._generate(today)
+		todayData, err := svc._generate(today, params.BalanceType)
 		if err != nil {
 			return nil, errcode.QueryFail.WithDetails(err.Error())
 		}

@@ -13,6 +13,12 @@
             <date-picker v-model="searchForm.date_range" type="daterange" :clearable="false"></date-picker>
           </el-form-item>
           <el-form-item>
+            <el-select v-model="searchForm.balance_type"  clearable>
+              <el-option label="积分" :value="10"></el-option>
+              <el-option label="吉祥值" :value="11"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item>
             <el-button type="primary" v-loading="loading" @click="fetch({page: 1})">{{ $t('common.Search') }}</el-button>
             <el-button type="warning" v-loading="loading" @click="fetchExport({})">{{ $t('common.Export') }}</el-button>
           </el-form-item>
@@ -63,6 +69,7 @@ export default {
       searchForm: {
         page: 1,
         page_size: 50,
+        balance_type:10,
         date_range: [],
       },
       total: 0,

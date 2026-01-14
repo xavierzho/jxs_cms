@@ -2,6 +2,7 @@ package i18n
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strings"
 	"sync"
@@ -121,11 +122,15 @@ func (b *Bundle) loadMessage(path string, language language.Tag, format i18nFile
 
 	// 文件夹
 	if fileInfo.IsDir() {
+
+		fmt.Println("loasdmessage dir path: ", path)
 		messageList, err = b.loadMessageFolder(path, format)
 		if err != nil {
 			return
 		}
 	} else { // 文件
+		fmt.Println("loasdmessage file path: ", path)
+
 		messageList, err = b.loadMessageFile(path, format)
 		if err != nil {
 			return
@@ -207,6 +212,7 @@ func (b *Bundle) ShouldT(ctx context.Context, group string, content string) (str
 	}
 
 	if localizer, ok := b.localizerMap[dl]; ok {
+
 		var result string
 		subContentList := findContent(content)
 		if len(subContentList) == 0 {

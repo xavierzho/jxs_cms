@@ -214,21 +214,21 @@
 			"id": 31,
 			"name": "activity_cost_award_log_view",
 			"display_name": "Activity Cost Award Log View",
-			"description": "欧气值流水视图",
+			"description": "积分流水视图",
 			"pages": "cost_award_log"
 		},
 		{
 			"id": 32,
 			"name": "activity_cost_award_view",
 			"display_name": "Activity Cost Award View",
-			"description": "欧气值报表视图",
+			"description": "积分报表视图",
 			"pages": "cost_award"
 		},
 		{
 			"id": 33,
 			"name": "activity_cost_award_generate",
 			"display_name": "Activity Cost Award Generate",
-			"description": "欧气值报表生成",
+			"description": "积分报表生成",
 			"pages": "cost_award"
 		},
 		{

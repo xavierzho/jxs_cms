@@ -21,6 +21,7 @@ import (
 type ListLogRequest struct {
 	app.Pager
 	AllLogRequest
+	BalanceType uint `form:"balance_type" json:"balance_type"`
 }
 
 func (q *ListLogRequest) Parse() (dateTimeRange [2]time.Time, queryParams database.QueryWhereGroup, err error) {
@@ -32,7 +33,8 @@ func (q *ListLogRequest) Parse() (dateTimeRange [2]time.Time, queryParams databa
 type AllLogRequest struct {
 	iForm.DateTimeRangeRequest
 	cForm.UserInfoRequest
-	LogType []int32 `form:"log_type[]"`
+	LogType     []int32 `form:"log_type[]"`
+	BalanceType uint    `form:"balance_type" json:"balance_type"`
 }
 
 func (q *AllLogRequest) Parse() (dateTimeRange [2]time.Time, queryParams database.QueryWhereGroup, err error) {

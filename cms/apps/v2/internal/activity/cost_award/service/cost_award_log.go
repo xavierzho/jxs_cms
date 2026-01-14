@@ -45,7 +45,7 @@ func (svc *CostAwardLogSvc) List(params *form.ListLogRequest) (summary map[strin
 		return nil, nil, errcode.InvalidParams.WithDetails(err.Error())
 	}
 
-	_summary, _data, err := svc.dao.List(dateTimeRange, queryParams, params.Pager)
+	_summary, _data, err := svc.dao.List(dateTimeRange, params.BalanceType, queryParams, params.Pager)
 	if err != nil {
 		return nil, nil, errcode.QueryFail.WithDetails(err.Error())
 	}
@@ -61,7 +61,7 @@ func (svc *CostAwardLogSvc) Export(params *form.AllLogRequest) (data *excel.Exce
 		return nil, errcode.InvalidParams.WithDetails(err.Error())
 	}
 
-	_data, err := svc.dao.All(dateTimeRange, queryParams)
+	_data, err := svc.dao.All(dateTimeRange, params.BalanceType, queryParams)
 	if err != nil {
 		return nil, errcode.QueryFail.WithDetails(err.Error())
 	}

@@ -34,5 +34,9 @@ func (api *MenuApi) All(ctx *gin.Context) {
 		return
 	}
 
+	for _, d := range data {
+		api.logger.Infof("data ===> %+v", d)
+	}
+
 	response.ToResponseData(data)
 }
