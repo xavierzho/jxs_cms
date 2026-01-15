@@ -179,8 +179,8 @@ export default {
   border-bottom: #409EFF 2px solid;
 }
 
-.recharge_amount_wechat{
-  border-bottom: #07C160 2px solid;
+.recharge_amount_huifu{
+  border-bottom: #6190E8 2px solid;
 }
 
 .recharge_amount_ali{

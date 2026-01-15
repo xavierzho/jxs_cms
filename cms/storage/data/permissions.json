@@ -260,21 +260,21 @@
 			"pages": "inquire_invite"
 		},
 		{
-			"id": 38,
-			"name": "report_order_view",
-			"display_name": "Report Order View",
-			"description": "发货报表视图",
-			"pages": "report_order"
-		},
-		{
-			"id": 39,
+			"id": 77,
 			"name": "activity_turntable_view",
 			"display_name": "Activity Turntable View",
 			"description": "转盘抽奖视图",
 			"pages": "activity_turntable"
 		},
 		{
-			"id": 40,
+			"id": 78,
+			"name": "report_order_view",
+			"display_name": "Report Order View",
+			"description": "发货报表视图",
+			"pages": "report_order"
+		},
+		{
+			"id": 79,
 			"name": "report_order_daily_generate",
 			"display_name": "Report Order Daily Generate",
 			"description": "发货报表生成",

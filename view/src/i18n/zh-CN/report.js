@@ -191,10 +191,9 @@ export default {
     pating: {
       pating: "参与用户",
       patingFirstPrize: "一番赏参与用户",
-      patingGashapon: "扭蛋机参与用户",
-      patingChao: "潮玩赏参与用户",
+      patingGashapon: "吉祥赏参与用户",
+      patingChao: "无限赏参与用户",
       patingHole: "洞洞乐参与用户",
-      patingChaoShe: "潮社赏参与用户",
       patingMarket: "集市参与用户",
       patingDeliver: "发货参与用户",
       patingShop: "商城参与用户",
@@ -235,8 +234,8 @@ export default {
 
     type: {
       FirstPrize: "一番赏",
-      Gashapon: "扭蛋机",
-      Chao: "潮玩赏",
+      Gashapon: "吉祥赏",
+      Chao: "无限赏",
       Hole: "洞洞乐",
       ClusterBox: "擂台赏",
       ChuanChuan: "串串赏",
@@ -268,7 +267,7 @@ export default {
 
   dashboard: {
     recharge_amount: '总充值',
-    recharge_amount_wechat: '总充值(微信)',
+    recharge_amount_huifu: '总充值(汇付)',
     recharge_amount_ali: '总充值(支付宝)',
     draw_amount: '总退款(￥)',
     new_user_cnt: '注册数',

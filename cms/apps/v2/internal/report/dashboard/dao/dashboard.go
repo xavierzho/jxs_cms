@@ -26,6 +26,7 @@ type Dashboard struct {
 	RechargeAmount       int64 `gorm:"column:recharge_amount; type:bigint;" json:"recharge_amount"`
 	RechargeAmountWeChat int64 `gorm:"column:recharge_amount_wechat; type:bigint;" json:"recharge_amount_wechat"`
 	RechargeAmountAli    int64 `gorm:"column:recharge_amount_ali; type:bigint;" json:"recharge_amount_ali"`
+	RechargeAmountHuiFu  int64 `gorm:"column:recharge_amount_huifu; type:bigint;" json:"recharge_amount_huifu"`
 	DrawAmount           int64 `gorm:"column:draw_amount; type:bigint;" json:"draw_amount"`
 }
 
@@ -215,6 +216,7 @@ func (d *DashboardDao) generateRecharge(startTime, endTime time.Time) (data *Das
 			"sum(ppo.amount) as recharge_amount",
 			"sum(case ppo.platform_id when 'wechatapp' then ppo.amount when 'wechatjs' then ppo.amount else 0 end) as  recharge_amount_wechat",
 			"sum(case ppo.platform_id when 'alipay' then ppo.amount else 0 end) as  recharge_amount_ali",
+			"sum(case ppo.platform_id when 'huifu' then ppo.amount else 0 end) as  recharge_amount_huifu",
 		).
 		Table("pay_payment_order ppo").
 		Joins("join users u on ppo.user_id = u.id and u.role = 0").

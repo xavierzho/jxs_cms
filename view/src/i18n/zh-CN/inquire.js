@@ -75,7 +75,7 @@ export default {
     edit_comment: '编辑备注',
     add_comment: '添加备注',
 
-    filterOptionTipBet: '该选项仅对抽赏记录/欧气值·直购有效',
+    filterOptionTipBet: '该选项仅对抽赏记录/积分·直购有效',
     filterOptionTipRecharge: '该选项仅对充值记录有效',
     balance_type: '流水类型'
   },

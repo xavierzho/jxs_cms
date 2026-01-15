@@ -67,7 +67,7 @@ export default {
     createdDateTime: "创建时间",
     finishDateTime: "完成时间",
   },
-  option:{
+  option: {
     YesOrNo: ['是', '否'],
     userType: {
       0: '用户',
@@ -77,22 +77,22 @@ export default {
     },
     DatePickerOptions: ['一周内', '一个月内', '三个月内', '六个月内', '一年内'],
     OperationLogModule: ["路由", "角色", "用户", "流水"],
-    BetOptions: ['一番赏', '扭蛋机', '潮玩赏', '洞洞乐', '潮社赏'],
+    BetOptions: ['一番赏', '吉祥赏', '无限赏', '洞洞乐', '擂台赏', '串串赏'],
     dim: ['日', '月'],
     dateTimeType: ['创建时间', '完成时间'],
     inviteUserType: ['被邀用户', '邀请用户'],
     recallUserType: ['被召回用户', '召回用户'],
     pointType: {
-      0:"潮币钱包",
-      2:"金币钱包",
-      10: "现金点",
-      11: "欧气值",
-      100:"免费",
+      0: "吉祥币钱包",
+      2: "金币钱包",
+      10: "积分",
+      11: "吉祥值",
+      100: "免费",
     },
     awardType: {
       10: "优惠券",
       20: "物品",
-      30: "欧气值",
+      30: "积分",
     },
     userChannel: {
       1: "官方",
@@ -103,6 +103,13 @@ export default {
       32: "荣耀",
       64: "百度",
       128: "腾讯",
+    },
+    balance_type: {
+      0: "吉祥币",
+      2: "金币",
+      3: "吉豆",
+      10: "积分",
+      11: "吉祥值",
     },
   },
   login: {
@@ -124,7 +131,7 @@ export default {
   },
   reward: {
     reward_value_item: "奖励价值(物品)",
-    reward_value_cost_award_point: "奖励价值(欧气值)",
+    reward_value_cost_award_point: "奖励价值(积分)",
     award_type: "奖励类型",
     award_name: "奖励名称",
     award_value: "奖励值",

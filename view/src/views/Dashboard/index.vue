@@ -11,7 +11,7 @@
     <div v-if="!loading" style="display: flex; flex-direction: column;">
       <div class="group">
         <dashboard-value class-name="recharge_amount" :title="$t('report.dashboard.recharge_amount')" :value="[todayData.recharge_amount,yesterdayData.recharge_amount]" value-type="value2f"/>
-        <dashboard-value class-name="recharge_amount_wechat" :title="$t('report.dashboard.recharge_amount_wechat')" :value="[todayData.recharge_amount_wechat,yesterdayData.recharge_amount_wechat]" value-type="value2f"/>
+        <dashboard-value class-name="recharge_amount_huifu" :title="$t('report.dashboard.recharge_amount_huifu')" :value="[todayData.recharge_amount_huifu,yesterdayData.recharge_amount_huifu]" value-type="value2f"/>
         <dashboard-value class-name="recharge_amount_ali" :title="$t('report.dashboard.recharge_amount_ali')" :value="[todayData.recharge_amount_ali,yesterdayData.recharge_amount_ali]" value-type="value2f"/>
         <dashboard-value class-name="draw_amount" :title="$t('report.dashboard.draw_amount')" :value="[todayData.draw_amount,yesterdayData.draw_amount]" value-type="value2f"/>
         <dashboard-value class-name="new_user_cnt" :title="$t('report.dashboard.new_user_cnt')" :value="[todayData.new_user_cnt,yesterdayData.new_user_cnt]"/>
@@ -37,8 +37,8 @@
       <el-table-column prop="recharge_amount" :label="$t('report.dashboard.recharge_amount')" min-width="90px" align="center">
         <template v-slot="data">{{data.row.recharge_amount | localeNum2f}}</template>
       </el-table-column>
-      <el-table-column prop="recharge_amount_wechat" :label="$t('report.dashboard.recharge_amount_wechat')" min-width="90px" align="center">
-        <template v-slot="data">{{data.row.recharge_amount_wechat | localeNum2f}}</template>
+      <el-table-column prop="recharge_amount_huifu" :label="$t('report.dashboard.recharge_amount_huifu')" min-width="90px" align="center">
+        <template v-slot="data">{{data.row.recharge_amount_huifu | localeNum2f}}</template>
       </el-table-column>
       <el-table-column prop="recharge_amount_ali" :label="$t('report.dashboard.recharge_amount_ali')" min-width="90px" align="center">
         <template v-slot="data">{{data.row.recharge_amount_ali | localeNum2f}}</template>

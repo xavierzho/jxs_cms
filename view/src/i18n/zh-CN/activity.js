@@ -21,17 +21,17 @@ export default {
   },
   costAwardLog: {
     log_type: "变动类型",
-    update_point: "欧气值变动",
-    point: "欧气值",
+    update_point: "积分变动",
+    point: "积分",
   },
 
   turntable: {
     user_id: "用户ID",
     user_name: "用户昵称",
     period: "期数",
-    point_type:"消耗类型",
-    point_type_name:"消耗类型",
-    point:"消耗数量",
+    point_type: "消耗类型",
+    point_type_name: "消耗类型",
+    point: "消耗数量",
     name: "项目名称",
     type: "奖品类型",
     item_id: "奖品ID",
@@ -49,7 +49,7 @@ export default {
     type: "奖励类型",
     day_no: "第几天",
     sign_in_type: "签到类型",
-    value:"奖励值",
+    value: "奖励值",
   },
 
   teamPK: {
@@ -70,6 +70,6 @@ export default {
     name: "名称",
     code: "兑换码",
     reward_value_item: "奖励价值(物品)",
-    reward_value_cost_award_point: "奖励价值(欧气值)",
+    reward_value_cost_award_point: "奖励价值(积分)",
   },
 }
