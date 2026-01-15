@@ -15,6 +15,7 @@ import (
 
 type CostAward struct {
 	iDao.DailyModel
+	BalanceType         uint  `gorm:"column:balance_type; type:int unsigned; default:0; comment:区分积分和吉祥值" json:"balance_type"`
 	GetUserCnt          uint  `gorm:"column:get_user_cnt; type:int unsigned; default:0; comment:获得用户数" json:"get_user_cnt"`
 	GetAmount           uint  `gorm:"column:get_amount; type:bigint; default:0; comment:获得总额" json:"get_amount"`
 	AcceptUserCnt       uint  `gorm:"column:accept_user_cnt; type:int unsigned; default:0; comment:领取用户数" json:"accept_user_cnt"`
@@ -45,15 +46,15 @@ func NewCostAwardDao(engine, center *gorm.DB, log *logger.Logger) *CostAwardDao 
 	}
 }
 
-func (d *CostAwardDao) Generate(cDate time.Time) (dataLog, dataAward *CostAward, err error) {
+func (d *CostAwardDao) Generate(cDate time.Time, balanceType uint) (dataLog, dataAward *CostAward, err error) {
 	eg := errgroup.Group{}
 
 	eg.Go(func() (err error) {
-		dataLog, err = d.generateLog(cDate)
+		dataLog, err = d.generateLog(cDate, balanceType)
 		return err
 	})
 	eg.Go(func() (err error) {
-		dataAward, err = d.generateAward(cDate)
+		dataAward, err = d.generateAward(cDate, balanceType)
 		return err
 	})
 
@@ -62,7 +63,7 @@ func (d *CostAwardDao) Generate(cDate time.Time) (dataLog, dataAward *CostAward,
 	return
 }
 
-func (d *CostAwardDao) generateLog(cDate time.Time) (data *CostAward, err error) {
+func (d *CostAwardDao) generateLog(cDate time.Time, balanceType uint) (data *CostAward, err error) {
 	err = d.center.
 		Select(
 			fmt.Sprintf("date_format(bl.created_at, '%s') as date", pkg.SQL_DATE_FORMAT),
@@ -74,6 +75,7 @@ func (d *CostAwardDao) generateLog(cDate time.Time) (data *CostAward, err error)
 		Table("balance_log bl, users u").
 		Where("bl.created_at between ? and ?", cDate.Format(pkg.DATE_TIME_MIL_FORMAT), cDate.Add(24*time.Hour-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
 		Where("bl.user_id = u.id and u.role=0").
+		Where("bl.type = ?", balanceType).
 		Group(fmt.Sprintf("date_format(bl.created_at, '%s')", pkg.SQL_DATE_FORMAT)).
 		Find(&data).Error
 	if err != nil {
@@ -84,7 +86,7 @@ func (d *CostAwardDao) generateLog(cDate time.Time) (data *CostAward, err error)
 	return
 }
 
-func (d *CostAwardDao) generateAward(cDate time.Time) (data *CostAward, err error) {
+func (d *CostAwardDao) generateAward(cDate time.Time, balanceType uint) (data *CostAward, err error) {
 	err = d.center.
 		Select(
 			fmt.Sprintf("date_format(ua.created_at, '%s') as date", pkg.SQL_DATE_FORMAT),

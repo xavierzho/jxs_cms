@@ -16,11 +16,13 @@ import (
 
 type GenerateRequest struct {
 	iForm.DateRangeRequest
+	BalanceType uint `form:"balance_type" json:"balance_type"`
 }
 
 type ListRequest struct {
 	app.Pager
 	AllRequest
+	BalanceType uint `form:"balance_type" json:"balance_type"`
 }
 
 func (q *ListRequest) Parse() (dateRange [2]time.Time, err error) {
@@ -31,10 +33,12 @@ func (q *ListRequest) Parse() (dateRange [2]time.Time, err error) {
 
 type AllRequest struct {
 	iForm.DateRangeRequest
+	BalanceType uint `form:"balance_type" json:"balance_type"`
 }
 
 type CostAward struct {
 	Date                string          `json:"date"`
+	BalanceType         int8            `json:"balance_type"`
 	GetUserCnt          uint            `json:"get_user_cnt"`
 	GetPoint            decimal.Decimal `json:"get_point"`
 	AcceptUserCnt       uint            `json:"accept_user_cnt"`

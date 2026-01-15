@@ -25,8 +25,8 @@ func NewCostAwardLogDao(center *gorm.DB, log *logger.Logger) *CostAwardLogDao {
 	}
 }
 
-func (d *CostAwardLogDao) List(dateTimeRange [2]time.Time, queryParams database.QueryWhereGroup, paper app.Pager) (summary map[string]any, data []map[string]any, err error) {
-	err = d.all(dateTimeRange, queryParams).
+func (d *CostAwardLogDao) List(dateTimeRange [2]time.Time, balanceType uint, queryParams database.QueryWhereGroup, paper app.Pager) (summary map[string]any, data []map[string]any, err error) {
+	err = d.all(dateTimeRange, balanceType, queryParams).
 		Select(
 			"count(0) as total",
 			"count(distinct bl.user_id) as user_cnt",
@@ -38,7 +38,7 @@ func (d *CostAwardLogDao) List(dateTimeRange [2]time.Time, queryParams database.
 		return
 	}
 
-	err = d.all(dateTimeRange, queryParams).
+	err = d.all(dateTimeRange, balanceType, queryParams).
 		Select("bl.*, u.nickname as user_name").
 		Order("bl.created_at desc, bl.user_id").
 		Scopes(database.Paginate(paper.Page, paper.PageSize)).
@@ -51,8 +51,8 @@ func (d *CostAwardLogDao) List(dateTimeRange [2]time.Time, queryParams database.
 	return
 }
 
-func (d *CostAwardLogDao) All(dateTimeRange [2]time.Time, queryParams database.QueryWhereGroup) (data []map[string]any, err error) {
-	err = d.all(dateTimeRange, queryParams).
+func (d *CostAwardLogDao) All(dateTimeRange [2]time.Time, balanceType uint, queryParams database.QueryWhereGroup) (data []map[string]any, err error) {
+	err = d.all(dateTimeRange, balanceType, queryParams).
 		Select("bl.*, u.nickname as user_name").
 		Find(&data).Error
 	if err != nil {
@@ -63,11 +63,12 @@ func (d *CostAwardLogDao) All(dateTimeRange [2]time.Time, queryParams database.Q
 	return
 }
 
-func (d *CostAwardLogDao) all(dateTimeRange [2]time.Time, queryParams database.QueryWhereGroup) *gorm.DB {
+func (d *CostAwardLogDao) all(dateTimeRange [2]time.Time, balanceType uint, queryParams database.QueryWhereGroup) *gorm.DB {
 	return d.center.
 		Table("balance_log bl, users u").
 		Where("type = 3").
 		Where("bl.created_at between ? and ?", dateTimeRange[0].Format(pkg.DATE_TIME_MIL_FORMAT), dateTimeRange[1].Add(time.Second-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
 		Where("bl.user_id = u.id").
+		Where("bl.type = ?", balanceType).
 		Scopes(database.ScopeQuery(queryParams))
 }

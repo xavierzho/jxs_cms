@@ -31,8 +31,8 @@ Task = "任务记录"
 
 [menu.Activity]
 "" = "活动"
-CostAward = "欧气值报表"
-CostAwardLog = "欧气值流水"
+CostAward = "积分报表"
+CostAwardLog = "积分流水"
 Turntable = "转盘抽奖记录"
 StepByStep = "步步高升记录"
 SignIn = "签到记录"
