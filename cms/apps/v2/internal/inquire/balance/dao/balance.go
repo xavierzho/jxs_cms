@@ -77,7 +77,7 @@ var selectField = []string{
 	"bl.update_amount",
 	"bl.comment",
 	"bl.type as balance_type",
-	"aiec.item_name as item_exchange_name",
+	"i.name as item_exchange_name",
 }
 
 type BalanceDao struct {
@@ -169,6 +169,7 @@ func (d *BalanceDao) allDB(tx *gorm.DB, queryParams database.QueryWhereGroup) *g
 		Joins("left join gacha_machine gm on bl.source_type between 100 and 199 and bl.source_id = gm.id").
 		Joins("left join (select distinct config_id, name from activity_cost_award_config) cac on bl.source_type in (601, 100009) and bl.source_id = cac.config_id").
 		Joins("left join activity_item_exchange_config aiec on bl.source_type = 100004 and bl.source_id = aiec.id").
+		Joins("left join item i on aiec.item_id = i.id").
 		Joins("left join pay_payment_order ppo on bl.source_type in (1, 12) and bl.source_id = ppo.id"). // 金币退款 source_id 是退款订单id 没有第三方id
 		Joins("left join pay_payout_order pdo on bl.source_type in (2) and bl.source_id = pdo.id").
 		Where("bl.user_id = u.id").

@@ -1,6 +1,6 @@
 export default {
   revenue: {
-    type:{
+    type: {
       active: "active",
       pating: "pating",
       pay: "pay",
@@ -132,5 +132,33 @@ export default {
       ninety_day_rate: "Ninety Day Rate",
       no_180_day_rate: "No 180 Day Rate",
     },
+  },
+
+  market: {
+    user_cnt: "User Cnt",
+    order_cnt: "Order Cnt",
+    order_cnt_summary: "Total Order Cnt",
+    amount: "Amount (Total)",
+    amount_0: "Amount (Regular)",
+    amount_0_summary: "Total Amount (Regular)",
+    amount_1: "Amount (Internal Market)",
+    amount_1_summary: "Total Amount (Internal Market)",
+    amount_2: "Amount (Robot)",
+    amount_2_summary: "Total Amount (Robot)",
+  },
+
+  dashboard: {
+    recharge_amount: 'Recharge Amount',
+    recharge_amount_huifu: 'Recharge Amount (Huifu)',
+    recharge_amount_ali: 'Recharge Amount (Alipay)',
+    draw_amount: 'Draw Amount',
+    new_user_cnt: 'New User Cnt',
+    active_user_cnt: 'Active User Cnt',
+    recharge_user_cnt: 'Recharge User Cnt',
+    pating_rate_new: 'Pating Rate (New)',
+    new_user_cnt_summary: 'Total New User Cnt',
+    recharge_user_cnt_summary: 'Total Recharge User Cnt',
+    recharge_amount_summary: 'Total Recharge Amount',
+    draw_amount_summary: 'Total Draw Amount',
   },
 }

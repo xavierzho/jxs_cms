@@ -81,7 +81,11 @@ func (svc *DashboardSvc) _generate(startTime, endTime time.Time) (data *dao.Dash
 		RechargeAmount:       dataGroup.Recharge.RechargeAmount,
 		RechargeAmountWeChat: dataGroup.Recharge.RechargeAmountWeChat,
 		RechargeAmountAli:    dataGroup.Recharge.RechargeAmountAli,
+		RechargeAmountHuiFu:  dataGroup.Recharge.RechargeAmountHuiFu,
 		DrawAmount:           dataGroup.Draw.DrawAmount + dataGroup.RechargeRefund.DrawAmount + dataGroup.SavingRefund.DrawAmount,
+		RefundAmountWeChat:   dataGroup.RechargeRefund.RefundAmountWeChat,
+		RefundAmountAli:      dataGroup.RechargeRefund.RefundAmountAli,
+		RefundAmountHuiFu:    dataGroup.RechargeRefund.RefundAmountHuiFu,
 	}, nil
 }
 
@@ -116,6 +120,7 @@ func (svc *DashboardSvc) List() (data []*form.Dashboard, dataSummary *form.Dashb
 		OrderCnt:   marketCntToday.OrderCnt,
 		Amount0:    marketAmountToday.Amount0,
 		Amount1:    marketAmountToday.Amount1,
+		Amount2:    marketAmountToday.Amount2,
 	})
 
 	dashboardList := append(dataHistory, dataToday)
@@ -125,6 +130,7 @@ func (svc *DashboardSvc) List() (data []*form.Dashboard, dataSummary *form.Dashb
 				item.MarketOrderCnt = int(mItem.OrderCnt)
 				item.MarketAmount0 = mItem.Amount0
 				item.MarketAmount1 = mItem.Amount1
+				item.MarketAmount2 = mItem.Amount2
 				break
 			}
 		}
@@ -144,6 +150,7 @@ func (svc *DashboardSvc) List() (data []*form.Dashboard, dataSummary *form.Dashb
 			_dataSummary.MarketOrderCnt += int(mItem.OrderCnt)
 			_dataSummary.MarketAmount0 += mItem.Amount0
 			_dataSummary.MarketAmount1 += mItem.Amount1
+			_dataSummary.MarketAmount2 += mItem.Amount2
 		}
 	}
 

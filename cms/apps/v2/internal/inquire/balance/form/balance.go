@@ -95,6 +95,8 @@ func (q *AllRequest) Parse() (dateTimeRange [2]time.Time, queryParams database.Q
 			case 2:
 				channelTypeList = append(channelTypeList, "wechatjs")
 				channelTypeList = append(channelTypeList, "wechatapp")
+			case 3:
+				channelTypeList = append(channelTypeList, "huifu") // 汇付
 			}
 		}
 
@@ -169,7 +171,7 @@ func (q *AllRequest) Valid() (err error) {
 
 	for _, channelType := range q.ChannelType {
 		switch channelType {
-		case 1, 2:
+		case 1, 2, 3:
 		default:
 			return fmt.Errorf("not expected channelType: %d", q.ChannelType)
 		}
@@ -216,6 +218,8 @@ func Format(ctx context.Context, _summary map[string]any, data []*dao.Balance) (
 			channelType = global.I18n.T(ctx, "pay.channelType", "1")
 		case "wechatjs", "wechatapp":
 			channelType = global.I18n.T(ctx, "pay.channelType", "2")
+		case "huifu":
+			channelType = global.I18n.T(ctx, "pay.channelType", "3")
 		}
 
 		platformOrderId := ""

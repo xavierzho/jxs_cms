@@ -28,9 +28,13 @@ type Dashboard struct {
 	RechargeAmountAli    int64 `gorm:"column:recharge_amount_ali; type:bigint;" json:"recharge_amount_ali"`
 	RechargeAmountHuiFu  int64 `gorm:"column:recharge_amount_huifu; type:bigint;" json:"recharge_amount_huifu"`
 	DrawAmount           int64 `gorm:"column:draw_amount; type:bigint;" json:"draw_amount"`
+	RefundAmountWeChat   int64 `gorm:"column:refund_amount_wechat" json:"refund_amount_wechat"`
+	RefundAmountAli      int64 `gorm:"column:refund_amount_ali" json:"refund_amount_ali"`
+	RefundAmountHuiFu    int64 `gorm:"column:refund_amount_huifu" json:"refund_amount_huifu"`
 	MarketOrderCnt       int   `gorm:"-" json:"market_order_cnt"`
 	MarketAmount0        uint  `gorm:"-" json:"market_amount_0"`
 	MarketAmount1        uint  `gorm:"-" json:"market_amount_1"`
+	MarketAmount2        uint  `gorm:"-" json:"market_amount_2"`
 }
 
 func (Dashboard) TableName() string {
@@ -255,11 +259,14 @@ func (d *DashboardDao) generateDraw(startTime, endTime time.Time) (data *Dashboa
 	return data, nil
 }
 
-// 原路退款
+// 原路退款 - 分渠道
 func (d *DashboardDao) generateRechargeRefund(startTime, endTime time.Time) (data *Dashboard, err error) {
 	err = d.center.
 		Select(
 			"sum(refund_amount) as draw_amount",
+			"sum(case platform_id when 'wechatapp' then refund_amount when 'wechatjs' then refund_amount else 0 end) as refund_amount_wechat",
+			"sum(case platform_id when 'alipay' then refund_amount else 0 end) as refund_amount_ali",
+			"sum(case platform_id when 'huifu' then refund_amount else 0 end) as refund_amount_huifu",
 		).
 		Table("pay_payment_order ppo").
 		Joins("join users u on ppo.user_id = u.id and u.role = 0").

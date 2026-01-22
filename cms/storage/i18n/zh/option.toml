@@ -73,6 +73,7 @@
 [pay.channelType]
 1 = "支付宝"
 2 = "微信"
+3 = "汇付"
 
 [cost_award.log_type]
 0 = "消费返积分"

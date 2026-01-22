@@ -38,9 +38,16 @@ type Dashboard struct {
 	RechargeAmountAli    decimal.Decimal `json:"recharge_amount_ali"`
 	RechargeAmountHuiFu  decimal.Decimal `json:"recharge_amount_huifu"`
 	DrawAmount           decimal.Decimal `json:"draw_amount"`
+	RefundAmountWeChat   decimal.Decimal `json:"refund_amount_wechat"`
+	RefundAmountAli      decimal.Decimal `json:"refund_amount_ali"`
+	RefundAmountHuiFu    decimal.Decimal `json:"refund_amount_huifu"`
+	NetReceivedWeChat    decimal.Decimal `json:"net_received_wechat"`
+	NetReceivedAli       decimal.Decimal `json:"net_received_ali"`
+	NetReceivedHuiFu     decimal.Decimal `json:"net_received_huifu"`
 	MarketOrderCnt       int             `json:"market_order_cnt"`
 	MarketAmount0        decimal.Decimal `json:"market_amount_0"`
 	MarketAmount1        decimal.Decimal `json:"market_amount_1"`
+	MarketAmount2        decimal.Decimal `json:"market_amount_2"`
 }
 
 // 填充
@@ -74,9 +81,16 @@ func Format(dateRange [2]time.Time, data ...*dao.Dashboard) (result []*Dashboard
 			RechargeAmountAli:    util.ConvertAmount2Decimal(dataItem.RechargeAmountAli),
 			RechargeAmountHuiFu:  util.ConvertAmount2Decimal(dataItem.RechargeAmountHuiFu),
 			DrawAmount:           util.ConvertAmount2Decimal(dataItem.DrawAmount),
+			RefundAmountWeChat:   util.ConvertAmount2Decimal(dataItem.RefundAmountWeChat),
+			RefundAmountAli:      util.ConvertAmount2Decimal(dataItem.RefundAmountAli),
+			RefundAmountHuiFu:    util.ConvertAmount2Decimal(dataItem.RefundAmountHuiFu),
+			NetReceivedWeChat:    util.ConvertAmount2Decimal(dataItem.RechargeAmountWeChat - dataItem.RefundAmountWeChat),
+			NetReceivedAli:       util.ConvertAmount2Decimal(dataItem.RechargeAmountAli - dataItem.RefundAmountAli),
+			NetReceivedHuiFu:     util.ConvertAmount2Decimal(dataItem.RechargeAmountHuiFu - dataItem.RefundAmountHuiFu),
 			MarketOrderCnt:       dataItem.MarketOrderCnt,
 			MarketAmount0:        util.ConvertAmount2Decimal(int64(dataItem.MarketAmount0)),
 			MarketAmount1:        util.ConvertAmount2Decimal(int64(dataItem.MarketAmount1)),
+			MarketAmount2:        util.ConvertAmount2Decimal(int64(dataItem.MarketAmount2)),
 		})
 	}
 

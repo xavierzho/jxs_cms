@@ -19,6 +19,7 @@ type Market struct {
 	OrderCnt uint `gorm:"column:order_cnt; default:0" json:"order_cnt"`
 	Amount0  uint `gorm:"column:amount_0; default:0" json:"amount_0"`
 	Amount1  uint `gorm:"column:amount_1; default:0" json:"amount_1"`
+	Amount2  uint `gorm:"column:amount_2; default:0" json:"amount_2"`
 }
 
 func (Market) TableName() string {
@@ -97,6 +98,7 @@ func (d *MarketDao) generateAmount(cDate time.Time) (data *Market, err error) {
 			fmt.Sprintf("date_format(bl.created_at, '%s') as date", pkg.SQL_DATE_FORMAT),
 			"sum(case muou.role when 0 then bl.update_amount else 0 end) as amount_0",
 			"sum(case muou.role when 1 then bl.update_amount else 0 end) as amount_1",
+			"sum(case muou.role when 2 then bl.update_amount else 0 end) as amount_2",
 		).
 		Table("balance_log bl").
 		Joins("join users u on bl.user_id = u.id and u.role = 0").

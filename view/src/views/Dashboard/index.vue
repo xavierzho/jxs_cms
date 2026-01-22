@@ -12,7 +12,7 @@
       <div class="group">
         <dashboard-value class-name="recharge_amount" :title="$t('report.dashboard.recharge_amount')" :value="[todayData.recharge_amount,yesterdayData.recharge_amount]" value-type="value2f"/>
         <dashboard-value class-name="recharge_amount_huifu" :title="$t('report.dashboard.recharge_amount_huifu')" :value="[todayData.recharge_amount_huifu,yesterdayData.recharge_amount_huifu]" value-type="value2f"/>
-        <dashboard-value class-name="recharge_amount_ali" :title="$t('report.dashboard.recharge_amount_ali')" :value="[todayData.recharge_amount_ali,yesterdayData.recharge_amount_ali]" value-type="value2f"/>
+<!--        <dashboard-value class-name="recharge_amount_ali" :title="$t('report.dashboard.recharge_amount_ali')" :value="[todayData.recharge_amount_ali,yesterdayData.recharge_amount_ali]" value-type="value2f"/>-->
         <dashboard-value class-name="draw_amount" :title="$t('report.dashboard.draw_amount')" :value="[todayData.draw_amount,yesterdayData.draw_amount]" value-type="value2f"/>
         <dashboard-value class-name="new_user_cnt" :title="$t('report.dashboard.new_user_cnt')" :value="[todayData.new_user_cnt,yesterdayData.new_user_cnt]"/>
       </div>
@@ -32,6 +32,14 @@
         <dashboard-value class-name="market_amount_0_summary" :title="$t('report.market.amount_0_summary')" :value="[summary.market_amount_0,0]" value-type="value2f" is-summary/>
         <dashboard-value class-name="market_amount_1" :title="$t('report.market.amount_1')" :value="[todayData.market_amount_1,yesterdayData.market_amount_1]" value-type="value2f"/>
         <dashboard-value class-name="market_amount_1_summary" :title="$t('report.market.amount_1_summary')" :value="[summary.market_amount_1,0]" value-type="value2f" is-summary/>
+        <dashboard-value class-name="market_amount_2" :title="$t('report.market.amount_2')" :value="[todayData.market_amount_2,yesterdayData.market_amount_2]" value-type="value2f"/>
+        <dashboard-value class-name="market_amount_2_summary" :title="$t('report.market.amount_2_summary')" :value="[summary.market_amount_2,0]" value-type="value2f" is-summary/>
+      </div>
+
+      <div class="group">
+<!--        <dashboard-value class-name="net_received_wechat" :title="$t('report.dashboard.net_received_wechat')" :value="[todayData.net_received_wechat,yesterdayData.net_received_wechat]" value-type="value2f"/>-->
+<!--        <dashboard-value class-name="net_received_ali" :title="$t('report.dashboard.net_received_ali')" :value="[todayData.net_received_ali,yesterdayData.net_received_ali]" value-type="value2f"/>-->
+        <dashboard-value class-name="net_received_huifu" :title="$t('report.dashboard.net_received_huifu')" :value="[todayData.net_received_huifu,yesterdayData.net_received_huifu]" value-type="value2f"/>
       </div>
 
 <!--      <div class="group">-->
@@ -49,8 +57,8 @@
       <el-table-column prop="recharge_amount_huifu" :label="$t('report.dashboard.recharge_amount_huifu')" min-width="90px" align="center">
         <template v-slot="data">{{data.row.recharge_amount_huifu | localeNum2f}}</template>
       </el-table-column>
-      <el-table-column prop="recharge_amount_ali" :label="$t('report.dashboard.recharge_amount_ali')" min-width="90px" align="center">
-        <template v-slot="data">{{data.row.recharge_amount_ali | localeNum2f}}</template>
+      <el-table-column prop="refund_amount_huifu" :label="$t('report.dashboard.refund_amount_huifu')" min-width="90px" align="center">
+        <template v-slot="data">{{data.row.refund_amount_huifu | localeNum2f}}</template>
       </el-table-column>
       <el-table-column prop="draw_amount" :label="$t('report.dashboard.draw_amount')" min-width="90px" align="center">
         <template v-slot="data">{{data.row.draw_amount | localeNum2f}}</template>
@@ -72,6 +80,9 @@
       </el-table-column>
       <el-table-column prop="market_amount_1" :label="$t('report.market.amount_1')" min-width="90px" align="center">
         <template v-slot="data">{{ data.row.market_amount_1 | localeNum2f }}</template>
+      </el-table-column>
+      <el-table-column prop="market_amount_2" :label="$t('report.market.amount_2')" min-width="90px" align="center">
+        <template v-slot="data">{{ data.row.market_amount_2 | localeNum2f }}</template>
       </el-table-column>
     </el-table>
   </div>

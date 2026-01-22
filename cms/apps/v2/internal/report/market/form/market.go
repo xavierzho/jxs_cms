@@ -40,6 +40,7 @@ type Market struct {
 	Amount   decimal.Decimal `json:"amount"`
 	Amount0  decimal.Decimal `json:"amount_0"`
 	Amount1  decimal.Decimal `json:"amount_1"`
+	Amount2  decimal.Decimal `json:"amount_2"`
 }
 
 func Format(dateRange [2]time.Time, _summary map[string]any, data []*dao.Market) (summary map[string]any, result []Market, err error) {
@@ -47,7 +48,8 @@ func Format(dateRange [2]time.Time, _summary map[string]any, data []*dao.Market)
 	if summary != nil {
 		summary["amount_0"] = util.ConvertAmount2Decimal(summary["amount_0"])
 		summary["amount_1"] = util.ConvertAmount2Decimal(summary["amount_1"])
-		summary["amount"] = summary["amount_0"].(decimal.Decimal).Add(summary["amount_1"].(decimal.Decimal))
+		summary["amount_2"] = util.ConvertAmount2Decimal(summary["amount_2"])
+		summary["amount"] = summary["amount_0"].(decimal.Decimal).Add(summary["amount_1"].(decimal.Decimal)).Add(summary["amount_2"].(decimal.Decimal))
 	}
 
 	var dataMap = make(map[string]dao.Market)
@@ -63,9 +65,10 @@ func Format(dateRange [2]time.Time, _summary map[string]any, data []*dao.Market)
 			OrderCnt: dataMap[cDateStr].OrderCnt,
 			Amount0:  util.ConvertAmount2Decimal(dataMap[cDateStr].Amount0),
 			Amount1:  util.ConvertAmount2Decimal(dataMap[cDateStr].Amount1),
+			Amount2:  util.ConvertAmount2Decimal(dataMap[cDateStr].Amount2),
 		}
 
-		item.Amount = item.Amount0.Add(item.Amount1)
+		item.Amount = item.Amount0.Add(item.Amount1).Add(item.Amount2)
 
 		result = append(result, item)
 	}
@@ -86,6 +89,7 @@ func Format2Excel(dateRange [2]time.Time, _data []*dao.Market) (excelModel *exce
 		"成交金额(总)": func(source Market) any { return source.Amount },
 		"成交金额0":   func(source Market) any { return source.Amount0 },
 		"成交金额1":   func(source Market) any { return source.Amount1 },
+		"成交金额2":   func(source Market) any { return source.Amount2 },
 	}
 
 	excelModel = &excel.Excel[Market]{
@@ -94,7 +98,7 @@ func Format2Excel(dateRange [2]time.Time, _data []*dao.Market) (excelModel *exce
 		SheetNameWithHead: map[string][]string{
 			"集市报表": {
 				"日期", "参与用户数", "新增订单数",
-				"成交金额(总)", "成交金额0", "成交金额1",
+				"成交金额(总)", "成交金额0", "成交金额1", "成交金额2",
 			},
 		},
 		DefaultColWidth:  20,

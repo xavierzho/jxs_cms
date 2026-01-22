@@ -78,6 +78,7 @@ func (svc *BalanceSvc) OptionsChannelType() []map[string]string {
 	return []map[string]string{
 		{"value": "1", "label": global.I18n.T(svc.ctx.Request.Context(), "pay.channelType", "1")},
 		{"value": "2", "label": global.I18n.T(svc.ctx.Request.Context(), "pay.channelType", "2")},
+		{"value": "3", "label": global.I18n.T(svc.ctx.Request.Context(), "pay.channelType", "3")},
 	}
 }
 
