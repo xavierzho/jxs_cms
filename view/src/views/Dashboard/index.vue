@@ -25,6 +25,15 @@
         <dashboard-value class-name="recharge_user_cnt_summary" :title="$t('report.dashboard.recharge_user_cnt_summary')" :value="[summary.recharge_user_cnt,0]" is-summary/>
       </div>
 
+      <div class="group">
+        <dashboard-value class-name="market_order_cnt" :title="$t('report.market.order_cnt')" :value="[todayData.market_order_cnt,yesterdayData.market_order_cnt]"/>
+        <dashboard-value class-name="market_order_cnt_summary" :title="$t('report.market.order_cnt_summary')" :value="[summary.market_order_cnt,0]" is-summary/>
+        <dashboard-value class-name="market_amount_0" :title="$t('report.market.amount_0')" :value="[todayData.market_amount_0,yesterdayData.market_amount_0]" value-type="value2f"/>
+        <dashboard-value class-name="market_amount_0_summary" :title="$t('report.market.amount_0_summary')" :value="[summary.market_amount_0,0]" value-type="value2f" is-summary/>
+        <dashboard-value class-name="market_amount_1" :title="$t('report.market.amount_1')" :value="[todayData.market_amount_1,yesterdayData.market_amount_1]" value-type="value2f"/>
+        <dashboard-value class-name="market_amount_1_summary" :title="$t('report.market.amount_1_summary')" :value="[summary.market_amount_1,0]" value-type="value2f" is-summary/>
+      </div>
+
 <!--      <div class="group">-->
 <!--        <dashboard-value class-name="recharge_amount_summary" :title="$t('report.dashboard.recharge_amount_summary')" :value="[summary.recharge_amount,0]" value-type="value2f" is-summary/>-->
 <!--        <dashboard-value class-name="draw_amount_summary" :title="$t('report.dashboard.draw_amount_summary')" :value="[summary.draw_amount,0]" value-type="value2f" is-summary/>-->
@@ -54,6 +63,15 @@
       </el-table-column>
       <el-table-column prop="recharge_user_cnt" :label="$t('report.dashboard.recharge_user_cnt')" min-width="90px" align="center">
         <template v-slot="data">{{ data.row.recharge_user_cnt | localeNum }}</template>
+      </el-table-column>
+      <el-table-column prop="market_order_cnt" :label="$t('report.market.order_cnt')" min-width="90px" align="center">
+        <template v-slot="data">{{ data.row.market_order_cnt | localeNum }}</template>
+      </el-table-column>
+      <el-table-column prop="market_amount_0" :label="$t('report.market.amount_0')" min-width="90px" align="center">
+        <template v-slot="data">{{ data.row.market_amount_0 | localeNum2f }}</template>
+      </el-table-column>
+      <el-table-column prop="market_amount_1" :label="$t('report.market.amount_1')" min-width="90px" align="center">
+        <template v-slot="data">{{ data.row.market_amount_1 | localeNum2f }}</template>
       </el-table-column>
     </el-table>
   </div>

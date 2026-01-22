@@ -140,12 +140,16 @@ func (q *AllRequest) Valid() (err error) {
 	for _, sourceType := range q.SourceType {
 		switch sourceType {
 		case 1, 2, 3, 12, 13:
+		case 15: // 兑换
 		case 101, 102, 103, 104, 105, 106:
-		case 201, 202, 203, 204:
+		case 201, 202, 203, 204: // 吉市
 		case 301, 302, 303, 304:
 		case 400:
 		case 601:
+		case 100004: // 物品置换
 		case 100005:
+		case 100009: // 积分兑换
+		case 100013: // 吉祥值抵扣
 		case 999999:
 		default:
 			return fmt.Errorf("not expected sourceType: %d", q.SourceType)
@@ -223,6 +227,27 @@ func Format(ctx context.Context, _summary map[string]any, data []*dao.Balance) (
 		default:
 		}
 
+		// 特殊处理 ItemName
+		if item.SourceType == 15 {
+			item.CostAwardName = "吉祥币兑换"
+		} else if item.SourceType >= 200 && item.SourceType <= 299 {
+			item.CostAwardName = "吉市订单"
+		} else if item.SourceType == 100013 {
+			item.CostAwardName = "吉祥值抵扣"
+		} else if item.SourceType == 100009 {
+			if item.CostAwardName == "" {
+				item.CostAwardName = "积分兑换"
+			} else {
+				item.CostAwardName = "积分兑换-" + item.CostAwardName
+			}
+		} else if item.SourceType == 100004 {
+			if item.ItemExchangeName == "" {
+				item.ItemExchangeName = "物品置换"
+			} else {
+				item.ItemExchangeName = "物品置换-" + item.ItemExchangeName
+			}
+		}
+
 		var paySourceTypeStr string
 		if item.PaySourceType != 0 {
 			paySourceTypeStr = global.I18n.T(ctx, "source_type", convert.GetString(item.PaySourceType))
@@ -234,7 +259,7 @@ func Format(ctx context.Context, _summary map[string]any, data []*dao.Balance) (
 			UserID:           item.UserID,
 			UserName:         item.UserName,
 			SourceTypeStr:    global.I18n.T(ctx, "source_type", convert.GetString(item.SourceType)),
-			ItemName:         item.GachaName + item.CostAwardName + channelType, // 三者仅一者非空
+			ItemName:         item.GachaName + item.CostAwardName + item.ItemExchangeName + channelType, // 三者仅一者非空
 			PlatformOrderId:  platformOrderId,
 			PaySourceTypeStr: paySourceTypeStr,
 			BeforeBalance:    util.ConvertAmount2Decimal(item.BeforeBalance),

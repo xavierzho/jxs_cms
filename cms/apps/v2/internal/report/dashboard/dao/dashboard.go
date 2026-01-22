@@ -28,6 +28,9 @@ type Dashboard struct {
 	RechargeAmountAli    int64 `gorm:"column:recharge_amount_ali; type:bigint;" json:"recharge_amount_ali"`
 	RechargeAmountHuiFu  int64 `gorm:"column:recharge_amount_huifu; type:bigint;" json:"recharge_amount_huifu"`
 	DrawAmount           int64 `gorm:"column:draw_amount; type:bigint;" json:"draw_amount"`
+	MarketOrderCnt       int   `gorm:"-" json:"market_order_cnt"`
+	MarketAmount0        uint  `gorm:"-" json:"market_amount_0"`
+	MarketAmount1        uint  `gorm:"-" json:"market_amount_1"`
 }
 
 func (Dashboard) TableName() string {

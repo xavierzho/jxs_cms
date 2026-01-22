@@ -3,9 +3,10 @@ package dao
 import (
 	"data_backend/pkg/util"
 	"fmt"
-	"github.com/shopspring/decimal"
 	"strings"
 	"time"
+
+	"github.com/shopspring/decimal"
 
 	"data_backend/internal/app"
 	"data_backend/pkg"
@@ -79,28 +80,28 @@ func (d *ItemDao) GetLog(dateTimeRange [2]time.Time, logTypeList []int, paramsGr
 		if paramsGroup.ActivityFlag.CostRank {
 			dbList = append(dbList, d.getLogActivityCostRankDB(dateTimeRange, paramsGroup))
 		}
-		if paramsGroup.ActivityFlag.ItemExchange {
-			dbList = append(dbList, d.getLogActivityItemExchangeDB(dateTimeRange, paramsGroup))
-		}
-		if paramsGroup.ActivityFlag.PrizeWheel {
-			dbList = append(dbList, d.getLogActivityPrizeWheelDB(dateTimeRange, paramsGroup))
-		}
-		if paramsGroup.ActivityFlag.StepByStep {
-			dbList = append(dbList, d.getLogActivityStepByStepDB(dateTimeRange, paramsGroup))
-			dbList = append(dbList, d.getLogActivityStepByStepRankDB(dateTimeRange, paramsGroup))
-		}
-		if paramsGroup.ActivityFlag.SignIn {
-			dbList = append(dbList, d.getLogActivitySignInDB(dateTimeRange, paramsGroup))
-		}
-		if paramsGroup.ActivityFlag.LuckyNum {
-			dbList = append(dbList, d.getLogActivityLuckyNumDB(dateTimeRange, paramsGroup))
-		}
+		// if paramsGroup.ActivityFlag.ItemExchange {
+		// 	dbList = append(dbList, d.getLogActivityItemExchangeDB(dateTimeRange, paramsGroup))
+		// }
+		// if paramsGroup.ActivityFlag.PrizeWheel {
+		// 	dbList = append(dbList, d.getLogActivityPrizeWheelDB(dateTimeRange, paramsGroup))
+		// }
+		// if paramsGroup.ActivityFlag.StepByStep {
+		// 	dbList = append(dbList, d.getLogActivityStepByStepDB(dateTimeRange, paramsGroup))
+		// 	dbList = append(dbList, d.getLogActivityStepByStepRankDB(dateTimeRange, paramsGroup))
+		// }
+		// if paramsGroup.ActivityFlag.SignIn {
+		// 	dbList = append(dbList, d.getLogActivitySignInDB(dateTimeRange, paramsGroup))
+		// }
+		// if paramsGroup.ActivityFlag.LuckyNum {
+		// 	dbList = append(dbList, d.getLogActivityLuckyNumDB(dateTimeRange, paramsGroup))
+		// }
 		if paramsGroup.ActivityFlag.RedemptionCode {
 			dbList = append(dbList, d.getLogActivityRedemptionCodeDB(dateTimeRange, paramsGroup))
 		}
-		if paramsGroup.ActivityFlag.Lottery {
-			dbList = append(dbList, d.getLogActivityLotteryDB(dateTimeRange, paramsGroup))
-		}
+		// if paramsGroup.ActivityFlag.Lottery {
+		// 	dbList = append(dbList, d.getLogActivityLotteryDB(dateTimeRange, paramsGroup))
+		// }
 	}
 
 	if paramsGroup.TaskFlag {
@@ -674,9 +675,9 @@ func (d *ItemDao) getLogActivityRedemptionCodeDB(dateTimeRange [2]time.Time, par
 			fmt.Sprintf("DATE_FORMAT(ua.created_at, '%s') as date_time", pkg.SQL_DATE_TIME_FORMAT),
 			"u.id as user_id",
 			"u.nickname as user_name",
-			"100010 as log_type", // 步步高升
-			"ua.params_2 as log_type_name",
-			"cast(ua.params as SIGNED) as period", // id 作期数
+			"100010 as log_type", // 兑换码
+			"'' as log_type_name",
+			"cast(JSON_UNQUOTE(ua.params->'$.log_id') as SIGNED) as period", // id 作期数
 			"0 as bet_nums",
 			"0 as level_type",
 			"0 as update_amount",
@@ -689,11 +690,11 @@ func (d *ItemDao) getLogActivityRedemptionCodeDB(dateTimeRange [2]time.Time, par
 		Where("a.id = ua.activity_id").
 		Where("ua.created_at between ? and ?", dateTimeRange[0].Format(pkg.DATE_TIME_MIL_FORMAT), dateTimeRange[1].Add(time.Second-time.Millisecond).Format(pkg.DATE_TIME_MIL_FORMAT)).
 		Where("ua.user_id = u.id").
-		Where("cast(ua.params as SIGNED) = c.config_id").
+		Where("cast(JSON_UNQUOTE(ua.params->'$.log_id') as SIGNED) = c.config_id").
 		Where("c.type = 20").
 		Where("c.value = i.id").
 		Scopes(database.ScopeQuery(paramsGroup.UsersParams)).
-		Group(fmt.Sprintf("ua.params, DATE_FORMAT(ua.created_at, '%s'), u.id, u.nickname, ua.params_2", pkg.SQL_DATE_TIME_FORMAT)).
+		Group(fmt.Sprintf("ua.params, DATE_FORMAT(ua.created_at, '%s'), u.id, u.nickname", pkg.SQL_DATE_TIME_FORMAT)).
 		Having(having, havingParams...)
 }
 

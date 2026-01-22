@@ -38,6 +38,9 @@ type Dashboard struct {
 	RechargeAmountAli    decimal.Decimal `json:"recharge_amount_ali"`
 	RechargeAmountHuiFu  decimal.Decimal `json:"recharge_amount_huifu"`
 	DrawAmount           decimal.Decimal `json:"draw_amount"`
+	MarketOrderCnt       int             `json:"market_order_cnt"`
+	MarketAmount0        decimal.Decimal `json:"market_amount_0"`
+	MarketAmount1        decimal.Decimal `json:"market_amount_1"`
 }
 
 // 填充
@@ -71,6 +74,9 @@ func Format(dateRange [2]time.Time, data ...*dao.Dashboard) (result []*Dashboard
 			RechargeAmountAli:    util.ConvertAmount2Decimal(dataItem.RechargeAmountAli),
 			RechargeAmountHuiFu:  util.ConvertAmount2Decimal(dataItem.RechargeAmountHuiFu),
 			DrawAmount:           util.ConvertAmount2Decimal(dataItem.DrawAmount),
+			MarketOrderCnt:       dataItem.MarketOrderCnt,
+			MarketAmount0:        util.ConvertAmount2Decimal(int64(dataItem.MarketAmount0)),
+			MarketAmount1:        util.ConvertAmount2Decimal(int64(dataItem.MarketAmount1)),
 		})
 	}
 

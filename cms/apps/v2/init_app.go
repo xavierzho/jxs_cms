@@ -61,8 +61,10 @@ func InitObject() (err error) {
 	if err = local.SetupDBEngine(); err != nil {
 		return fmt.Errorf("SetupDBEngine: %w", err)
 	}
-	if err = local.SetupRedis(); err != nil {
-		return fmt.Errorf("SetupRedis: %w", err)
+	if global.ServerSetting.RunMode != global.RUN_MODE_MIGRATE {
+		if err = local.SetupRedis(); err != nil {
+			return fmt.Errorf("SetupRedis: %w", err)
+		}
 	}
 
 	// 迁移模式仅初始化日志 数据库
