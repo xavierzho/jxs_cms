@@ -117,8 +117,7 @@ func (d *GachaDao) getRevenueBetDB(paramsGroup RevenueRequestParamsGroup) *gorm.
 
 	return d.center.
 		Select(selectList).
-		//Table("(? union all ?) t", d.getRevenueBetNormalDB(paramsGroup), d.getRevenueBetExtraDB(paramsGroup)).
-		Table("(?) t", d.getRevenueBetNormalDB(paramsGroup)).
+		Table("(? union all ? union all ?) t", d.getRevenueBetNormalDB(paramsGroup), d.getRevenueBetExtraDB(paramsGroup), d.getRevenueBetUnlimitedDB(paramsGroup)).
 		Group(strings.Join(groupList, ",")).
 		Having(awardHaving, awardHavingParams...)
 }
@@ -144,6 +143,7 @@ func (d *GachaDao) getRevenueBetNormalDB(paramsGroup RevenueRequestParamsGroup) 
 		Select(betSelectList).
 		Table("gacha_box gb, gacha_machine gm, gacha_box_award gba, item i").
 		Scopes(database.ScopeQuery(paramsGroup.GMParams)).
+		Where("gm.type <> 3"). // 排除无限赏
 		Where("gb.gacha_id = gm.id").
 		Where("gb.gacha_id = gba.gacha_id").
 		Where("gb.box_index = gba.box_index").
@@ -174,6 +174,7 @@ func (d *GachaDao) getRevenueBetExtraDB(paramsGroup RevenueRequestParamsGroup) *
 		Select(extraSelectList).
 		Table("gacha_box gb, gacha_machine gm, gacha_award ga, item i ").
 		Scopes(database.ScopeQuery(paramsGroup.GMParams)).
+		Where("gm.type <> 3"). // 排除无限赏
 		Where("gb.gacha_id = gm.id").
 		Where("gb.gacha_id = ga.gacha_id").
 		Where("ga.level_type <> 1").
@@ -182,6 +183,47 @@ func (d *GachaDao) getRevenueBetExtraDB(paramsGroup RevenueRequestParamsGroup) *
 		Where("gb.deleted_at is null").
 		Where("ga.deleted_at is null").
 		Group(strings.Join(extraGroupList, ","))
+}
+
+func (d *GachaDao) getRevenueBetUnlimitedDB(paramsGroup RevenueRequestParamsGroup) *gorm.DB {
+	selectList := []string{
+		"gm.created_at, gm.id as gacha_id", "(gm.`type` + 100) as gacha_type", "gm.name as gacha_name", "gm.period",
+		"sum(t.nums) as bet_nums", "sum(t.nums) as total_nums",
+		"sum(case t.level_type when 1 then t.nums * i.inner_price else 0 end) as inner_price_bet_normal",
+		"0 as inner_price_left_normal",
+		"sum(case t.level_type when 1 then 0 else t.nums * i.inner_price end) as inner_price_bet_extra",
+		"0 as inner_price_left_extra",
+		"0 as sp_left_num",
+	}
+	groupList := []string{"gm.created_at, gm.id", "(gm.`type` + 100)", "gm.name", "gm.period"}
+	if paramsGroup.IsBoxDim {
+		// 无限赏 不在乎箱子维度
+		selectList = append(selectList, "0 as box_out_no")
+		groupList = append(groupList, "box_out_no")
+	}
+
+	return d.center.
+		Select(selectList).
+		Table("gacha_machine gm, gacha_user_record gur, ? as t, item i", d.getRevenueBetUnlimitedItemJsonDB()).
+		Scopes(database.ScopeQuery(paramsGroup.GMParams)).
+		Where("gm.type = 3").
+		Where("gur.gacha_id = gm.id").
+		Where("t.item_id = i.id").
+		Where("gm.deleted_at is null").
+		Group(strings.Join(groupList, ","))
+}
+
+func (d *GachaDao) getRevenueBetUnlimitedItemJsonDB() *gorm.DB {
+	return d.center.Raw(strings.ReplaceAll(strings.ReplaceAll(`
+	JSON_TABLE(
+		JSON_UNQUOTE(gur.items), 
+		'$[*]' COLUMNS(
+				nums int path '$.Nums',
+				item_id bigint path '$.ItemID',
+				level_type int path '$.LevelType'
+			)
+	)
+	`, "\t", " "), "\n", " "))
 }
 
 // amount

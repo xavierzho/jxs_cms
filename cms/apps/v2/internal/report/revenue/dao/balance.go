@@ -16,7 +16,7 @@ type Balance struct {
 	Wallet   uint `gorm:"column:wallet; default:0" json:"wallet"`     // 吉祥币余额 (0)
 	Merchant uint `gorm:"column:merchant; default:0" json:"merchant"` // 邀请返佣余额 (1)
 	Gold     uint `gorm:"column:gold; default:0" json:"gold"`         // 余额余额 (2)
-	Jidou    uint `gorm:"column:jidou; default:0" json:"jidou"`       // 吉豆余额 (3)
+	Jidou    uint `gorm:"-" json:"jidou"`                             // 吉豆余额 (3)
 	Point    uint `gorm:"column:point; default:0" json:"point"`       // 积分余额 (10)
 	Loyalty  uint `gorm:"column:loyalty; default:0" json:"loyalty"`   // 吉祥值余额 (11)
 }

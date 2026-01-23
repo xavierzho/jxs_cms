@@ -22,7 +22,7 @@ import (
 	"data_backend/apps/v2/internal/report/bet"
 	"data_backend/apps/v2/internal/report/cohort"
 	"data_backend/apps/v2/internal/report/dashboard"
-	"data_backend/apps/v2/internal/report/invite"
+	reportInvite "data_backend/apps/v2/internal/report/invite"
 	"data_backend/apps/v2/internal/report/market"
 	"data_backend/apps/v2/internal/report/order"
 	"data_backend/apps/v2/internal/report/realtime"
@@ -142,7 +142,7 @@ func startJobs() (err error) {
 			return err
 		}
 
-		if err = invite.AddJobList(); err != nil {
+		if err = reportInvite.AddJobList(); err != nil {
 			return err
 		}
 		if err = order.AddJobList(); err != nil {
@@ -261,7 +261,7 @@ func startQueue() (err error) {
 			return err
 		}
 
-		if err = invite.AddQueueJob(); err != nil {
+		if err = reportInvite.AddQueueJob(); err != nil {
 			return err
 		}
 		if err = order.AddQueueJob(); err != nil {
@@ -367,7 +367,7 @@ func InitRouter(rg *gin.RouterGroup) (err error) {
 			return fmt.Errorf("dashboard.InitRouter: %v", err)
 		}
 
-		if err = invite.InitRouter(rg); err != nil {
+		if err = reportInvite.InitRouter(rg); err != nil {
 			return fmt.Errorf("invite.InitRouter: %v", err) //report/invite
 		}
 
@@ -464,7 +464,7 @@ func MigrateModel() (err error) {
 		market.AppendMigrateModel()
 		realtime.AppendMigrateModel()
 		dashboard.AppendMigrateModel()
-		invite.AppendMigrateModel()
+		reportInvite.AppendMigrateModel()
 		order.AppendMigrateModel()
 		recall.AppendMigrateModel()
 	}

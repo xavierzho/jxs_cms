@@ -44,7 +44,7 @@
         <el-form inline v-model="searchFormLog">
           <el-form-item :label="$t('inquire.item.log_type')">
             <el-select v-model="searchFormLog.log_type_list" multiple clearable>
-              <el-option v-for="item in inquireItemLogType" :label="item.label" :value="item.value"
+              <el-option v-for="item in filteredInquireItemLogType" :label="item.label" :value="item.value"
                          :key="item.value"></el-option>
             </el-select>
           </el-form-item>
@@ -323,7 +323,7 @@ export default {
         tel: '',
         role: [],
         channel: null,
-        log_type_list: ['101', '102', '103', '104', '105','106'],
+        log_type_list: ['102', '103', '105', '106'],
         gacha_name: '',
         update_amount_range: [], // 没填则不传, 用边界补齐 两个元素
         show_price_range: [],
@@ -345,6 +345,10 @@ export default {
       userChannel: 'option/userChannel',
       inquireItemLogType: 'option/inquireItemLogType',
     }),
+    filteredInquireItemLogType() {
+      const exclude = ['101', '104'] // 一番赏, 洞洞乐
+      return this.inquireItemLogType.filter(item => !exclude.includes(String(item.value)))
+    },
   },
   created() {
     if (this.inquireItemLogType.length === 0) {

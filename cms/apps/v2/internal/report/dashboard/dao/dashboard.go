@@ -11,6 +11,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Dashboard struct {
@@ -28,9 +29,9 @@ type Dashboard struct {
 	RechargeAmountAli    int64 `gorm:"column:recharge_amount_ali; type:bigint;" json:"recharge_amount_ali"`
 	RechargeAmountHuiFu  int64 `gorm:"column:recharge_amount_huifu; type:bigint;" json:"recharge_amount_huifu"`
 	DrawAmount           int64 `gorm:"column:draw_amount; type:bigint;" json:"draw_amount"`
-	RefundAmountWeChat   int64 `gorm:"column:refund_amount_wechat" json:"refund_amount_wechat"`
-	RefundAmountAli      int64 `gorm:"column:refund_amount_ali" json:"refund_amount_ali"`
-	RefundAmountHuiFu    int64 `gorm:"column:refund_amount_huifu" json:"refund_amount_huifu"`
+	RefundAmountWeChat   int64 `gorm:"-" json:"refund_amount_wechat"`
+	RefundAmountAli      int64 `gorm:"-" json:"refund_amount_ali"`
+	RefundAmountHuiFu    int64 `gorm:"-" json:"refund_amount_huifu"`
 	MarketOrderCnt       int   `gorm:"-" json:"market_order_cnt"`
 	MarketAmount0        uint  `gorm:"-" json:"market_amount_0"`
 	MarketAmount1        uint  `gorm:"-" json:"market_amount_1"`
@@ -67,6 +68,14 @@ func NewDashboardDao(engine, center *gorm.DB, log *logger.Logger) *DashboardDao 
 		center:        center,
 		logger:        log,
 	}
+}
+
+func (d *DashboardDao) Save(data *Dashboard) (err error) {
+	if err = d.engine.Clauses(clause.OnConflict{UpdateAll: true}).Omit("created_at").Create(data).Error; err != nil {
+		d.logger.Errorf("Save: %v", err)
+		return err
+	}
+	return nil
 }
 
 func (d *DashboardDao) Generate(startTime, endTime time.Time) (dataGroup DashboardGroup, err error) {
