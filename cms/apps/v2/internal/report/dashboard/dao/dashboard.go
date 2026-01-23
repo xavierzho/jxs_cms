@@ -71,7 +71,9 @@ func NewDashboardDao(engine, center *gorm.DB, log *logger.Logger) *DashboardDao 
 }
 
 func (d *DashboardDao) Save(data *Dashboard) (err error) {
-	if err = d.engine.Clauses(clause.OnConflict{UpdateAll: true}).Omit("created_at").Create(data).Error; err != nil {
+	if err = d.engine.Clauses(clause.OnConflict{UpdateAll: true}).
+		Omit("created_at", "refund_amount_wechat", "refund_amount_ali", "refund_amount_huifu", "market_order_cnt", "market_amount_0", "market_amount_1", "market_amount_2").
+		Create(data).Error; err != nil {
 		d.logger.Errorf("Save: %v", err)
 		return err
 	}
@@ -81,22 +83,32 @@ func (d *DashboardDao) Save(data *Dashboard) (err error) {
 func (d *DashboardDao) Generate(startTime, endTime time.Time) (dataGroup DashboardGroup, err error) {
 	eg := errgroup.Group{}
 
+	// Summary时 不需要计算 活跃用户、参与用户、付费用户
+	isSummary := startTime.IsZero() || startTime.Year() < 2000
+
 	eg.Go(func() (err error) {
 		dataGroup.NewUser, err = d.generateNewUserCnt(startTime, endTime)
 		return err
 	})
-	eg.Go(func() (err error) {
-		dataGroup.ActiveUser, err = d.generateActiveUserCnt(startTime, endTime)
-		return err
-	})
-	eg.Go(func() (err error) {
-		dataGroup.Pating, err = d.generatePating(startTime, endTime)
-		return err
-	})
-	eg.Go(func() (err error) {
-		dataGroup.Pay, err = d.generatePay(startTime, endTime)
-		return err
-	})
+	if !isSummary {
+		eg.Go(func() (err error) {
+			dataGroup.ActiveUser, err = d.generateActiveUserCnt(startTime, endTime)
+			return err
+		})
+		eg.Go(func() (err error) {
+			dataGroup.Pating, err = d.generatePating(startTime, endTime)
+			return err
+		})
+		eg.Go(func() (err error) {
+			dataGroup.Pay, err = d.generatePay(startTime, endTime)
+			return err
+		})
+	} else {
+		dataGroup.ActiveUser = &Dashboard{}
+		dataGroup.Pating = &Dashboard{}
+		dataGroup.Pay = &Dashboard{}
+	}
+
 	eg.Go(func() (err error) {
 		dataGroup.Recharge, err = d.generateRecharge(startTime, endTime)
 		return err
@@ -184,8 +196,11 @@ from
 	from balance_log bl, users u
 	where
 		bl.created_at between '%[1]s' and '%s'
-		and (bl.source_type between 100 and 199 or bl.source_type in (601)) -- 抽赏 + 商城
-		and bl.update_amount <= 0
+		and (
+			((bl.source_type between 100 and 199 or bl.source_type in (601, 100013)) and bl.update_amount <= 0) -- 抽赏 + 商城 + 吉祥值抵扣
+			or
+			(bl.source_type = 400 and bl.update_amount > 0) -- 邀请返佣
+		)
 		and bl.user_id = u.id and u.role = 0
 	) t
 	`,
@@ -270,6 +285,13 @@ func (d *DashboardDao) generateDraw(startTime, endTime time.Time) (data *Dashboa
 
 // 原路退款 - 分渠道
 func (d *DashboardDao) generateRechargeRefund(startTime, endTime time.Time) (data *Dashboard, err error) {
+	var result struct {
+		DrawAmount         int64
+		RefundAmountWeChat int64
+		RefundAmountAli    int64
+		RefundAmountHuiFu  int64
+	}
+
 	err = d.center.
 		Select(
 			"sum(refund_amount) as draw_amount",
@@ -282,10 +304,17 @@ func (d *DashboardDao) generateRechargeRefund(startTime, endTime time.Time) (dat
 		Where("ppo.refund_time between ? and ?", startTime.Format(pkg.DATE_TIME_MIL_FORMAT), endTime.Format(pkg.DATE_TIME_MIL_FORMAT)).
 		Where("ppo.status = 9").
 		Where("ppo.pay_source_type <> 12"). // 金币储值 不算在 Refund 中
-		Find(&data).Error
+		Find(&result).Error
 	if err != nil {
 		d.logger.Errorf("generateRechargeRefund: %v", err)
 		return nil, err
+	}
+
+	data = &Dashboard{
+		DrawAmount:         result.DrawAmount,
+		RefundAmountWeChat: result.RefundAmountWeChat,
+		RefundAmountAli:    result.RefundAmountAli,
+		RefundAmountHuiFu:  result.RefundAmountHuiFu,
 	}
 
 	return data, nil
